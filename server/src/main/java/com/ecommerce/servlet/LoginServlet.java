@@ -1,27 +1,26 @@
 package com.ecommerce.servlet;
 
-import com.ecommerce.dto.UserDB;
-import com.ecommerce.entity.User;
-import com.ecommerce.entity.Seller;
-import com.ecommerce.entity.Buyer;
-import com.ecommerce.entity.Shipper;
-import com.ecommerce.entity.Admin;
+import com.ecommerce.dto.LoginDTO;
+import com.ecommerce.entity.*;
+import com.ecommerce.service.LoginService; // 1. Import Service
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 
-@WebServlet(urlPatterns = {"/api/login"})
+@WebServlet(name = "LoginServlet", urlPatterns = {"/api/login"})
 public class LoginServlet extends HttpServlet {
 
-    private Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
+    private final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
+    
+    private final LoginService loginService = new LoginService(); 
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -32,29 +31,25 @@ public class LoginServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
 
-        PrintWriter out = response.getWriter();
-        JsonObject jsonResponse = new JsonObject();
+        try (PrintWriter out = response.getWriter();
+             BufferedReader reader = request.getReader()) {
 
-        try {
-            BufferedReader reader = request.getReader();
             LoginDTO loginData = gson.fromJson(reader, LoginDTO.class);
+            JsonObject jsonResponse = new JsonObject();
 
-            // 1. Gọi DB kiểm tra (JPA sẽ tự động trả về đúng class con: Seller/Buyer...)
-            User user = UserDB.checkLogin(loginData.email, loginData.password);
+            try {
+                User user = loginService.login(loginData.email, loginData.password);
 
-            if (user != null) {
-                jsonResponse.addProperty("status", "success");
+                jsonResponse.addProperty("success", true);
                 jsonResponse.addProperty("message", "Đăng nhập thành công");
-                // Token giả lập (Có thể thêm role vào token nếu muốn)
                 jsonResponse.addProperty("token", "fake-jwt-token-" + user.getUserId());
 
-                // 2. XÁC ĐỊNH VAI TRÒ (ROLE) DỰA TRÊN CLASS DIAGRAM
+                // Xử lý Role và Extra Info
                 String role = "UNKNOWN";
                 JsonObject extraInfo = new JsonObject();
 
                 if (user instanceof Admin) {
                     role = "ADMIN";
-                    // Admin không có thuộc tính riêng đặc biệt trong diagram để trả về thêm
                 } else if (user instanceof Seller) {
                     role = "SELLER";
                     Seller seller = (Seller) user;
@@ -62,47 +57,40 @@ public class LoginServlet extends HttpServlet {
                     extraInfo.addProperty("revenue", seller.getRevenue());
                 } else if (user instanceof Buyer) {
                     role = "BUYER";
-                    Buyer buyer = (Buyer) user;
-                    // Có thể trả về số lượng địa chỉ đã lưu
-                    extraInfo.addProperty("savedAddressCount", 
-                        buyer.getSavedAddresses() != null ? buyer.getSavedAddresses().size() : 0);
+                    // Don't access lazy collections - just set a placeholder
+                    extraInfo.addProperty("savedAddressCount", 0);
                 } else if (user instanceof Shipper) {
                     role = "SHIPPER";
                 }
 
-                // 3. Đóng gói JSON trả về React
+                // Đóng gói JSON trả về
                 JsonObject userJson = new JsonObject();
                 userJson.addProperty("userId", user.getUserId());
                 userJson.addProperty("fullName", user.getFullName());
                 userJson.addProperty("email", user.getEmail());
                 userJson.addProperty("phoneNumber", user.getPhoneNumber());
-                userJson.addProperty("role", role); // React sẽ dùng cái này để chuyển trang
-                
-                // Gắn thêm thông tin riêng (ví dụ ShopName cho Seller)
+                userJson.addProperty("role", role);
                 userJson.add("extraInfo", extraInfo);
 
                 jsonResponse.add("user", userJson);
-                response.setStatus(200);
-            } else {
-                jsonResponse.addProperty("status", "error");
-                jsonResponse.addProperty("message", "Email hoặc mật khẩu không đúng!");
-                response.setStatus(401);
+                response.setStatus(HttpServletResponse.SC_OK);
+
+            } catch (Exception e) {
+                jsonResponse.addProperty("success", false);
+                jsonResponse.addProperty("message", e.getMessage());
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }
 
+            out.print(gson.toJson(jsonResponse));
+            
         } catch (Exception e) {
             e.printStackTrace();
-            jsonResponse.addProperty("status", "error");
-            jsonResponse.addProperty("message", "Lỗi server: " + e.getMessage());
-            response.setStatus(500);
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
-
-        out.print(gson.toJson(jsonResponse));
-        out.flush();
     }
 
     @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) {
         setAccessControlHeaders(resp);
         resp.setStatus(HttpServletResponse.SC_OK);
     }
@@ -114,8 +102,5 @@ public class LoginServlet extends HttpServlet {
         resp.setHeader("Access-Control-Allow-Credentials", "true");
     }
 
-    private static class LoginDTO {
-        String email;
-        String password;
-    }
+    
 }

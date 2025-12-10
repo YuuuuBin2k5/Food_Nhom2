@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Button, Form, Input, Checkbox } from "@heroui/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { loginAPI } from "../services/authService";
 
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
@@ -14,18 +15,35 @@ const LoginPage = () => {
     setLoading(true);
     setError("");
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email");
-    const password = formData.get("password");
+    const form = new FormData(e.target);
+    const email = form.get("email");
+    const password = form.get("password");
 
-    const result = await login(email, password);
+    try {
+      const res = await loginAPI(email, password);
+      // loginAPI currently returns axios response; get payload
+      const payload = res?.data ?? res;
 
-    if (result.success) {
-      navigate("/");
-    } else {
-      setError(result.message);
+      if (payload.success) {
+        // store in context and localStorage via context.login
+        login(payload.user, payload.token);
+
+        // điều hướng theo role nếu backend trả role
+        const role = payload.user?.role?.toUpperCase();
+        if (role === "ADMIN") navigate("/admin/dashboard");
+        else if (role === "SELLER") navigate("/seller/dashboard");
+        else if (role === "SHIPPER") navigate("/shipper/orders");
+        else navigate("/");
+      } else {
+        setError(payload.message || "Sai tài khoản hoặc mật khẩu");
+      }
+    } catch (err) {
+      setError(
+        err.response?.data?.message || err.message || "Lỗi khi đăng nhập"
+      );
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (

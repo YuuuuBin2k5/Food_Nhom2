@@ -1,7 +1,7 @@
 import axios from "axios";
 
 //BASE_URL
-const BASE_URL = "http://localhost:8080/FoodShare/api";
+const BASE_URL = "http://localhost:8080/server/api";
 
 const api = axios.create({
   baseURL: BASE_URL,
@@ -29,7 +29,8 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    if (error.response && error.response.status === 401) {
+    // Only redirect on 401 if we're NOT on the login page
+    if (error.response && error.response.status === 401 && !window.location.pathname.includes('/login')) {
       console.warn("Phiên đăng nhập hết hạn, đang đăng xuất...");
 
       localStorage.removeItem("token");

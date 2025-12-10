@@ -6,7 +6,10 @@ import { useAuth } from "../context/AuthContext";
 const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedRole, setSelectedRole] = useState("buyer"); // Mặc định là người mua
+
+  // Mặc định là người mua ("buyer")
+  const [selectedRole, setSelectedRole] = useState("buyer");
+
   const { register } = useAuth();
   const navigate = useNavigate();
 
@@ -14,16 +17,17 @@ const RegisterPage = () => {
     e.preventDefault();
     setError("");
 
+    // Lấy dữ liệu từ Form
     const formData = new FormData(e.currentTarget);
     const data = Object.fromEntries(formData);
 
-    // Validate mật khẩu
+    // 1. Validate mật khẩu
     if (data.password !== data.confirmPassword) {
       setError("Mật khẩu nhập lại không khớp!");
       return;
     }
 
-    // Validate logic riêng theo Diagram
+    // 2. Validate riêng cho Seller
     if (selectedRole === "seller" && !data.shopName) {
       setError("Vui lòng nhập tên cửa hàng!");
       return;
@@ -31,48 +35,56 @@ const RegisterPage = () => {
 
     setLoading(true);
 
-    // Gộp role vào data gửi đi
-    const payload = { ...data, role: selectedRole };
+    const payload = {
+      ...data,
+      role: selectedRole,
+    };
 
-    // Gọi hàm đăng ký từ context
-    const result = await register(payload);
+    delete payload.confirmPassword;
 
-    if (result.success) {
-      alert("Đăng ký thành công! Vui lòng đăng nhập.");
-      navigate("/login");
-    } else {
-      setError(result.message);
+    try {
+      const result = await register(payload);
+
+      if (result.success) {
+        alert("Đăng ký thành công! Vui lòng đăng nhập.");
+        navigate("/login");
+      } else {
+        setError(result.message || "Đăng ký thất bại, vui lòng thử lại.");
+      }
+    } catch (err) {
+      setError("Lỗi kết nối server.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center bg-gray-50 p-8">
       <div className="w-full max-w-xl overflow-hidden rounded-2xl bg-white shadow-lg transition-all duration-200">
-        {/* Header Section - Gradient Blue (Giống Login) */}
+        {/* Header Section */}
         <div className="rounded-t-2xl bg-gradient-to-r from-blue-600 to-blue-500 px-10 py-8 text-center">
           <h1 className="text-4xl leading-tight font-extrabold text-white">
             Tạo tài khoản
           </h1>
           <p className="mt-2 text-blue-100 text-base">
-            Tham gia cộng đồng ngay hôm nay
+            Tham gia cộng đồng Food Rescue ngay hôm nay
           </p>
         </div>
 
         <div className="px-10 py-8 text-gray-700">
-          {/* ROLE SELECTION - Dựa trên Diagram User/Seller/Buyer/Shipper */}
+          {/* ROLE SELECTION */}
           <div className="mb-6 flex w-full justify-center">
             <Tabs
               aria-label="Role Selection"
               color="primary"
               radius="full"
               selectedKey={selectedRole}
-              onSelectionChange={setSelectedRole}
+              onSelectionChange={(key) => setSelectedRole(key.toString())}
               classNames={{
                 tabList: "bg-gray-100 p-2 border border-gray-200 rounded-full",
-                cursor: "px-6 py-2.5 rounded-full bg-white shadow-sm text-base",
+                cursor: "shadow-sm",
                 tabContent:
-                  "text-gray-700 group-data-[selected=true]:text-blue-600 font-semibold",
+                  "font-semibold group-data-[selected=true]:text-blue-600",
               }}
             >
               <Tab key="buyer" title="Khách hàng" />
@@ -82,7 +94,7 @@ const RegisterPage = () => {
           </div>
 
           <Form
-            className="flex flex-col gap-6"
+            className="flex flex-col gap-5"
             validationBehavior="native"
             onSubmit={handleSubmit}
           >
@@ -90,23 +102,21 @@ const RegisterPage = () => {
             {selectedRole === "seller" && (
               <Input
                 isRequired
-                label="Tên Cửa Hàng (Shop Name)"
+                label="Tên Cửa Hàng"
                 labelPlacement="outside"
                 name="shopName"
                 placeholder="Ví dụ: Cơm Tấm Sài Gòn"
-                type="text"
                 variant="bordered"
                 radius="md"
                 classNames={{
-                  label: "font-medium text-blue-600 text-base",
                   inputWrapper:
-                    "border-blue-200 bg-blue-50 focus-within:border-blue-500 px-3 py-2",
-                  input: "text-black w-full py-3",
+                    "border-blue-200 bg-blue-50 focus-within:border-blue-500",
+                  label: "font-medium text-blue-600",
                 }}
               />
             )}
 
-            {/* Các trường chung từ class User */}
+            {/* Các trường chung */}
             <Input
               isRequired
               label="Họ và tên"
@@ -115,12 +125,6 @@ const RegisterPage = () => {
               placeholder="Nguyễn Văn A"
               variant="bordered"
               radius="md"
-              classNames={{
-                label: "font-medium text-gray-700 text-base",
-                inputWrapper:
-                  "border-gray-200 bg-gray-50 focus-within:border-blue-500 px-3 py-2",
-                input: "text-black w-full py-3",
-              }}
             />
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -133,28 +137,16 @@ const RegisterPage = () => {
                 type="tel"
                 variant="bordered"
                 radius="md"
-                classNames={{
-                  label: "font-medium text-gray-700 text-base",
-                  inputWrapper:
-                    "border-gray-200 bg-gray-50 focus-within:border-blue-500 px-3 py-2",
-                  input: "text-black w-full py-3",
-                }}
               />
               <Input
                 isRequired
                 label="Email"
                 labelPlacement="outside"
                 name="email"
-                placeholder="email@..."
+                placeholder="email@domain.com"
                 type="email"
                 variant="bordered"
                 radius="md"
-                classNames={{
-                  label: "font-medium text-gray-700 text-base",
-                  inputWrapper:
-                    "border-gray-200 bg-gray-50 focus-within:border-blue-500 px-3 py-2",
-                  input: "text-black w-full py-3",
-                }}
               />
             </div>
 
@@ -167,12 +159,6 @@ const RegisterPage = () => {
               type="password"
               variant="bordered"
               radius="md"
-              classNames={{
-                label: "font-medium text-gray-700 text-base",
-                inputWrapper:
-                  "border-gray-200 bg-gray-50 focus-within:border-blue-500 px-3 py-2",
-                input: "text-black w-full py-3",
-              }}
             />
 
             <Input
@@ -184,14 +170,9 @@ const RegisterPage = () => {
               type="password"
               variant="bordered"
               radius="md"
-              classNames={{
-                label: "font-medium text-gray-700 text-base",
-                inputWrapper:
-                  "border-gray-200 bg-gray-50 focus-within:border-blue-500 px-3 py-2",
-                input: "text-black w-full py-3",
-              }}
             />
 
+            {/* Hiển thị lỗi nếu có */}
             {error && (
               <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700 border border-red-100 flex items-center gap-2">
                 ⚠️ {error}
@@ -204,9 +185,9 @@ const RegisterPage = () => {
               size="lg"
               radius="md"
               isLoading={loading}
-              className="mt-3 w-full bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow-md py-3.5 rounded-md text-lg"
+              className="mt-3 w-full bg-blue-600 font-bold shadow-md"
             >
-              {loading ? "Đang xử lý..." : "Đăng Ký"}
+              {loading ? "Đang xử lý..." : "Đăng Ký Tài Khoản"}
             </Button>
 
             <div className="mt-4 text-center text-sm text-gray-600">
