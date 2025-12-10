@@ -10,9 +10,14 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@heroui/input": "^2.4.28",
+    "@heroui/react": "^2.8.5",
     "@tailwindcss/vite": "^4.1.17",
+    "axios": "^1.13.2",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-router": "^7.10.1",
+    "react-router-dom": "^7.10.1",
     "tailwindcss": "^4.1.17"
   },
   "devDependencies": {

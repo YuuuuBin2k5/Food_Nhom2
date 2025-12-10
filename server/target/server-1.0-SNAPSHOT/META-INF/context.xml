@@ -1,2 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<Context path="/server"/>
+<Context path="/server">
+    <Resource name="jdbc/server" 
+              auth="Container" 
+              type="javax.sql.DataSource"
+              driverClassName="org.postgresql.Driver" 
+              url="jdbc:postgresql://localhost:5432/server_project" 
+              username="postgres" 
+              password="01218552666aE@" 
+              maxTotal="100" 
+              maxIdle="30" 
+              maxWaitMillis="10000"
+              removeAbandonedOnBorrow="true" 
+              removeAbandonedTimeout="60"
+              logAbandoned="true" />
+</Context>
