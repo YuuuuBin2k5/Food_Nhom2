@@ -4,7 +4,7 @@
               auth="Container" 
               type="javax.sql.DataSource"
               driverClassName="org.postgresql.Driver" 
-              url="jdbc:postgresql://localhost:5432/server_project" 
+              url="jdbc:postgresql://localhost:5432/FoodRescuePU" 
               username="postgres" 
               password="01218552666aE@" 
               maxTotal="100" 

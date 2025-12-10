@@ -1,6 +1,7 @@
 <%@page contentType="text/html" pageEncoding="UTF-8"%>
 <%@page import="com.ecommerce.util.DBUtil"%>
-<%@page import="javax.persistence.EntityManager"%>
+
+<%@page import="jakarta.persistence.EntityManager"%>
 
 <!DOCTYPE html>
 <html>
@@ -61,6 +62,7 @@
                 // 1. Nếu trang này chạy được -> Server (Tomcat) ĐANG CHẠY.
                 
                 // 2. Thử tạo EntityManager để kiểm tra DB
+                // DBUtil trả về Jakarta EntityManagerFactory, nên biến em phải là Jakarta EntityManager
                 em = DBUtil.getEmFactory().createEntityManager();
                 
                 // Nếu dòng trên không lỗi -> Kết nối thành công

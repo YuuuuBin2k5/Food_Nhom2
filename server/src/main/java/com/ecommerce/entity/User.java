@@ -4,12 +4,14 @@
  */
 package com.ecommerce.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
-@MappedSuperclass
+@Entity
+@Table(name = "users") 
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class User implements Serializable {
 
     @Id
@@ -43,6 +45,7 @@ public abstract class User implements Serializable {
     protected Date createdDate;
 
     public User() {
+        this.userId = UUID.randomUUID().toString();
         this.fullName = null;
         this.email = null;
         this.password = null;
@@ -50,7 +53,7 @@ public abstract class User implements Serializable {
         this.address = null;
         this.role = null;
         this.isBanned = false;
-        this.createdDate = null;
+        this.createdDate = new Date();
     }
     public User(String fullName, String email, String password, String phoneNumber, String address, Role role) {
         this.userId = UUID.randomUUID().toString();
