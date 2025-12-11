@@ -16,9 +16,9 @@
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/FoodRescueDB"/>
-            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
-            <property name="jakarta.persistence.jdbc.password" value="01218552666aE@"/>
+            <property name="jakarta.persistence.jdbc.url" value="postgresql://postgres.temjcgfdfgzldxpdfxzn:0786759178aE@aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres"/>
+            <property name="jakarta.persistence.jdbc.user" value="postgres.temjcgfdfgzldxpdfxzn"/>
+            <property name="jakarta.persistence.jdbc.password" value="0786759178aE"/>
 
             <property name="hibernate.hbm2ddl.auto" value="update"/>
             <property name="hibernate.show_sql" value="true"/>
