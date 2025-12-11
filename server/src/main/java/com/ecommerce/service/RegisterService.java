@@ -15,10 +15,19 @@ public class RegisterService {
         EntityTransaction trans = em.getTransaction();
 
         try {
-            String checkEmailQuery = "SELECT COUNT(u) FROM User u WHERE u.email = :email";
-            TypedQuery<Long> query = em.createQuery(checkEmailQuery, Long.class);
-            query.setParameter("email", email);
-            Long count = query.getSingleResult();
+            long count = 0;
+
+            count += em.createQuery("SELECT COUNT(s) FROM Seller s WHERE s.email = :email", Long.class)
+                       .setParameter("email", email)
+                       .getSingleResult();
+
+            count += em.createQuery("SELECT COUNT(b) FROM Buyer b WHERE b.email = :email", Long.class)
+                       .setParameter("email", email)
+                       .getSingleResult();
+
+            count += em.createQuery("SELECT COUNT(sh) FROM Shipper sh WHERE sh.email = :email", Long.class)
+                        .setParameter("email", email)
+                        .getSingleResult();
 
             if (count > 0) {
                 throw new Exception("Email này đã được sử dụng!");

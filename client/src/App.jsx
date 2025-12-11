@@ -1,14 +1,48 @@
-import Footer from "./components/layouts/Footer";
-import SideBar from "./components/layouts/SideBar";
+import { Route, Routes } from "react-router";
 import { AuthProvider } from "./context/AuthContext";
-import AppRoutes from "./routes/AppRoutes";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import ABC from "./pages/admin/ABC";
+import PrivateRoute from "./components/common/PrivateRoute";
+import MainLayout from "./components/layouts/MainLayout";
+import HomePage from "./pages/HomePage";
+import SellerDashboard from "./pages/seller/SellerDashboard";
+import ShipperOrders from "./pages/shipper/ShipperOrders";
+import NotFound from "./pages/NotFound";
 
 function App() {
   return (
     <>
       {/* Component AppRoutes quản lý tất cả các Routes */}
       <AuthProvider>
-        <AppRoutes />
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* Protected Routes */}
+          <Route element={<PrivateRoute />}>
+            <Route element={<MainLayout />}>
+              {/* Buyer Routes */}
+              <Route path="/" element={<HomePage />} />
+
+              {/* Admin Routes */}
+              <Route path="/admin/dashboard" element={<AdminDashboard />} />
+
+              <Route path="/admin/abc" element={<ABC />} />
+
+              {/* Seller Routes */}
+              <Route path="/seller/dashboard" element={<SellerDashboard />} />
+
+              {/* Shipper Routes */}
+              <Route path="/shipper/orders" element={<ShipperOrders />} />
+            </Route>
+          </Route>
+
+          {/* 404 Not Found */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
       </AuthProvider>
     </>
   );
