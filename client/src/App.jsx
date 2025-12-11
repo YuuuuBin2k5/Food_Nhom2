@@ -3,7 +3,6 @@ import { AuthProvider } from "./context/AuthContext";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-import ABC from "./pages/admin/ABC";
 import PrivateRoute from "./components/common/PrivateRoute";
 import MainLayout from "./components/layouts/MainLayout";
 import HomePage from "./pages/HomePage";
@@ -34,6 +33,7 @@ function App() {
               {/* Seller Routes */}
               <Route path="/seller/dashboard" element={<SellerDashboard />} />
 
+              {/* Checkout Routes */}
               <Route path="/checkout" element={<CheckoutPage />} />
 
               {/* Shipper Routes */}

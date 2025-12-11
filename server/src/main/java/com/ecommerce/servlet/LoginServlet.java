@@ -3,6 +3,7 @@ package com.ecommerce.servlet;
 import com.ecommerce.dto.LoginDTO;
 import com.ecommerce.entity.*;
 import com.ecommerce.service.LoginService; // 1. Import Service
+import com.ecommerce.util.JwtUtil;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -40,10 +41,6 @@ public class LoginServlet extends HttpServlet {
             try {
                 User user = loginService.login(loginData.email, loginData.password);
 
-                jsonResponse.addProperty("success", true);
-                jsonResponse.addProperty("message", "Đăng nhập thành công");
-                jsonResponse.addProperty("token", "fake-jwt-token-" + user.getUserId());
-
                 // Xử lý Role và Extra Info
                 String role = "UNKNOWN";
                 JsonObject extraInfo = new JsonObject();
@@ -62,7 +59,14 @@ public class LoginServlet extends HttpServlet {
                 } else if (user instanceof Shipper) {
                     role = "SHIPPER";
                 }
-
+                
+                // Tạo JWT
+                String jwtToken = JwtUtil.generateToken(user.getUserId(), role);
+                
+                jsonResponse.addProperty("success", true);
+                jsonResponse.addProperty("message", "Đăng nhập thành công");
+                jsonResponse.addProperty("token", jwtToken);
+                
                 // Đóng gói JSON trả về
                 JsonObject userJson = new JsonObject();
                 userJson.addProperty("userId", user.getUserId());

@@ -15,6 +15,7 @@ com\ecommerce\servlet\RegisterServlet.class
 com\ecommerce\service\LoginService.class
 com\ecommerce\servlet\CheckoutServlet.class
 com\ecommerce\service\OrderService.class
+com\ecommerce\util\JwtUtil.class
 com\ecommerce\entity\Payment.class
 com\ecommerce\filter\CorsFilter.class
 com\ecommerce\dto\CheckoutRequest.class
