@@ -173,4 +173,5 @@ public class Product implements Serializable {
     public void setSeller(Seller seller) {
         this.seller = seller;
     }
+
 }

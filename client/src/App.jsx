@@ -10,6 +10,7 @@ import HomePage from "./pages/HomePage";
 import SellerDashboard from "./pages/seller/SellerDashboard";
 import ShipperOrders from "./pages/shipper/ShipperOrders";
 import NotFound from "./pages/NotFound";
+import CheckoutPage from "./pages/CheckoutPage";
 
 function App() {
   return (
@@ -30,10 +31,10 @@ function App() {
               {/* Admin Routes */}
               <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
-              <Route path="/admin/abc" element={<ABC />} />
-
               {/* Seller Routes */}
               <Route path="/seller/dashboard" element={<SellerDashboard />} />
+
+              <Route path="/checkout" element={<CheckoutPage />} />
 
               {/* Shipper Routes */}
               <Route path="/shipper/orders" element={<ShipperOrders />} />
