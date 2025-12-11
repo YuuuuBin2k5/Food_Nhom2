@@ -9,9 +9,8 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
-@Entity
-@Table(name = "users") 
-@Inheritance(strategy = InheritanceType.JOINED)
+
+@MappedSuperclass
 public abstract class User implements Serializable {
 
     @Id

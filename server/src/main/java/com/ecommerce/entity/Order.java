@@ -98,7 +98,7 @@ public class Order implements Serializable {
         this.status = status;
     }
 
-    public User getBuyer() {
+    public Buyer getBuyer() {
         return buyer;
     }
 

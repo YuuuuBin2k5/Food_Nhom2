@@ -54,8 +54,12 @@ const HomePage = () => {
         </Card>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card 
+            className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+            isPressable
+            onPress={() => navigate("/products")}
+          >
             <CardBody className="p-6 text-center">
               <div className="text-4xl mb-3">🛍️</div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">
@@ -67,7 +71,27 @@ const HomePage = () => {
             </CardBody>
           </Card>
 
-          <Card className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+          <Card 
+            className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer bg-gradient-to-br from-blue-500 to-blue-600"
+            isPressable
+            onPress={() => navigate("/checkout")}
+          >
+            <CardBody className="p-6 text-center">
+              <div className="text-4xl mb-3">🛒</div>
+              <h3 className="text-xl font-bold text-white mb-2">
+                Thanh toán
+              </h3>
+              <p className="text-blue-100 text-sm">
+                Đặt hàng ngay
+              </p>
+            </CardBody>
+          </Card>
+
+          <Card 
+            className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+            isPressable
+            onPress={() => navigate("/orders")}
+          >
             <CardBody className="p-6 text-center">
               <div className="text-4xl mb-3">📦</div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">
@@ -79,7 +103,11 @@ const HomePage = () => {
             </CardBody>
           </Card>
 
-          <Card className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer">
+          <Card 
+            className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
+            isPressable
+            onPress={() => navigate("/settings")}
+          >
             <CardBody className="p-6 text-center">
               <div className="text-4xl mb-3">⚙️</div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">
