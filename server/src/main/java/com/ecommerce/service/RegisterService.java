@@ -15,6 +15,7 @@ public class RegisterService {
         EntityTransaction trans = em.getTransaction();
 
         try {
+            // Kiểm tra tài khoản có tồn tại hay không (biến count để so sánh)
             long count = 0;
 
             count += em.createQuery("SELECT COUNT(s) FROM Seller s WHERE s.email = :email", Long.class)
@@ -34,9 +35,12 @@ public class RegisterService {
             }
 
             User newUser = null;
+            
+            //Nếu role == null thì là gán BUYER
             String userRoleStr = (role != null) ? role.toUpperCase() : "BUYER";
             Role enumRole;
-
+            
+            // Duyệt xem vai trò j
             switch (userRoleStr) {
                 case "SELLER":
                     if (shopName == null || shopName.trim().isEmpty()) {

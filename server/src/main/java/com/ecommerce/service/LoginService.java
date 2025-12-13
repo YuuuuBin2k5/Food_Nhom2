@@ -14,16 +14,16 @@ public class LoginService {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
 
         try {
-            User user = null;  // ✅ KHỞI TẠO ban đầu
+            User user = null;  
 
-            // 1️⃣ Kiểm tra Seller
+            // Kiểm tra Seller
             try {
                 user = em.createQuery("SELECT s FROM Seller s WHERE s.email = :email", Seller.class)
                          .setParameter("email", email)
                          .getSingleResult();
             } catch (NoResultException ignored) {}
 
-            // 2️⃣ Kiểm tra Buyer
+            // Kiểm tra Buyer
             if (user == null) {
                 try {
                     user = em.createQuery("SELECT b FROM Buyer b WHERE b.email = :email", Buyer.class)
@@ -32,7 +32,7 @@ public class LoginService {
                 } catch (NoResultException ignored) {}
             }
 
-            // 3️⃣ Kiểm tra Shipper
+            // Kiểm tra Shipper
             if (user == null) {
                 try {
                     user = em.createQuery("SELECT sh FROM Shipper sh WHERE sh.email = :email", Shipper.class)
@@ -41,17 +41,16 @@ public class LoginService {
                 } catch (NoResultException ignored) {}
             }
 
-            // ❌ Nếu email không tồn tại
             if (user == null) {
                 throw new Exception("Email không tồn tại");
             }
-
-            // ✅ Kiểm tra password
+            
+            // Kiểm tra mật khẩu tài khoảnn
             if (!user.getPassword().equals(password)) {
                 throw new Exception("Sai mật khẩu");
             }
-
-            // ✅ Kiểm tra banned
+            
+            // Kiểm tra tài khoản có bị banned ko
             if (user.isBanned()) {
                 throw new Exception("Tài khoản của bạn đã bị khóa");
             }

@@ -16,89 +16,69 @@ import java.io.PrintWriter;
 
 @WebServlet("/api/checkout")
 public class CheckoutServlet extends HttpServlet {
-    
-    private OrderService orderService = new OrderService();
-    private Gson gson = new Gson();
-    
+
+    private final OrderService orderService = new OrderService();
+    private final Gson gson = new Gson();
+
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         resp.setHeader("Access-Control-Allow-Origin", "*");
         resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
-        
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-        
+
         PrintWriter out = resp.getWriter();
-        
+
         try {
-            StringBuilder requestBody = new StringBuilder();
-            String line;
+            String userId = (String) req.getAttribute("userId");
+            if (userId == null) {
+                resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                out.print(gson.toJson(CheckoutResponse.error("Unauthorized")));
+                return;
+            }
+
             BufferedReader reader = req.getReader();
-            
-            while ((line = reader.readLine()) != null) {
-                requestBody.append(line);
-            }
-            
-            String jsonRequest = requestBody.toString();
-            
-            CheckoutRequest request = gson.fromJson(jsonRequest, CheckoutRequest.class);
-            
-            if (request.getUserId() == null || request.getUserId().isEmpty()) {
-                throw new IllegalArgumentException("User ID is required");
-            }
-            
+            CheckoutRequest request = gson.fromJson(reader, CheckoutRequest.class);
+            request.setUserId(userId);
+
             if (request.getShippingAddress() == null || request.getShippingAddress().isEmpty()) {
                 throw new IllegalArgumentException("Shipping address is required");
             }
-            
+
             if (request.getItems() == null || request.getItems().isEmpty()) {
                 throw new IllegalArgumentException("Cart is empty");
             }
-            
+
             if (request.getPaymentMethod() == null || request.getPaymentMethod().isEmpty()) {
                 throw new IllegalArgumentException("Payment method is required");
             }
-            
+
             String orderId = orderService.placeOrder(request);
-            
-            CheckoutResponse response = CheckoutResponse.success(orderId);
-            String jsonResponse = gson.toJson(response);
-            
+
             resp.setStatus(HttpServletResponse.SC_OK);
-            out.print(jsonResponse);
-            out.flush();
-            
+            out.print(gson.toJson(CheckoutResponse.success(orderId)));
+
         } catch (IllegalArgumentException e) {
-            CheckoutResponse response = CheckoutResponse.error(e.getMessage());
-            String jsonResponse = gson.toJson(response);
-            
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print(jsonResponse);
-            out.flush();
-            
+            out.print(gson.toJson(CheckoutResponse.error(e.getMessage())));
         } catch (Exception e) {
-            CheckoutResponse response = CheckoutResponse.error(e.getMessage());
-            String jsonResponse = gson.toJson(response);
-            
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print(jsonResponse);
-            out.flush();
-            
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            out.print(gson.toJson(CheckoutResponse.error("Internal server error")));
         } finally {
             out.close();
         }
     }
-    
+
     @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) 
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        
+
         resp.setHeader("Access-Control-Allow-Origin", "*");
         resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         resp.setStatus(HttpServletResponse.SC_OK);
     }
 }

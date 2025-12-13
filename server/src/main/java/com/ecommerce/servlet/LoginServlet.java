@@ -81,7 +81,7 @@ public class LoginServlet extends HttpServlet {
 
             } catch (Exception e) {
                 jsonResponse.addProperty("success", false);
-                jsonResponse.addProperty("message", e.getMessage());
+                jsonResponse.addProperty("message", "Email hoặc mật khẩu không đúng");
                 response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             }
 

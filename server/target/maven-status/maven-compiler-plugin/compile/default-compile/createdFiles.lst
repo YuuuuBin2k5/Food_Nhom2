@@ -3,12 +3,10 @@ com\ecommerce\service\RegisterService.class
 com\ecommerce\entity\Product.class
 com\ecommerce\entity\ProductStatus.class
 com\ecommerce\entity\Buyer.class
-com\ecommerce\listener\CorsListener.class
 com\ecommerce\util\JPAUtil.class
 com\ecommerce\servlet\LoginServlet.class
 com\ecommerce\entity\Seller.class
 com\ecommerce\entity\OrderDetail.class
-com\ecommerce\listener\CorsListener$1.class
 com\ecommerce\dto\LoginDTO.class
 com\ecommerce\entity\PaymentMethod.class
 com\ecommerce\servlet\RegisterServlet.class
@@ -23,6 +21,7 @@ com\ecommerce\dto\RegisterDTO.class
 com\ecommerce\util\DBUtil.class
 com\ecommerce\entity\Role.class
 com\ecommerce\entity\Shipper.class
+com\ecommerce\filter\JwtAuthFilter.class
 com\ecommerce\entity\Order.class
 com\ecommerce\entity\OrderStatus.class
 com\ecommerce\entity\User.class
