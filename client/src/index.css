@@ -1,0 +1,192 @@
+@import "tailwindcss";
+
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Autofill overrides to ensure browser-filled text is readable on our inputs */
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #0f172a !important; /* Fresh dark text */
+  -webkit-box-shadow: 0 0 0px 1000px #fff9f0 inset !important; /* Creamy Vanilla bg */
+  box-shadow: 0 0 0px 1000px #fff9f0 inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+input:-webkit-autofill::first-line,
+textarea:-webkit-autofill::first-line {
+  color: #0f172a !important;
+}
+
+/* Firefox */
+input:-moz-autofill,
+textarea:-moz-autofill,
+select:-moz-autofill {
+  box-shadow: 0 0 0px 1000px #fff9f0 inset !important;
+  color: #0f172a !important;
+}
+
+/* Page transition animations for auth pages (only swap animations are used) */
+
+/* auth swap animations: move form between columns and fade side */
+.auth-wrap {
+  overflow: hidden;
+  position: relative;
+}
+.auth-wrap .auth-form,
+.auth-wrap .auth-side {
+  will-change: transform, opacity;
+}
+
+/* Ensure form stacks above side content during swap */
+.auth-form {
+  position: relative;
+  z-index: 20;
+}
+
+.auth-swap-to-register .auth-form {
+  animation: moveFormToLeft 700ms cubic-bezier(0.22, 0.9, 0.37, 1) both;
+}
+
+.auth-swap-to-login .auth-form {
+  animation: moveFormToRight 700ms cubic-bezier(0.22, 0.9, 0.37, 1) both;
+}
+
+/* During swap, make sure form is above side content */
+.auth-swap-to-register .auth-form,
+.auth-swap-to-login .auth-form {
+  z-index: 40;
+}
+
+.auth-side .auth-side-content > * {
+  will-change: opacity;
+}
+
+/* Khi chuyển sang Register */
+.auth-swap-to-register .auth-side .auth-side-content > * {
+  animation: sideTextOut 300ms ease forwards;
+}
+
+/* Khi chuyển sang Login */
+.auth-swap-to-login .auth-side .auth-side-content > * {
+  animation: sideTextOut 300ms ease forwards;
+}
+
+@keyframes sideTextOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes moveFormToLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-100%);
+    opacity: 1;
+  }
+}
+
+@keyframes moveSideOutRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(30%);
+    opacity: 0.65;
+  }
+}
+
+@keyframes moveFormToRight {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 1;
+  }
+}
+
+@keyframes moveSideOutLeft {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(-30%);
+    opacity: 0.65;
+  }
+}
+
+/* ----------------------- */
+/* Text-only entrance effects */
+/* ----------------------- */
+
+/* Base: subtle fade + upward slide + slight blur -> sharp */
+.text-entrance {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(8px);
+  filter: blur(2px);
+  animation: textEntrance 700ms cubic-bezier(0.22, 0.9, 0.37, 1) both;
+}
+
+@keyframes textEntrance {
+  0% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.995);
+    filter: blur(2px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) scale(1.002);
+    filter: blur(0.6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* Utility delays for staggered headings/subtitles */
+.text-entrance.delay-100 {
+  animation-delay: 100ms;
+}
+.text-entrance.delay-200 {
+  animation-delay: 200ms;
+}
+.text-entrance.delay-300 {
+  animation-delay: 300ms;
+}
+.text-entrance.delay-400 {
+  animation-delay: 400ms;
+}
+.text-entrance.delay-500 {
+  animation-delay: 500ms;
+}
+
+/* Slightly stronger glow for highlighted words (optional) */
+.text-glow {
+  text-shadow: 0 6px 18px rgba(255, 110, 70, 0.12),
+    0 2px 6px rgba(255, 140, 83, 0.08);
+}
