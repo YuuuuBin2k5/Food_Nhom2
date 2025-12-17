@@ -1,10 +1,12 @@
 package com.ecommerce.service;
 
+import com.ecommerce.entity.Admin;
 import com.ecommerce.entity.Buyer;
 import com.ecommerce.entity.Seller;
 import com.ecommerce.entity.Shipper;
 import com.ecommerce.entity.User;
 import com.ecommerce.util.DBUtil;
+import com.ecommerce.util.PasswordUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 
@@ -16,12 +18,21 @@ public class LoginService {
         try {
             User user = null;  
 
-            // Kiểm tra Seller
+            // Kiểm tra Admin
             try {
-                user = em.createQuery("SELECT s FROM Seller s WHERE s.email = :email", Seller.class)
+                user = em.createQuery("SELECT a FROM Admin a WHERE a.email = :email", Admin.class)
                          .setParameter("email", email)
                          .getSingleResult();
             } catch (NoResultException ignored) {}
+
+            // Kiểm tra Seller
+            if (user == null) {
+                try {
+                    user = em.createQuery("SELECT s FROM Seller s WHERE s.email = :email", Seller.class)
+                             .setParameter("email", email)
+                             .getSingleResult();
+                } catch (NoResultException ignored) {}
+            }
 
             // Kiểm tra Buyer
             if (user == null) {
@@ -45,8 +56,8 @@ public class LoginService {
                 throw new Exception("Email không tồn tại");
             }
             
-            // Kiểm tra mật khẩu tài khoảnn
-            if (!user.getPassword().equals(password)) {
+            // Kiểm tra mật khẩu đã hash
+            if (!PasswordUtil.verify(password, user.getPassword())) {
                 throw new Exception("Sai mật khẩu");
             }
             

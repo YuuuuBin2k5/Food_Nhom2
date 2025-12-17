@@ -9,10 +9,23 @@
         <!-- Đúng với Hibernate -->
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
+        <!-- User entities -->
         <class>com.ecommerce.entity.User</class>
+        <class>com.ecommerce.entity.Admin</class>
         <class>com.ecommerce.entity.Buyer</class>
         <class>com.ecommerce.entity.Seller</class>
         <class>com.ecommerce.entity.Shipper</class>
+        
+        <!-- Product entities -->
+        <class>com.ecommerce.entity.Product</class>
+        
+        <!-- Order entities -->
+        <class>com.ecommerce.entity.Order</class>
+        <class>com.ecommerce.entity.OrderDetail</class>
+        <class>com.ecommerce.entity.Payment</class>
+        <class>com.ecommerce.entity.Review</class>
+        
+        <!-- Other entities -->
         <class>com.ecommerce.entity.PasswordResetToken</class>
 
         <properties>
@@ -21,9 +34,26 @@
             <property name="jakarta.persistence.jdbc.user" value="postgres.temjcgfdfgzldxpdfxzn"/>
             <property name="jakarta.persistence.jdbc.password" value="0786759178aE"/>
 
+            <!-- Auto-update database schema when entity changes -->
             <property name="hibernate.hbm2ddl.auto" value="update"/>
+            
+            <!-- Show SQL queries in console (for debugging) -->
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.use_sql_comments" value="true"/>
+            
+            <!-- Dialect for PostgreSQL -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQLDialect"/>
+            
+            <!-- Force Hibernate to check and update schema -->
+            <property name="hibernate.hbm2ddl.jdbc_metadata_extraction_strategy" value="individually"/>
+            <property name="hibernate.temp.use_jdbc_metadata_defaults" value="false"/>
+            
+            <!-- Connection pool settings -->
+            <property name="hibernate.connection.pool_size" value="10"/>
+            
+            <!-- Enable second-level cache (optional) -->
+            <property name="hibernate.cache.use_second_level_cache" value="false"/>
         </properties>
     </persistence-unit>
 </persistence>

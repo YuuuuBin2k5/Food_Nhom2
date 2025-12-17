@@ -10,7 +10,7 @@ public class JPAUtil {
 
     static {
         try {
-            emFactory = Persistence.createEntityManagerFactory("EcommercePU");
+            emFactory = Persistence.createEntityManagerFactory("FoodRescuePU");
         } catch (Throwable ex) {
             System.err.println("EntityManagerFactory creation failed: " + ex);
             throw new ExceptionInInitializerError(ex);

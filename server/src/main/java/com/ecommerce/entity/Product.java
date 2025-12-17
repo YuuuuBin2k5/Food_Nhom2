@@ -41,6 +41,13 @@ public class Product implements Serializable {
     @Column(name = "quantity")
     private int quantity;
 
+    @Column(name = "image_url")
+    private String imageUrl;
+
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "created_date")
+    private Date createdDate;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ProductStatus status;
@@ -72,7 +79,7 @@ public class Product implements Serializable {
     }
 
     public Product(String name, String description, double originalPrice, double salePrice, 
-                   Date expirationDate, Date manufactureDate, int quantity, Seller seller) {
+                   Date expirationDate, Date manufactureDate, int quantity, String imageUrl, Seller seller) {
         this.name = name;
         this.description = description;
         this.originalPrice = originalPrice;
@@ -80,8 +87,10 @@ public class Product implements Serializable {
         this.expirationDate = expirationDate;
         this.manufactureDate = manufactureDate;
         this.quantity = quantity;
+        this.imageUrl = imageUrl;
         this.seller = seller;
         
+        this.createdDate = new Date();
         this.status = ProductStatus.PENDING_APPROVAL;
         this.isVerified = false;
     }
@@ -172,6 +181,22 @@ public class Product implements Serializable {
 
     public void setSeller(Seller seller) {
         this.seller = seller;
+    }
+
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
+    }
+
+    public Date getCreatedDate() {
+        return createdDate;
+    }
+
+    public void setCreatedDate(Date createdDate) {
+        this.createdDate = createdDate;
     }
 
 }

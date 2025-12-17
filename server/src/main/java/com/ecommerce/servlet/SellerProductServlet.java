@@ -45,17 +45,7 @@ public class SellerProductServlet extends HttpServlet {
             // Chuyển đổi Entity -> DTO (Tránh lỗi vòng lặp)
             List<ProductDTO> dtoList = new ArrayList<>();
             for (Product p : products) {
-                ProductDTO dto = new ProductDTO();
-                dto.productId = p.getProductId();
-                dto.name = p.getName();
-                dto.description = p.getDescription();
-                dto.originalPrice = p.getOriginalPrice();
-                dto.salePrice = p.getSalePrice();
-                dto.quantity = p.getQuantity();
-                dto.expirationDate = p.getExpirationDate();
-                dto.manufactureDate = p.getManufactureDate();
-                dto.status = p.getStatus(); 
-                // KHÔNG set Seller để tránh loop
+                ProductDTO dto = new ProductDTO(p);
                 dtoList.add(dto);
             }
 
@@ -89,12 +79,12 @@ public class SellerProductServlet extends HttpServlet {
             } catch (Exception ignore) {}
 
             // VALIDATION
-            if(dto.name == null || dto.name.isEmpty()) throw new Exception("Tên sản phẩm trống");
-            if(dto.salePrice < 0) throw new Exception("Giá bán không hợp lệ");
+            if(dto.getName() == null || dto.getName().isEmpty()) throw new Exception("Tên sản phẩm trống");
+            if(dto.getSalePrice() < 0) throw new Exception("Giá bán không hợp lệ");
 
             // XỬ LÝ NGÀY SẢN XUẤT (Fix lỗi null do frontend bỏ trường này)
-            if (dto.manufactureDate == null) {
-                dto.manufactureDate = new Date(); // Mặc định là hôm nay
+            if (dto.getManufactureDate() == null) {
+                dto.setManufactureDate(new Date()); // Mặc định là hôm nay
             }
 
             // Gọi Service thêm mới
@@ -128,11 +118,11 @@ public class SellerProductServlet extends HttpServlet {
             // Parse JSON
             ProductDTO dto = gson.fromJson(req.getReader(), ProductDTO.class);
             
-            if (dto.productId == null) throw new Exception("Thiếu Product ID để cập nhật");
+            if (dto.getProductId() == null) throw new Exception("Thiếu Product ID để cập nhật");
 
             // Xử lý ngày sản xuất nếu null (để không bị lỗi khi update)
-            if (dto.manufactureDate == null) {
-                dto.manufactureDate = new Date();
+            if (dto.getManufactureDate() == null) {
+                dto.setManufactureDate(new Date());
             }
 
             // Gọi Service cập nhật (Bạn cần đảm bảo Service có hàm updateProduct)

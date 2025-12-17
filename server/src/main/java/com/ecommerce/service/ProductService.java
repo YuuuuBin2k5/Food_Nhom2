@@ -24,13 +24,13 @@ public class ProductService {
             if (seller == null) throw new Exception("Seller not found");
 
             Product product = new Product();
-            product.setName(dto.name);
-            product.setDescription(dto.description);
-            product.setOriginalPrice(dto.originalPrice);
-            product.setSalePrice(dto.salePrice);
-            product.setQuantity(dto.quantity);
-            product.setExpirationDate(dto.expirationDate);
-            product.setManufactureDate(dto.manufactureDate);
+            product.setName(dto.getName());
+            product.setDescription(dto.getDescription());
+            product.setOriginalPrice(dto.getOriginalPrice());
+            product.setSalePrice(dto.getSalePrice());
+            product.setQuantity(dto.getQuantity());
+            product.setExpirationDate(dto.getExpirationDate());
+            product.setManufactureDate(dto.getManufactureDate());
             product.setStatus(ProductStatus.PENDING_APPROVAL); // Mặc định hiển thị
             product.setSeller(seller);
             product.setVerified(false); // Chưa được xác minh
@@ -51,7 +51,7 @@ public class ProductService {
         EntityTransaction trans = em.getTransaction();
         try {
             trans.begin();
-            Product product = em.find(Product.class, dto.productId);
+            Product product = em.find(Product.class, dto.getProductId());
             
             if (product == null) throw new Exception("Sản phẩm không tồn tại");
             
@@ -61,16 +61,16 @@ public class ProductService {
             }
 
             // Cập nhật field
-            product.setName(dto.name);
-            product.setDescription(dto.description);
-            product.setOriginalPrice(dto.originalPrice);
-            product.setSalePrice(dto.salePrice);
-            product.setQuantity(dto.quantity);
-            product.setExpirationDate(dto.expirationDate);
+            product.setName(dto.getName());
+            product.setDescription(dto.getDescription());
+            product.setOriginalPrice(dto.getOriginalPrice());
+            product.setSalePrice(dto.getSalePrice());
+            product.setQuantity(dto.getQuantity());
+            product.setExpirationDate(dto.getExpirationDate());
             
             // Cập nhật trạng thái (Ẩn/Hiện)
-            if (dto.status != null) {
-                product.setStatus(dto.status);
+            if (dto.getStatus() != null) {
+                product.setStatus(dto.getStatus());
             }
 
             em.merge(product);

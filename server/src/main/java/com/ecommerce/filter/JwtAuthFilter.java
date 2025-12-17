@@ -57,7 +57,9 @@ public class JwtAuthFilter implements Filter {
             path.equals("/forgot-password") ||
             path.equals("/api/reset-password") ||
             path.equals("/reset-password") ||
-            path.equals("/api/ping")) {
+            path.equals("/api/ping") ||
+            path.equals("/api/test") ||
+            path.equals("/api/debug/sellers")) {
             chain.doFilter(req, res);
             return;
         }
@@ -112,6 +114,8 @@ public class JwtAuthFilter implements Filter {
             // ===============================
             request.setAttribute("userId", userId);
             request.setAttribute("role", role);
+
+            System.out.println("=== [JwtAuthFilter] Request passed: " + path + " | Role: " + role);
 
             // Continue chain
             chain.doFilter(req, res);

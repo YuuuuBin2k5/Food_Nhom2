@@ -40,16 +40,7 @@ public class PublicProductServlet extends HttpServlet {
                         sendError(resp, 404, "Product not found");
                         return;
                     }
-                    ProductDTO dto = new ProductDTO();
-                    dto.productId = p.getProductId();
-                    dto.name = p.getName();
-                    dto.description = p.getDescription();
-                    dto.originalPrice = p.getOriginalPrice();
-                    dto.salePrice = p.getSalePrice();
-                    dto.quantity = p.getQuantity();
-                    dto.expirationDate = p.getExpirationDate();
-                    dto.manufactureDate = p.getManufactureDate();
-                    dto.status = p.getStatus();
+                    ProductDTO dto = new ProductDTO(p);
 
                     String json = gson.toJson(dto);
                     System.out.println("[PublicProductServlet] Detail Response length: " + (json != null ? json.length() : 0));
@@ -67,16 +58,7 @@ public class PublicProductServlet extends HttpServlet {
 
             List<ProductDTO> dtoList = new ArrayList<>();
             for (Product p : products) {
-                ProductDTO dto = new ProductDTO();
-                dto.productId = p.getProductId();
-                dto.name = p.getName();
-                dto.description = p.getDescription();
-                dto.originalPrice = p.getOriginalPrice();
-                dto.salePrice = p.getSalePrice();
-                dto.quantity = p.getQuantity();
-                dto.expirationDate = p.getExpirationDate();
-                dto.manufactureDate = p.getManufactureDate();
-                dto.status = p.getStatus();
+                ProductDTO dto = new ProductDTO(p);
                 dtoList.add(dto);
             }
 
