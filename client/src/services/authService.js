@@ -1,4 +1,4 @@
-import api from "./api";
+import { api } from "./api";
 
 export const loginAPI = (email, password) => {
   return api.post("/login", { email, password });

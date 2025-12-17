@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "sellers")
-public class Seller extends User implements Serializable {
+public class Seller extends User {
 
     @Column(name = "shop_name", nullable = false)
     private String shopName;

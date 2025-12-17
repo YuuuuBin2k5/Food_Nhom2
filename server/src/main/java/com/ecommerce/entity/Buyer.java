@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "buyers")
-public class Buyer extends User implements Serializable {
+public class Buyer extends User {
 
     @ElementCollection
     @CollectionTable(name = "buyer_addresses", joinColumns = @JoinColumn(name = "buyer_id"))

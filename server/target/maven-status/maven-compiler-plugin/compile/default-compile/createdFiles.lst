@@ -1,8 +1,10 @@
 com\ecommerce\entity\Review.class
 com\ecommerce\service\RegisterService.class
 com\ecommerce\entity\Product.class
+com\ecommerce\dto\SellerDTO.class
 com\ecommerce\entity\ProductStatus.class
 com\ecommerce\entity\Buyer.class
+com\ecommerce\service\ProductService.class
 com\ecommerce\listener\CorsListener.class
 com\ecommerce\util\JPAUtil.class
 com\ecommerce\servlet\LoginServlet.class
@@ -14,6 +16,8 @@ com\ecommerce\entity\PaymentMethod.class
 com\ecommerce\servlet\RegisterServlet.class
 com\ecommerce\service\LoginService.class
 com\ecommerce\servlet\CheckoutServlet.class
+com\ecommerce\servlet\ProductServlet.class
+com\ecommerce\dto\ProductPageResponse.class
 com\ecommerce\service\OrderService.class
 com\ecommerce\util\JwtUtil.class
 com\ecommerce\entity\Payment.class
@@ -21,8 +25,10 @@ com\ecommerce\filter\CorsFilter.class
 com\ecommerce\dto\CheckoutRequest.class
 com\ecommerce\dto\RegisterDTO.class
 com\ecommerce\util\DBUtil.class
+com\ecommerce\dto\ProductDTO.class
 com\ecommerce\entity\Role.class
 com\ecommerce\entity\Shipper.class
+com\ecommerce\dto\ProductFilter.class
 com\ecommerce\entity\Order.class
 com\ecommerce\entity\OrderStatus.class
 com\ecommerce\entity\User.class

@@ -11,7 +11,7 @@ import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "admins")
-public class Admin extends User implements Serializable {
+public class Admin extends User {
 
     public Admin() {
         super();

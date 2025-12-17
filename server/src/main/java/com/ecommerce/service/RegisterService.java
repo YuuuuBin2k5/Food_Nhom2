@@ -4,7 +4,6 @@ import com.ecommerce.entity.*;
 import com.ecommerce.util.DBUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.TypedQuery;
 import java.util.Date;
 
 public class RegisterService {

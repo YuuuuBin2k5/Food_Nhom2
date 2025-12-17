@@ -3,7 +3,7 @@ import axios from "axios";
 //BASE_URL
 const BASE_URL = "http://localhost:8080/server/api";
 
-const api = axios.create({
+export const api = axios.create({
   baseURL: BASE_URL,
   headers: {
     "Content-Type": "application/json",
@@ -42,4 +42,4 @@ api.interceptors.response.use(
   }
 );
 
-export default api;
+// export default api;

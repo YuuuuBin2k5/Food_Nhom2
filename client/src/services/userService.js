@@ -1,4 +1,4 @@
-import api from "././authService";
+import { api } from "./api";
 
 export const userService = {
   GetAllUsers: async () => {
@@ -17,5 +17,5 @@ export const userService = {
       return [];
     }
   },
-  AddUsers: async () => {},
+  AddUsers: async () => { },
 };

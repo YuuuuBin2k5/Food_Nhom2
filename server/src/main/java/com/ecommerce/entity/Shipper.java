@@ -11,7 +11,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "shippers")
-public class Shipper extends User implements Serializable {
+public class Shipper extends User {
 
     @Column(name = "is_available")
     private boolean isAvailable;

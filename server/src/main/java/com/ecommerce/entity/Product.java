@@ -7,7 +7,6 @@ package com.ecommerce.entity;
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Table(name = "products")
