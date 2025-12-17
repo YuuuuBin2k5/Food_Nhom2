@@ -49,43 +49,53 @@ const Icons = {
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = window.location;
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  // Ref để click outside thì đóng dropdown
+  // Refs
   const profileRef = useRef(null);
+  const filterRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setIsProfileOpen(false);
       }
+      if (filterRef.current && !filterRef.current.contains(event.target)) {
+        setIsFilterOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // --- MENU CONFIG (Giống version trước nhưng gọn hơn cho Header) ---
+  // Check if on products page
+  const isProductsPage = location.pathname === '/products' || location.pathname === '/';
+
+  // --- MENU CONFIG ---
   const menuConfig = {
-    common: [{ to: "/", label: "Trang chủ" }],
+    common: [{ to: "/", label: "Trang chủ", icon: "🏠" }],
     BUYER: [
-      { to: "/products", label: "Sản phẩm" },
-      { to: "/orders", label: "Đơn mua" },
+      { to: "/products", label: "Sản phẩm", icon: "🛍️" },
+      { to: "/cart", label: "Giỏ hàng", icon: "🛒" },
+      { to: "/orders", label: "Đơn mua", icon: "📦" },
     ],
     SELLER: [
-      { to: "/seller/dashboard", label: "Kênh Bán Hàng" },
-      { to: "/seller/products", label: "Kho Hàng" },
+      { to: "/seller/dashboard", label: "Kênh Bán Hàng", icon: "📊" },
+      { to: "/seller/products", label: "Kho Hàng", icon: "📦" },
     ],
     ADMIN: [
-      { to: "/admin/dashboard", label: "Dashboard" },
-      { to: "/admin/users", label: "Users" },
+      { to: "/admin/dashboard", label: "Dashboard", icon: "⚙️" },
+      { to: "/admin/users", label: "Users", icon: "👥" },
     ],
-    SHIPPER: [{ to: "/shipper/orders", label: "Đơn cần giao" }],
+    SHIPPER: [{ to: "/shipper/orders", label: "Đơn cần giao", icon: "🚚" }],
   };
 
   const getMenuItems = () => {
-    const role = user?.role || "GUEST";
+    const role = user?.role || "BUYER";
     const roleItems = menuConfig[role] || menuConfig.BUYER;
     return [...menuConfig.common, ...roleItems];
   };
@@ -93,128 +103,214 @@ export default function Sidebar() {
   const navLinks = getMenuItems();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-200 shadow-sm font-sans">
+    <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 shadow-lg font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* 1. LOGO & DESKTOP NAV */}
           <div className="flex items-center gap-8">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-sm group-hover:shadow-md transition-all">
-                F
+            <Link to="/" className="flex items-center gap-3 group">
+              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg group-hover:bg-white/30 transition-all">
+                <span className="text-2xl">🍲</span>
               </div>
-              <span className="text-xl font-bold text-gray-800 tracking-tight">
-                Food<span className="text-blue-600">Nhom2</span>
-              </span>
+              <div className="hidden sm:block">
+                <span className="text-xl font-bold text-white tracking-tight block leading-tight">
+                  Food Rescue
+                </span>
+                <span className="text-xs text-blue-100">Nhóm 2</span>
+              </div>
             </Link>
 
             {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex space-x-1">
+            <nav className="hidden md:flex items-center gap-2">
               {navLinks.map((link) => (
                 <NavLink
                   key={link.to}
                   to={link.to}
                   className={({ isActive }) =>
-                    `px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                    `px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
                       isActive
-                        ? "bg-blue-50 text-blue-700"
-                        : "text-gray-600 hover:text-blue-600 hover:bg-gray-50"
+                        ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
+                        : "text-blue-100 hover:text-white hover:bg-white/10"
                     }`
                   }
                 >
+                  <span>{link.icon}</span>
                   {link.label}
                 </NavLink>
               ))}
             </nav>
           </div>
 
-          {/* 2. RIGHT ACTIONS (Cart, Profile, Mobile Toggle) */}
-          <div className="flex items-center gap-2 sm:gap-4">
-            {/* Cart Icon (Chỉ hiện cho Buyer hoặc Guest) */}
-            {(!user || user.role === "BUYER") && (
-              <button
-                onClick={() => navigate("/checkout")}
-                className="relative p-2 text-gray-500 hover:text-blue-600 hover:bg-gray-100 rounded-full transition-colors"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+          {/* 2. RIGHT ACTIONS (Filter, Profile, Mobile Toggle) */}
+          <div className="flex items-center gap-3">
+            {/* Filter Button - Only show on products page */}
+            {isProductsPage && (
+              <div className="relative" ref={filterRef}>
+                <button
+                  onClick={() => setIsFilterOpen(!isFilterOpen)}
+                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl transition-all"
                 >
-                  <Icons.Cart />
-                </svg>
-                {/* Badge số lượng (ví dụ hardcode là 2) */}
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-1.5 py-0.5 text-xs font-bold leading-none text-white transform translate-x-1/4 -translate-y-1/4 bg-red-500 rounded-full">
-                  2
-                </span>
-              </button>
+                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                  <span className="hidden sm:inline text-white font-semibold text-sm">Bộ lọc</span>
+                </button>
+
+                {/* Filter Dropdown */}
+                {isFilterOpen && (
+                  <div className="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 max-h-[80vh] overflow-y-auto">
+                    {/* Filter Header */}
+                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 sticky top-0 z-10">
+                      <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        </svg>
+                        Bộ lọc sản phẩm
+                      </h3>
+                    </div>
+
+                    {/* Filter Content */}
+                    <div className="p-5 space-y-5">
+                      {/* Price Range */}
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                          💰 Khoảng giá
+                        </h4>
+                        <div className="space-y-2">
+                          {[
+                            { label: 'Dưới 50.000đ', value: '0-50000' },
+                            { label: '50.000đ - 100.000đ', value: '50000-100000' },
+                            { label: '100.000đ - 200.000đ', value: '100000-200000' },
+                            { label: 'Trên 200.000đ', value: '200000-1000000' },
+                          ].map((range) => (
+                            <label key={range.value} className="flex items-center gap-3 p-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
+                              <input type="radio" name="priceRange" className="w-4 h-4 text-blue-600" />
+                              <span className="text-sm text-gray-700">{range.label}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+
+                      <hr className="border-gray-200" />
+
+                      {/* Categories */}
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                          🍽️ Danh mục
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {['Tất cả', 'Cơm', 'Bánh mì', 'Đồ uống', 'Trái cây', 'Rau củ'].map((cat) => (
+                            <button
+                              key={cat}
+                              className="px-3 py-1.5 text-sm rounded-full border border-gray-200 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                            >
+                              {cat}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <hr className="border-gray-200" />
+
+                      {/* Quick Filters */}
+                      <div>
+                        <h4 className="font-semibold text-gray-800 mb-3">⚡ Lọc nhanh</h4>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-3 p-3 rounded-lg bg-orange-50 border border-orange-100 cursor-pointer hover:bg-orange-100 transition-colors">
+                            <input type="checkbox" className="w-4 h-4 text-orange-500 rounded" />
+                            <div>
+                              <span className="text-sm font-medium text-gray-800 block">🔥 Đang giảm giá</span>
+                              <span className="text-xs text-gray-500">Sản phẩm có khuyến mãi</span>
+                            </div>
+                          </label>
+                          <label className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors">
+                            <input type="checkbox" className="w-4 h-4 text-blue-600 rounded" />
+                            <div>
+                              <span className="text-sm font-medium text-gray-800 block">✅ Còn hàng</span>
+                              <span className="text-xs text-gray-500">Ẩn sản phẩm hết hàng</span>
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+
+                      {/* Clear Button */}
+                      <button className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Xóa bộ lọc
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
-            {/* Profile Dropdown (Desktop & Mobile trigger) */}
+            {/* Profile Dropdown */}
             {user ? (
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-2 focus:outline-none"
+                  className="flex items-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl transition-all focus:outline-none"
                 >
-                  <div className="hidden sm:flex flex-col items-end mr-1">
-                    <span className="text-sm font-semibold text-gray-800 leading-none">
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 font-bold shadow-lg">
+                    {user.fullName?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="hidden sm:flex flex-col items-start">
+                    <span className="text-sm font-bold text-white leading-none">
                       {user.fullName}
                     </span>
-                    <span className="text-[10px] text-gray-500 font-medium bg-gray-100 px-1.5 py-0.5 rounded uppercase mt-1">
+                    <span className="text-xs text-blue-100 font-medium uppercase mt-0.5">
                       {user.role}
                     </span>
                   </div>
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold shadow-sm ring-2 ring-white cursor-pointer hover:ring-blue-100 transition-all">
-                    {user.fullName?.charAt(0).toUpperCase()}
-                  </div>
+                  <svg className="w-4 h-4 text-white hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
                 </button>
 
                 {/* Dropdown Menu */}
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                    <div className="px-4 py-3 border-b border-gray-50 sm:hidden">
-                      <p className="text-sm font-bold text-gray-900">
+                  <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    {/* User Info Header */}
+                    <div className="px-5 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
+                      <p className="text-base font-bold text-gray-900">
                         {user.fullName}
                       </p>
-                      <p className="text-xs text-gray-500">{user.email}</p>
+                      <p className="text-sm text-gray-600">{user.email}</p>
+                      <span className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full uppercase">
+                        {user.role}
+                      </span>
                     </div>
 
-                    <Link
-                      to="/settings"
-                      className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-blue-600"
-                      onClick={() => setIsProfileOpen(false)}
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
+                    {/* Menu Items */}
+                    <div className="py-2">
+                      <Link
+                        to="/settings"
+                        className="flex items-center gap-3 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                        onClick={() => setIsProfileOpen(false)}
                       >
-                        <Icons.User />
-                      </svg>
-                      Tài khoản của tôi
-                    </Link>
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <Icons.User />
+                        </svg>
+                        Tài khoản của tôi
+                      </Link>
 
-                    <button
-                      onClick={() => {
-                        logout();
-                        setIsProfileOpen(false);
-                        navigate("/login");
-                      }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50"
-                    >
-                      <svg
-                        className="w-4 h-4"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
+                      <button
+                        onClick={() => {
+                          logout();
+                          setIsProfileOpen(false);
+                          navigate("/login");
+                        }}
+                        className="w-full flex items-center gap-3 px-5 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                       >
-                        <Icons.Logout />
-                      </svg>
-                      Đăng xuất
-                    </button>
+                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                          <Icons.Logout />
+                        </svg>
+                        Đăng xuất
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -222,13 +318,13 @@ export default function Sidebar() {
               <div className="hidden sm:flex items-center gap-3">
                 <Link
                   to="/login"
-                  className="text-sm font-medium text-gray-600 hover:text-blue-600"
+                  className="px-5 py-2 text-sm font-semibold text-white hover:bg-white/10 rounded-xl transition-all"
                 >
                   Đăng nhập
                 </Link>
                 <Link
                   to="/register"
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-full hover:bg-blue-700 shadow-sm transition-colors"
+                  className="px-5 py-2 text-sm font-semibold bg-white text-blue-600 rounded-xl hover:bg-blue-50 shadow-lg transition-all"
                 >
                   Đăng ký
                 </Link>
@@ -238,14 +334,9 @@ export default function Sidebar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2 text-gray-500 hover:bg-gray-100 rounded-lg"
+              className="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 {isMobileMenuOpen ? <Icons.Close /> : <Icons.Menu />}
               </svg>
             </button>
@@ -255,35 +346,36 @@ export default function Sidebar() {
 
       {/* 3. MOBILE MENU (Collapsible) */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-gray-100 bg-white">
-          <div className="px-4 pt-2 pb-4 space-y-1">
+        <div className="md:hidden border-t border-white/20 bg-gradient-to-b from-blue-600 to-indigo-700">
+          <div className="px-4 pt-3 pb-4 space-y-2">
             {navLinks.map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
                 onClick={() => setIsMobileMenuOpen(false)}
                 className={({ isActive }) =>
-                  `block px-3 py-3 rounded-lg text-base font-medium ${
+                  `flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold transition-all ${
                     isActive
-                      ? "bg-blue-50 text-blue-700"
-                      : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                      ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
+                      : "text-blue-100 hover:bg-white/10 hover:text-white"
                   }`
                 }
               >
+                <span className="text-xl">{link.icon}</span>
                 {link.label}
               </NavLink>
             ))}
             {!user && (
-              <div className="mt-4 pt-4 border-t border-gray-100 grid grid-cols-2 gap-4">
+              <div className="mt-4 pt-4 border-t border-white/20 grid grid-cols-2 gap-3">
                 <Link
                   to="/login"
-                  className="flex justify-center py-2 border rounded-lg font-medium text-gray-600"
+                  className="flex justify-center py-3 border-2 border-white/30 text-white rounded-xl font-semibold hover:bg-white/10 transition-all"
                 >
                   Đăng nhập
                 </Link>
                 <Link
                   to="/register"
-                  className="flex justify-center py-2 bg-blue-600 text-white rounded-lg font-medium"
+                  className="flex justify-center py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 shadow-lg transition-all"
                 >
                   Đăng ký
                 </Link>

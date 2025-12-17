@@ -17,6 +17,7 @@ com\ecommerce\servlet\ApiForgotPasswordServlet.class
 com\ecommerce\servlet\PublicProductServlet.class
 com\ecommerce\util\DBUtil.class
 com\ecommerce\dto\ProductDTO.class
+com\ecommerce\dto\ProductFilter.class
 com\ecommerce\entity\Order.class
 com\ecommerce\servlet\ForgotPasswordServlet.class
 com\ecommerce\dto\SellerUpdateDTO.class
@@ -38,6 +39,7 @@ com\ecommerce\servlet\SellerProfileServlet.class
 com\ecommerce\entity\OrderDetail.class
 com\ecommerce\dto\LoginDTO.class
 com\ecommerce\servlet\CheckoutServlet.class
+com\ecommerce\dto\ProductPageResponse.class
 com\ecommerce\service\OrderService.class
 com\ecommerce\dto\RegisterDTO.class
 com\ecommerce\util\PasswordUtil.class

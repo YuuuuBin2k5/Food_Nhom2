@@ -2,14 +2,14 @@ package com.ecommerce.servlet;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.ecommerce.dto.ProductDTO;
-import com.ecommerce.entity.Product;
+import com.ecommerce.dto.ProductFilter;
+import com.ecommerce.dto.ProductPageResponse;
 import com.ecommerce.service.ProductService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -26,61 +26,98 @@ public class PublicProductServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         setHeaders(resp);
-        PrintWriter out = resp.getWriter();
-        try {
-            System.out.println("[PublicProductServlet] GET called");
-            String pathInfo = req.getPathInfo(); // may be null or like "/123"
-            if (pathInfo != null && pathInfo.length() > 1) {
-                // detail
-                String idStr = pathInfo.substring(1);
-                try {
-                    Long id = Long.parseLong(idStr);
-                    Product p = productService.getActiveProductById(id);
-                    if (p == null) {
-                        sendError(resp, 404, "Product not found");
-                        return;
-                    }
-                    ProductDTO dto = new ProductDTO(p);
-
-                    String json = gson.toJson(dto);
-                    System.out.println("[PublicProductServlet] Detail Response length: " + (json != null ? json.length() : 0));
-                    out.print(json);
-                    out.flush();
-                    return;
-                } catch (NumberFormatException nfe) {
-                    sendError(resp, 400, "Invalid product id");
-                    return;
-                }
-            }
-
-            List<Product> products = productService.getActiveProducts();
-            if (products == null) products = new ArrayList<>();
-
-            List<ProductDTO> dtoList = new ArrayList<>();
-            for (Product p : products) {
-                ProductDTO dto = new ProductDTO(p);
-                dtoList.add(dto);
-            }
-
-            String json = gson.toJson(dtoList);
-            System.out.println("[PublicProductServlet] Response length: " + (json != null ? json.length() : 0));
-            out.print(json);
-            out.flush();
+        setAccessControlHeaders(resp);
+        
+        String pathInfo = req.getPathInfo();
+        
+        if (pathInfo != null && pathInfo.length() > 1) {
+            // GET /api/products/{id}
+            String productId = pathInfo.substring(1);
+            getProductById(productId, resp);
+        } else {
+            // GET /api/products (list with filters)
+            getProducts(req, resp);
+        }
+    }
+    
+    private void getProducts(HttpServletRequest request, HttpServletResponse response) 
+            throws IOException {
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
+        try (PrintWriter out = response.getWriter()) {
+            // Get query parameters
+            String search = request.getParameter("search");
+            String minPriceStr = request.getParameter("minPrice");
+            String maxPriceStr = request.getParameter("maxPrice");
+            String sortBy = request.getParameter("sortBy");
+            String pageStr = request.getParameter("page");
+            String sizeStr = request.getParameter("size");
+            String sellerId = request.getParameter("sellerId");
+            String hasDiscountStr = request.getParameter("hasDiscount");
+            String inStockStr = request.getParameter("inStock");
+            
+            // Parse parameters
+            Double minPrice = minPriceStr != null ? Double.parseDouble(minPriceStr) : null;
+            Double maxPrice = maxPriceStr != null ? Double.parseDouble(maxPriceStr) : null;
+            int page = pageStr != null ? Integer.parseInt(pageStr) : 0;
+            int size = sizeStr != null ? Integer.parseInt(sizeStr) : 12;
+            Boolean hasDiscount = hasDiscountStr != null ? Boolean.parseBoolean(hasDiscountStr) : null;
+            Boolean inStock = inStockStr != null ? Boolean.parseBoolean(inStockStr) : null;
+            
+            // Create filter object
+            ProductFilter filter = new ProductFilter();
+            filter.setSearch(search);
+            filter.setMinPrice(minPrice);
+            filter.setMaxPrice(maxPrice);
+            filter.setSortBy(sortBy);
+            filter.setPage(page);
+            filter.setSize(size);
+            filter.setSellerId(sellerId);
+            filter.setHasDiscount(hasDiscount);
+            filter.setInStock(inStock);
+            
+            // Get products
+            ProductPageResponse pageResponse = productService.getProducts(filter);
+            
+            // Return response
+            response.setStatus(HttpServletResponse.SC_OK);
+            out.print(gson.toJson(pageResponse));
+            
         } catch (Exception e) {
-            e.printStackTrace();
-            sendError(resp, 500, "Lỗi Server: " + e.getMessage());
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            JsonObject error = new JsonObject();
+            error.addProperty("success", false);
+            error.addProperty("message", e.getMessage());
+            response.getWriter().print(gson.toJson(error));
+        }
+    }
+    
+    private void getProductById(String productId, HttpServletResponse response) 
+            throws IOException {
+        
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
+        try (PrintWriter out = response.getWriter()) {
+            Long id = Long.parseLong(productId);
+            ProductDTO product = productService.getProductById(id);
+            
+            response.setStatus(HttpServletResponse.SC_OK);
+            out.print(gson.toJson(product));
+            
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            sendError(response, 400, "Invalid product ID");
+        } catch (Exception e) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            sendError(response, 404, e.getMessage());
         }
     }
 
     @Override
     protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String origin = req.getHeader("Origin");
-        if (origin != null && (origin.equals("http://localhost:5173") || origin.equals("http://localhost:5174"))) {
-            resp.setHeader("Access-Control-Allow-Origin", origin);
-        }
-        resp.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-        resp.setHeader("Access-Control-Allow-Credentials", "true");
+        setAccessControlHeaders(resp);
         resp.setStatus(HttpServletResponse.SC_OK);
     }
 
@@ -88,9 +125,20 @@ public class PublicProductServlet extends HttpServlet {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
     }
+    
+    private void setAccessControlHeaders(HttpServletResponse resp) {
+        String origin = "http://localhost:5173";
+        resp.setHeader("Access-Control-Allow-Origin", origin);
+        resp.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        resp.setHeader("Access-Control-Allow-Credentials", "true");
+    }
 
     private void sendError(HttpServletResponse resp, int statusCode, String message) throws IOException {
         resp.setStatus(statusCode);
-        resp.getWriter().print(gson.toJson(java.util.Map.of("success", false, "message", message)));
+        JsonObject error = new JsonObject();
+        error.addProperty("success", false);
+        error.addProperty("message", message);
+        resp.getWriter().print(gson.toJson(error));
     }
 }

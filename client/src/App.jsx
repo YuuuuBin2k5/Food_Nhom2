@@ -1,4 +1,6 @@
 import { Route, Routes } from "react-router";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import { AuthProvider } from "./context/AuthContext";
 import LoginPage from "./pages/Auth/LoginPage";
 import RegisterPage from "./pages/Auth/RegisterPage";
@@ -7,14 +9,16 @@ import ResetPassword from "./pages/Auth/ResetPassword";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import PrivateRoute from "./components/common/PrivateRoute";
 import MainLayout from "./components/layouts/MainLayout";
-import HomePage from "./pages/HomePage";
 import SellerDashboard from "./pages/seller/SellerDashboard";
 import ShipperOrders from "./pages/shipper/ShipperOrders";
 import NotFound from "./pages/NotFound";
 import CheckoutPage from "./pages/CheckoutPage";
 import { CartProvider } from "./context/CartContext";
-import ProductPage from "./pages/ProductPage";
-import ProductList from "./pages/ProductList";
+import HomePage from "./pages/HomePage";
+import BuyerHomePage from "./pages/Buyer/homePage";
+import ProductDetailPage from "./pages/Buyer/ProductDetailPage";
+import ShoppingCartPage from "./pages/Buyer/ShoppingCartPage";
+import OrderSuccessPage from "./pages/Buyer/OrderSuccessPage";
 
 function App() {
   return (
@@ -34,17 +38,19 @@ function App() {
               <Route element={<MainLayout />}>
                 {/* Buyer Routes */}
                 <Route path="/" element={<HomePage />} />
+                <Route path="/products" element={<BuyerHomePage />} />
+                <Route path="/products/:productId" element={<ProductDetailPage />} />
+                <Route path="/cart" element={<ShoppingCartPage />} />
+                <Route path="/order-success" element={<OrderSuccessPage />} />
 
                 {/* Admin Routes */}
                 <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
                 {/* Seller Routes */}
                 <Route path="/seller/dashboard" element={<SellerDashboard />} />
-
+                
                 {/* Checkout Routes */}
                 <Route path="/checkout" element={<CheckoutPage />} />
-                <Route path="/products" element={<ProductList />} />
-                <Route path="/product/:id" element={<ProductPage />} />
 
                 {/* Shipper Routes */}
                 <Route path="/shipper/orders" element={<ShipperOrders />} />
@@ -56,6 +62,7 @@ function App() {
           </Routes>
         </CartProvider>
       </AuthProvider>
+      <ToastContainer position="top-right" autoClose={3000} />
     </>
   );
 }

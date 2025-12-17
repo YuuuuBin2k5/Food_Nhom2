@@ -25,6 +25,7 @@ public class ProductDTO {
     private String sellerId;
     private String sellerName;
     private String shopName;
+    private SellerDTO seller;
 
     public ProductDTO() {
     }
@@ -171,5 +172,13 @@ public class ProductDTO {
 
     public void setShopName(String shopName) {
         this.shopName = shopName;
+    }
+
+    public SellerDTO getSeller() {
+        return seller;
+    }
+
+    public void setSeller(SellerDTO seller) {
+        this.seller = seller;
     }
 }
