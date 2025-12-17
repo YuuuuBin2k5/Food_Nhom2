@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="3.0" xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+    <persistence-unit name="adminfoodPU" transaction-type="RESOURCE_LOCAL">
+        
+        <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+        
+        <class>com.mycompany.model.Admin</class>
+        <class>com.mycompany.model.Buyer</class>
+        <class>com.mycompany.model.Order</class>
+        <class>com.mycompany.model.OrderStatus</class>
+        <class>com.mycompany.model.Payment</class>
+        <class>com.mycompany.model.PaymentMethod</class>
+        <class>com.mycompany.model.Product</class>
+        <class>com.mycompany.model.ProductStatus</class>
+        <class>com.mycompany.model.Review</class>
+        <class>com.mycompany.model.Role</class>
+        <class>com.mycompany.model.Seller</class>
+        <class>com.mycompany.model.Shipper</class>
+        <class>com.mycompany.model.User</class>
+        
+        <exclude-unlisted-classes>false</exclude-unlisted-classes>
+
+        <properties>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://localhost:5432/AdminFoodDB"/>
+            <property name="jakarta.persistence.jdbc.user" value="postgres"/>
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.password" value="123"/>
+
+            <!-- drop-and-create-tables: Tạo lại bảng (mất data cũ) -->
+            <!-- Sau khi chạy TestDB xong, đổi lại thành "none" để giữ data -->
+            <property name="eclipselink.ddl-generation" value="drop-and-create-tables"/>
+            <property name="eclipselink.ddl-generation.output-mode" value="database"/>
+            <property name="eclipselink.logging.level" value="FINE"/>
+        </properties>
+    </persistence-unit>
+</persistence>
