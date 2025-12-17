@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import MysicInput from "../components/common/MysicInput";
-import MysicButton from "../components/common/MysicButton";
-import { resetPasswordAPI } from "../services/authService";
-import imageUrl from "../images/backgroundLogin.png";
+import MysicInput from "../../components/common/MysicInput";
+import MysicButton from "../../components/common/MysicButton";
+import { resetPasswordAPI } from "../../services/authService";
+import imageUrl from "../../images/backgroundLogin.png";
 
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
@@ -125,10 +125,11 @@ const ResetPassword = () => {
                 ✅ {message}
               </div>
             )}
-
-            <MysicButton type="submit" isLoading={loading}>
-              {loading ? "Đang xử lý..." : "Đặt lại mật khẩu"}
-            </MysicButton>
+            <div className="flex items-center justify-center">
+              <MysicButton type="submit" isLoading={loading}>
+                {loading ? "Đang xử lý..." : "Đặt lại mật khẩu"}
+              </MysicButton>
+            </div>
 
             <div className="mt-4 text-center text-sm text-[#334155] opacity-90">
               Quay lại đăng nhập?{" "}

@@ -21,6 +21,9 @@ public class Seller extends User implements Serializable {
 
     @Column(name = "revenue")
     private double revenue;
+    
+    @Column(name = "food_safety_cert")
+    private String foodSafetyCertificate;
 
     // Quan hệ: 1 Seller có nhiều Product
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
@@ -72,5 +75,13 @@ public class Seller extends User implements Serializable {
 
     public void setProducts(List<Product> products) {
         this.products = products;
+    }
+    
+    public String getFoodSafetyCertificate() {
+        return foodSafetyCertificate;
+    }
+
+    public void setFoodSafetyCertificate(String foodSafetyCertificate) {
+        this.foodSafetyCertificate = foodSafetyCertificate;
     }
 }

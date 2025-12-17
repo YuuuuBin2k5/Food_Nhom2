@@ -10,6 +10,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { useCart } from "../context/CartContext";
 
 const CheckoutPage = () => {
   const { user } = useAuth();
@@ -20,40 +21,58 @@ const CheckoutPage = () => {
   const [success, setSuccess] = useState(false);
 
   const [formData, setFormData] = useState({
-    shippingAddress: "",
+    shippingAddress: user?.address || "",
     paymentMethod: "COD",
-    items: [], // Sẽ được thêm từ giỏ hàng
   });
+
+  const {
+    items: cartItems,
+    getTotals,
+    clearCart,
+    updateQuantity,
+    removeItem,
+  } = useCart();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
     try {
+      if (!cartItems || cartItems.length === 0) {
+        setError("Giỏ hàng rỗng");
+        setLoading(false);
+        return;
+      }
+
+      const orderItems = cartItems.map((it) => ({
+        productId: it.productId,
+        quantity: it.quantity,
+      }));
+
       const checkoutData = {
         userId: user.userId,
         shippingAddress: formData.shippingAddress,
         paymentMethod: formData.paymentMethod,
-        items: [
-          // Demo data - trong thực tế sẽ lấy từ giỏ hàng
-          { productId: "1", quantity: 2 },
-          { productId: "2", quantity: 1 },
-        ],
+        items: orderItems,
       };
 
       const response = await api.post("/checkout", checkoutData);
 
-      if (response.data.success) {
+      if (response.data && response.data.success) {
         setSuccess(true);
+        clearCart();
         setTimeout(() => {
           navigate("/orders");
-        }, 2000);
+        }, 1200);
       } else {
-        setError(response.data.message || "Đặt hàng thất bại");
+        setError(response.data?.message || "Đặt hàng thất bại");
       }
     } catch (err) {
-      setError(err.response?.data?.message || "Có lỗi xảy ra khi đặt hàng");
+      setError(
+        err.response?.data?.message ||
+          err.message ||
+          "Có lỗi xảy ra khi đặt hàng"
+      );
     } finally {
       setLoading(false);
     }
@@ -204,30 +223,68 @@ const CheckoutPage = () => {
                 </h2>
 
                 <div className="space-y-3 mb-4">
-                  {/* Demo items - trong thực tế sẽ map từ giỏ hàng */}
-                  <div className="flex justify-between py-2 border-b">
-                    <span className="text-gray-600">Sản phẩm 1 x2</span>
-                    <span className="font-semibold">100,000 VNĐ</span>
-                  </div>
-                  <div className="flex justify-between py-2 border-b">
-                    <span className="text-gray-600">Sản phẩm 2 x1</span>
-                    <span className="font-semibold">50,000 VNĐ</span>
-                  </div>
+                  {cartItems.length === 0 ? (
+                    <div className="p-6 text-gray-500">Giỏ hàng trống</div>
+                  ) : (
+                    cartItems.map((it) => (
+                      <div
+                        key={it.productId}
+                        className="flex items-center justify-between py-2 border-b"
+                      >
+                        <div>
+                          <div className="font-medium">{it.name}</div>
+                          <div className="text-sm text-gray-500">
+                            x{it.quantity}
+                          </div>
+                        </div>
+                        <div className="font-semibold">
+                          {new Intl.NumberFormat("vi-VN", {
+                            style: "currency",
+                            currency: "VND",
+                          }).format(
+                            (it.salePrice || it.price || 0) * it.quantity
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
 
                 <div className="space-y-2 pt-4 border-t">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Tạm tính:</span>
-                    <span className="font-semibold">150,000 VNĐ</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Phí vận chuyển:</span>
-                    <span className="font-semibold">30,000 VNĐ</span>
-                  </div>
-                  <div className="flex justify-between text-lg font-bold pt-2 border-t">
-                    <span>Tổng cộng:</span>
-                    <span className="text-blue-600">180,000 VNĐ</span>
-                  </div>
+                  {(() => {
+                    const t = getTotals();
+                    return (
+                      <>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Tạm tính:</span>
+                          <span className="font-semibold">
+                            {new Intl.NumberFormat("vi-VN", {
+                              style: "currency",
+                              currency: "VND",
+                            }).format(t.subtotal)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Phí vận chuyển:</span>
+                          <span className="font-semibold">
+                            {new Intl.NumberFormat("vi-VN", {
+                              style: "currency",
+                              currency: "VND",
+                            }).format(t.shipping)}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-lg font-bold pt-2 border-t">
+                          <span>Tổng cộng:</span>
+                          <span className="text-blue-600">
+                            {new Intl.NumberFormat("vi-VN", {
+                              style: "currency",
+                              currency: "VND",
+                            }).format(t.total)}
+                          </span>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </CardBody>
             </Card>

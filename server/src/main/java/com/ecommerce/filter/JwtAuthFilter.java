@@ -27,10 +27,16 @@ public class JwtAuthFilter implements Filter {
         HttpServletResponse response = (HttpServletResponse) res;
 
         // ===============================
-        // 1️⃣ Set CORS headers cho mọi request
+        // 1️⃣ Set CORS headers cho mọi request (cho môi trường dev: 5173/5174)
         // ===============================
-        response.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-        response.setHeader("Access-Control-Allow-Credentials", "true");
+        String origin = request.getHeader("Origin");
+        if (origin != null) {
+            if (origin.equals("http://localhost:5173") || origin.equals("http://localhost:5174")
+                    || origin.equals("http://127.0.0.1:5173") || origin.equals("http://127.0.0.1:5174")) {
+                response.setHeader("Access-Control-Allow-Origin", origin);
+                response.setHeader("Access-Control-Allow-Credentials", "true");
+            }
+        }
         response.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
         response.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type");
 

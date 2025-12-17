@@ -1,13 +1,13 @@
 import React, { useState, useRef } from "react";
 import { Form, Checkbox } from "@heroui/react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import { loginAPI } from "../services/authService";
-import imageUrl from "../images/backgroundLogin.png";
+import { useAuth } from "../../context/AuthContext";
+import { loginAPI } from "../../services/authService";
+import imageUrl from "../../images/backgroundLogin.png";
 
 // Import Component riêng của bạn
-import MysicInput from "../components/common/MysicInput";
-import MysicButton from "../components/common/MysicButton";
+import MysicInput from "../../components/common/MysicInput";
+import MysicButton from "../../components/common/MysicButton";
 
 const LoginPage = () => {
   const [loading, setLoading] = useState(false);
@@ -152,10 +152,11 @@ const LoginPage = () => {
               </div>
             )}
 
-            {/* Sử dụng Component MysicButton.jsx đã tách */}
-            <MysicButton type="submit" isLoading={loading}>
-              {loading ? "Đang xác thực..." : "Đăng nhập"}
-            </MysicButton>
+            <div className="flex items-center justify-center">
+              <MysicButton type="submit" isLoading={loading}>
+                {loading ? "Đang xác thực..." : "Đăng nhập"}
+              </MysicButton>
+            </div>
 
             <div className="mt-4 text-center text-sm text-[#334155] opacity-90">
               Chưa có tài khoản?{" "}

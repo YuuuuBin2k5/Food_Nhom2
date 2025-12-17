@@ -1,12 +1,12 @@
 import React, { useState, useRef } from "react";
 import { Form, Tab, Tabs } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import imageUrl from "../images/backgroundLogin.png";
+import { useAuth } from "../../context/AuthContext";
+import imageUrl from "../../images/backgroundLogin.png";
 
 // Import Component tái sử dụng (đã tạo ở bước trước)
-import MysicInput from "../components/common/MysicInput";
-import MysicButton from "../components/common/MysicButton";
+import MysicInput from "../../components/common/MysicInput";
+import MysicButton from "../../components/common/MysicButton";
 
 const RegisterPage = () => {
   const [loading, setLoading] = useState(false);

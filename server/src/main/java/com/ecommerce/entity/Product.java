@@ -82,7 +82,7 @@ public class Product implements Serializable {
         this.quantity = quantity;
         this.seller = seller;
         
-        this.status = ProductStatus.INACTIVE;
+        this.status = ProductStatus.PENDING_APPROVAL;
         this.isVerified = false;
     }
     

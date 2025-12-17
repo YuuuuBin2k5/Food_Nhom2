@@ -1,15 +1,19 @@
 com\ecommerce\entity\Review.class
+com\ecommerce\servlet\SellerProductServlet.class
 com\ecommerce\service\RegisterService.class
 com\ecommerce\entity\Product.class
 com\ecommerce\util\DebugLog.class
 com\ecommerce\entity\PasswordResetToken.class
 com\ecommerce\entity\ProductStatus.class
 com\ecommerce\entity\Buyer.class
+com\ecommerce\service\ProductService.class
 com\ecommerce\util\JPAUtil.class
 com\ecommerce\service\AuthService.class
 com\ecommerce\servlet\LoginServlet.class
 com\ecommerce\util\MailUtil$1.class
 com\ecommerce\entity\Seller.class
+com\ecommerce\service\SellerService.class
+com\ecommerce\servlet\SellerProfileServlet.class
 com\ecommerce\entity\OrderDetail.class
 com\ecommerce\dto\LoginDTO.class
 com\ecommerce\entity\PaymentMethod.class
@@ -25,6 +29,7 @@ com\ecommerce\dto\RegisterDTO.class
 com\ecommerce\servlet\ApiForgotPasswordServlet.class
 com\ecommerce\util\DBUtil.class
 com\ecommerce\util\PasswordUtil.class
+com\ecommerce\dto\ProductDTO.class
 com\ecommerce\entity\Role.class
 com\ecommerce\servlet\ApiResetPasswordServlet.class
 com\ecommerce\entity\Shipper.class
@@ -34,6 +39,7 @@ com\ecommerce\entity\Order.class
 com\ecommerce\entity\OrderStatus.class
 com\ecommerce\entity\User.class
 com\ecommerce\servlet\ForgotPasswordServlet.class
+com\ecommerce\dto\SellerUpdateDTO.class
 com\ecommerce\dto\CartItemDTO.class
 com\ecommerce\entity\Admin.class
 com\ecommerce\servlet\ResetPasswordServlet.class

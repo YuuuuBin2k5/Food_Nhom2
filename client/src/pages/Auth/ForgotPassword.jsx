@@ -1,11 +1,11 @@
 import React, { useState, useRef } from "react";
 import { Form } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
-import { forgotPasswordAPI } from "../services/authService";
+import { forgotPasswordAPI } from "../../services/authService";
 
-import MysicInput from "../components/common/MysicInput";
-import MysicButton from "../components/common/MysicButton";
-import imageUrl from "../images/backgroundLogin.png";
+import MysicInput from "../../components/common/MysicInput";
+import MysicButton from "../../components/common/MysicButton";
+import imageUrl from "../../images/backgroundLogin.png";
 
 const ForgotPassword = () => {
   const [loading, setLoading] = useState(false);
@@ -114,9 +114,11 @@ const ForgotPassword = () => {
               </div>
             )}
 
-            <MysicButton type="submit" isLoading={loading}>
-              {loading ? "Đang gửi..." : "Gửi email đặt lại"}
-            </MysicButton>
+            <div className="flex items-center justify-center">
+              <MysicButton type="submit" isLoading={loading}>
+                {loading ? "Đang gửi..." : "Gửi email đặt lại"}
+              </MysicButton>
+            </div>
 
             <div className="mt-4 text-center text-sm text-[#334155] opacity-90">
               Quay lại đăng nhập?{" "}
