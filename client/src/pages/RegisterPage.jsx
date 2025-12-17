@@ -75,18 +75,13 @@ const RegisterPage = () => {
       <div className="flex w-full max-w-6xl h-180 overflow-hidden rounded-xl shadow-2xl bg-white/10 backdrop-blur-md border border-white/30">
         {/* LEFT: FORM (will animate in from left when page mounts) */}
         <div className="auth-form w-full md:w-[50%] px-8 py-10 bg-white flex flex-col justify-start">
-          <div className="flex flex-col mb-10 items-center text-center">
-            {/* Tiêu đề nhỏ phía trên (Optional) để dẫn dắt */}
-            <span className="text-[#FF8E53] text-xs font-bold tracking-[0.2em] uppercase mb-2 opacity-90 text-entrance delay-100">
-              Welcome
-            </span>
-
+          <div className="flex flex-col mb-4 items-center text-center">
             {/* Hiệu ứng Gradient Text + Bóng nhẹ */}
             <h1 className="text-4xl font-black tracking-tight bg-gradient-to-b from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(255,140,83,0.12)] text-entrance delay-200">
               Tạo tài khoản
             </h1>
 
-            <p className="mt-3 text-[#334155] text-base font-normal opacity-90 max-w-xs leading-relaxed text-entrance delay-300">
+            <p className="mt-2 text-[#334155] text-base font-normal opacity-90 max-w-5xs leading-relaxed text-entrance delay-300">
               Tham gia cộng đồng{" "}
               <span className="font-bold text-[#0f172a]">Food Rescue</span> ngay
               hôm nay
@@ -94,14 +89,14 @@ const RegisterPage = () => {
           </div>
 
           {/* Role Selection Tabs */}
-          <div className="mb-8 flex w-full justify-center">
+          <div className="mb-12 flex w-full justify-center">
             <Tabs
               aria-label="Role Selection"
               radius="full"
               selectedKey={selectedRole}
               onSelectionChange={(key) => setSelectedRole(key.toString())}
               classNames={{
-                tabList: "bg-[#FFF9F0] p-1 border border-[#E7DACE]/40",
+                tabList: "bg-[#FFF9F0] p-2 w-90 border border-[#E7DACE]/40",
                 cursor: "bg-[#FF6B6B] shadow-md",
                 tabContent:
                   "text-[#334155] font-bold group-data-[selected=true]:text-white",
@@ -163,7 +158,7 @@ const RegisterPage = () => {
 
               <MysicInput
                 isRequired
-                label="Nhập lại mật khẩu"
+                label="Xác nhận mật khẩu"
                 name="confirmPassword"
                 placeholder="••••••••"
                 type="password"
@@ -176,16 +171,18 @@ const RegisterPage = () => {
               </div>
             )}
 
-            <MysicButton type="submit" isLoading={loading} className="mt-4">
-              {loading ? "Đang xử lý..." : "Đăng Ký Tài Khoản"}
-            </MysicButton>
+            <div className="flex items-center justify-center">
+              <MysicButton type="submit" isLoading={loading}>
+                {loading ? "Đang xử lý..." : "Đăng Ký"}
+              </MysicButton>
+            </div>
 
-            <div className="mt-4 text-center text-sm text-[#334155] opacity-90">
+            <div className="mt-1 text-center text-sm text-[#334155] opacity-90">
               Đã có tài khoản?{" "}
               <button
                 type="button"
                 onClick={handleToLogin}
-                className="font-bold text-[#10B981] hover:underline opacity-100"
+                className="font-bold text-[#10B981] hover:underline opacity-100 cursor-pointer"
               >
                 Đăng nhập ngay
               </button>
@@ -194,20 +191,13 @@ const RegisterPage = () => {
         </div>
 
         {/* RIGHT: IMAGE + PROMO TEXT (translucent image with different text) */}
-        <div
-          className="auth-side w-full md:w-[50%] relative h-full flex flex-col justify-between p-10 "
-          style={{
-            backgroundImage: `url(${imageUrl})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        >
+        <div className="auth-side w-full md:w-[50%] relative h-full flex flex-col justify-between p-10 ">
           <div className="absolute inset-0 bg-white/10 backdrop-blur-md z-0 overflow-hidden rounded-r-3xl" />
           <div className="auth-side-content relative z-10 text-right text-entrance delay-100">
             <h2 className="text-white text-xs font-bold tracking-[0.2em] uppercase mb-4 opacity-90">
               Join the Movement
             </h2>
-            <h1 className="text-white text-5xl font-black leading-tight drop-shadow-md">
+            <h1 className="text-white text-4xl font-black leading-tight drop-shadow-md">
               Bạn đang tham gia
               <br /> Hành Trình
               <br /> Giải Cứu Thức Ăn

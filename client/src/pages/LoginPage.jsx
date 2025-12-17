@@ -69,10 +69,10 @@ const LoginPage = () => {
           <div className="absolute inset- z-0 overflow-hidden rounded-l-3xl" />{" "}
           {/* Thêm rounded-l-3xl cho khớp */}
           <div className="auth-side-content relative z-10 text-entrance">
-            <h2 className="text-white text-xs font-bold tracking-[0.2em] uppercase mb-4 opacity-90">
+            <h2 className="text-white text-[10px] font-bold tracking-[0.2em] uppercase mb-4 opacity-90">
               Our Mission
             </h2>
-            <h1 className="text-white text-5xl font-black leading-tight drop-shadow-md">
+            <h1 className="text-white text-4xl font-black leading-tight drop-shadow-md">
               Sẻ Chia <br />
               Hương Vị <br />
               Yêu Thương
@@ -89,11 +89,6 @@ const LoginPage = () => {
         {/* CỘT PHẢI: Form */}
         <div className="auth-form w-[50%] px-10 py-8 bg-white flex flex-col justify-center">
           <div className="flex flex-col mb-10 items-center text-center">
-            {/* Dòng chữ nhỏ "WELCOME BACK" phía trên tạo cảm giác Pro */}
-            <span className="text-[#FF8E53] text-xs font-bold tracking-[0.2em] uppercase mb-2 opacity-90 text-entrance delay-100">
-              Welcome Back
-            </span>
-
             {/* Tiêu đề chính: Gradient & Glow */}
             <h1 className="text-4xl font-black tracking-tight bg-gradient-to-b from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] bg-clip-text text-transparent drop-shadow-[0_0_18px_rgba(255,140,83,0.12)] text-entrance delay-200">
               Chào mừng trở lại!
@@ -167,7 +162,7 @@ const LoginPage = () => {
               <button
                 type="button"
                 onClick={handleToRegister}
-                className="font-bold text-[#10B981] hover:underline opacity-100"
+                className="font-bold text-[#10B981] hover:underline opacity-100 cursor-pointer"
               >
                 Tạo tài khoản mới
               </button>
