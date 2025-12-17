@@ -142,4 +142,31 @@ public class ProductService {
             em.close();
         }
     }
+
+    // 5. Lấy danh sách sản phẩm đang active (dành cho trang mua hàng)
+    public List<Product> getActiveProducts() {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT p FROM Product p WHERE p.status = :st AND p.isVerified = true", Product.class);
+            query.setParameter("st", ProductStatus.ACTIVE);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    // 6. Lấy chi tiết 1 product nếu đang active và verified
+    public Product getActiveProductById(Long productId) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT p FROM Product p WHERE p.productId = :id AND p.status = :st AND p.isVerified = true", Product.class);
+            query.setParameter("id", productId);
+            query.setParameter("st", ProductStatus.ACTIVE);
+            return query.getResultStream().findFirst().orElse(null);
+        } finally {
+            em.close();
+        }
+    }
 }

@@ -3,6 +3,8 @@ package com.ecommerce.servlet;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter; // 1. Import Service
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.ecommerce.dto.LoginDTO;
 import com.ecommerce.entity.Admin;
@@ -21,6 +23,10 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 @WebServlet(name = "LoginServlet", urlPatterns = {"/api/login"})
 public class LoginServlet extends HttpServlet {
@@ -44,8 +50,28 @@ public class LoginServlet extends HttpServlet {
             LoginDTO loginData = gson.fromJson(reader, LoginDTO.class);
             JsonObject jsonResponse = new JsonObject();
 
+            // Validate DTO
+            try (ValidatorFactory vf = Validation.buildDefaultValidatorFactory()) {
+                Validator validator = vf.getValidator();
+                Set<ConstraintViolation<LoginDTO>> violations = validator.validate(loginData);
+                if (!violations.isEmpty()) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    // group violations by property path -> list of messages
+                    java.util.Map<String, java.util.List<String>> errorsMap = violations.stream()
+                        .collect(Collectors.groupingBy(v -> v.getPropertyPath().toString(),
+                            Collectors.mapping(ConstraintViolation::getMessage, Collectors.toList())));
+
+                    JsonObject err = new JsonObject();
+                    err.addProperty("success", false);
+                    err.addProperty("message", "Validation failed");
+                    err.add("errors", gson.toJsonTree(errorsMap));
+                    out.print(gson.toJson(err));
+                    return;
+                }
+            }
+
             try {
-                User user = loginService.login(loginData.email, loginData.password);
+                User user = loginService.login(loginData.getEmail(), loginData.getPassword());
 
                 // Xử lý Role và Extra Info
                 String role = "UNKNOWN";

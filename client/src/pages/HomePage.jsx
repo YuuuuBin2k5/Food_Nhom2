@@ -16,9 +16,7 @@ const HomePage = () => {
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-800">
-              Trang Chủ
-            </h1>
+            <h1 className="text-4xl font-bold text-gray-800">Trang Chủ</h1>
             <p className="text-gray-600 mt-2">
               Chào mừng bạn đến với hệ thống E-Commerce
             </p>
@@ -46,7 +44,10 @@ const HomePage = () => {
                 </h2>
                 <p className="text-gray-600">{user?.email}</p>
                 <p className="text-sm text-gray-500 mt-1">
-                  Vai trò: <span className="font-semibold text-blue-600">{user?.role}</span>
+                  Vai trò:{" "}
+                  <span className="font-semibold text-blue-600">
+                    {user?.role}
+                  </span>
                 </p>
               </div>
             </div>
@@ -55,67 +56,51 @@ const HomePage = () => {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <Card 
+          <Card
             className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
             isPressable
             onPress={() => navigate("/products")}
           >
             <CardBody className="p-6 text-center">
               <div className="text-4xl mb-3">🛍️</div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
-                Sản phẩm
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Xem danh sách sản phẩm
-              </p>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Sản phẩm</h3>
+              <p className="text-gray-600 text-sm">Xem danh sách sản phẩm</p>
             </CardBody>
           </Card>
 
-          <Card 
+          <Card
             className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer bg-gradient-to-br from-blue-500 to-blue-600"
             isPressable
             onPress={() => navigate("/checkout")}
           >
             <CardBody className="p-6 text-center">
               <div className="text-4xl mb-3">🛒</div>
-              <h3 className="text-xl font-bold text-white mb-2">
-                Thanh toán
-              </h3>
-              <p className="text-blue-100 text-sm">
-                Đặt hàng ngay
-              </p>
+              <h3 className="text-xl font-bold text-white mb-2">Thanh toán</h3>
+              <p className="text-blue-100 text-sm">Đặt hàng ngay</p>
             </CardBody>
           </Card>
 
-          <Card 
+          <Card
             className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
             isPressable
             onPress={() => navigate("/orders")}
           >
             <CardBody className="p-6 text-center">
               <div className="text-4xl mb-3">📦</div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
-                Đơn hàng
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Quản lý đơn hàng của bạn
-              </p>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Đơn hàng</h3>
+              <p className="text-gray-600 text-sm">Quản lý đơn hàng của bạn</p>
             </CardBody>
           </Card>
 
-          <Card 
+          <Card
             className="shadow-lg hover:shadow-xl transition-shadow cursor-pointer"
             isPressable
             onPress={() => navigate("/settings")}
           >
             <CardBody className="p-6 text-center">
               <div className="text-4xl mb-3">⚙️</div>
-              <h3 className="text-xl font-bold text-gray-800 mb-2">
-                Cài đặt
-              </h3>
-              <p className="text-gray-600 text-sm">
-                Quản lý tài khoản
-              </p>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Cài đặt</h3>
+              <p className="text-gray-600 text-sm">Quản lý tài khoản</p>
             </CardBody>
           </Card>
         </div>

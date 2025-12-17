@@ -62,6 +62,13 @@ public class JwtAuthFilter implements Filter {
             return;
         }
 
+        // Publicly allow GET /api/products (product listing) without auth
+        if ((path.equals("/api/products") || path.startsWith("/api/products/"))
+                && "GET".equalsIgnoreCase(request.getMethod())) {
+            chain.doFilter(req, res);
+            return;
+        }
+
         // ===============================
         // 3️⃣ Check Authorization header
         // ===============================

@@ -27,6 +27,7 @@ com\ecommerce\filter\CorsFilter.class
 com\ecommerce\dto\CheckoutRequest.class
 com\ecommerce\dto\RegisterDTO.class
 com\ecommerce\servlet\ApiForgotPasswordServlet.class
+com\ecommerce\servlet\PublicProductServlet.class
 com\ecommerce\util\DBUtil.class
 com\ecommerce\util\PasswordUtil.class
 com\ecommerce\dto\ProductDTO.class

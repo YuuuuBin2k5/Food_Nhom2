@@ -14,6 +14,7 @@ import NotFound from "./pages/NotFound";
 import CheckoutPage from "./pages/CheckoutPage";
 import { CartProvider } from "./context/CartContext";
 import ProductPage from "./pages/ProductPage";
+import ProductList from "./pages/ProductList";
 
 function App() {
   return (
@@ -42,6 +43,7 @@ function App() {
 
                 {/* Checkout Routes */}
                 <Route path="/checkout" element={<CheckoutPage />} />
+                <Route path="/products" element={<ProductList />} />
                 <Route path="/product/:id" element={<ProductPage />} />
 
                 {/* Shipper Routes */}

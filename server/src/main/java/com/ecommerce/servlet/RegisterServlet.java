@@ -1,17 +1,25 @@
 package com.ecommerce.servlet;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.ecommerce.dto.RegisterDTO;
 import com.ecommerce.service.RegisterService;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 
 @WebServlet(name = "RegisterServlet", urlPatterns = {"/api/register"})
 public class RegisterServlet extends HttpServlet {
@@ -35,8 +43,36 @@ public class RegisterServlet extends HttpServlet {
 
             try {
                 RegisterDTO dto = gson.fromJson(reader, RegisterDTO.class);
-                
-                registerService.registerUser(dto.fullName, dto.email, dto.password, dto.phoneNumber, dto.role, dto.shopName);
+
+                // Server-side validation using Jakarta Bean Validation
+                try (ValidatorFactory vf = Validation.buildDefaultValidatorFactory()) {
+                    Validator validator = vf.getValidator();
+                    Set<ConstraintViolation<RegisterDTO>> violations = validator.validate(dto);
+                    if (!violations.isEmpty()) {
+                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                        java.util.Map<String, java.util.List<String>> errorsMap = violations.stream()
+                            .collect(Collectors.groupingBy(v -> v.getPropertyPath().toString(),
+                                Collectors.mapping(ConstraintViolation::getMessage, Collectors.toList())));
+
+                        JsonObject err = new JsonObject();
+                        err.addProperty("success", false);
+                        err.addProperty("message", "Validation failed");
+                        err.add("errors", gson.toJsonTree(errorsMap));
+                        out.print(gson.toJson(err));
+                        return;
+                    }
+                }
+
+                registerService.registerUser(
+                                    dto.getFullName(),
+                                    dto.getEmail(),
+                                    dto.getPassword(),
+                                    dto.getPhoneNumber(),
+                                    dto.getRole(),
+                                    dto.getShopName()
+                                );
+
+
 
                 jsonResponse.addProperty("status", "success");
                 jsonResponse.addProperty("message", "Đăng ký thành công! Vui lòng đăng nhập.");

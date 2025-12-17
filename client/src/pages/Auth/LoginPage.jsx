@@ -39,9 +39,15 @@ const LoginPage = () => {
         setError(payload.message || "Sai tài khoản hoặc mật khẩu");
       }
     } catch (err) {
-      setError(
-        err.response?.data?.message || err.message || "Lỗi khi đăng nhập"
-      );
+      // Prefer detailed field errors when available
+      const resp = err.response?.data;
+      if (resp?.errors) {
+        // resp.errors is a map: field -> [messages]
+        const flat = Object.values(resp.errors).flat();
+        setError(flat.join("; "));
+      } else {
+        setError(resp?.message || err.message || "Lỗi khi đăng nhập");
+      }
     } finally {
       setLoading(false);
     }
@@ -124,19 +130,17 @@ const LoginPage = () => {
             />
 
             <div className="flex items-center justify-between -mt-1">
-              <label className="flex items-center gap-2 cursor-pointer group">
-                <Checkbox
-                  size="sm"
-                  classNames={{
-                    wrapper:
-                      "group-data-[selected=true]:bg-[#FF6B6B] border-[#FF6B6B] before:bg-[#FF8E53]",
-                    icon: "text-white",
-                  }}
+              <div className="flex items-center ml-5 gap-2">
+                <input
+                  id="remember"
+                  name="remember"
+                  type="checkbox"
+                  className="w-4 h-4 rounded border-gray-300 text-[#FF6B6B] focus:ring-0"
                 />
-                <span className="text-sm text-[#e9d5ff] font-medium group-hover:text-white transition-colors">
+                <label htmlFor="remember" className="text-sm text-[#e9d5ff] font-medium select-none">
                   Ghi nhớ tôi
-                </span>
-              </label>
+                </label>
+              </div>
 
               <Link
                 to="/forgot-password"
@@ -154,7 +158,7 @@ const LoginPage = () => {
 
             <div className="flex items-center justify-center">
               <MysicButton type="submit" isLoading={loading}>
-                {loading ? "Đang xác thực..." : "Đăng nhập"}
+                {loading ? "Đang xác thực" : "Đăng nhập"}
               </MysicButton>
             </div>
 

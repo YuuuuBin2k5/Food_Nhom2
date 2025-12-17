@@ -57,10 +57,25 @@ const RegisterPage = () => {
         alert("Đăng ký thành công! Vui lòng đăng nhập.");
         navigate("/login");
       } else {
-        setError(result.message || "Đăng ký thất bại, vui lòng thử lại.");
+        // If server returned field errors, format them for display
+        if (result.errors && typeof result.errors === "object") {
+          const flat = Object.values(result.errors).flat();
+          setError(flat.join("; "));
+        } else {
+          setError(result.message || "Đăng ký thất bại, vui lòng thử lại.");
+        }
       }
     } catch (err) {
-      setError("Lỗi kết nối server.");
+      // try to surface server response message when fetch fails
+      const body = err?.response?.data || err;
+      if (body?.errors) {
+        const flat = Object.values(body.errors).flat();
+        setError(flat.join("; "));
+      } else if (body?.message) {
+        setError(body.message);
+      } else {
+        setError("Lỗi kết nối server.");
+      }
     } finally {
       setLoading(false);
     }
@@ -96,7 +111,8 @@ const RegisterPage = () => {
               selectedKey={selectedRole}
               onSelectionChange={(key) => setSelectedRole(key.toString())}
               classNames={{
-                tabList: "bg-[#FFF9F0] p-2 w-90 border border-[#E7DACE]/40",
+                tabList:
+                  "bg-[#FFF9F0] p-2 w-100 h-10 border border-[#E7DACE]/40",
                 cursor: "bg-[#FF6B6B] shadow-md",
                 tabContent:
                   "text-[#334155] font-bold group-data-[selected=true]:text-white",

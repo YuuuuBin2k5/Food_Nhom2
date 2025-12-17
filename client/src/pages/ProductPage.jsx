@@ -17,22 +17,33 @@ const ProductPage = () => {
   useEffect(() => {
     const load = async () => {
       setLoading(true);
+      setError("");
       try {
         const res = await api.get(`/products/${id}`);
         setProduct(res.data);
+        // ensure qty default is 1 and not more than stock
+        setQty(1);
       } catch (err) {
-        setError("Không tải được thông tin sản phẩm.");
+        const msg =
+          err?.response?.data?.message ||
+          err.message ||
+          "Không tải được thông tin sản phẩm.";
+        setError(msg);
       } finally {
         setLoading(false);
       }
     };
-    load();
+    if (id) load();
   }, [id]);
 
-  const handleAdd = () => {
+  const handleAdd = (goToCheckout = false) => {
     if (!product) return;
-    addItem(product, Number(qty || 1));
-    navigate("/checkout");
+    const q = Math.max(
+      1,
+      Math.min(Number(qty || 1), product.quantity || Infinity)
+    );
+    addItem(product, q);
+    if (goToCheckout) navigate("/checkout");
   };
 
   if (loading) return <div className="p-6">Đang tải...</div>;
@@ -67,14 +78,34 @@ const ProductPage = () => {
             <Input
               type="number"
               value={qty}
-              onChange={(e) => setQty(Math.max(1, Number(e.target.value || 1)))}
+              min={1}
+              max={product.quantity || undefined}
+              onChange={(e) => {
+                const v = Number(e.target.value);
+                if (Number.isNaN(v)) return setQty(1);
+                setQty(Math.max(1, Math.min(v, product.quantity || v)));
+              }}
               className="w-24"
             />
+            <div className="text-sm text-gray-500">
+              Tồn kho: {product.quantity}
+            </div>
           </div>
 
           <div className="flex gap-3">
-            <Button color="primary" onPress={handleAdd}>
+            <Button
+              color="primary"
+              onPress={() => handleAdd(false)}
+              disabled={product.quantity <= 0}
+            >
               Thêm vào giỏ
+            </Button>
+            <Button
+              color="success"
+              onPress={() => handleAdd(true)}
+              disabled={product.quantity <= 0}
+            >
+              Mua ngay
             </Button>
             <Button variant="light" onPress={() => navigate(-1)}>
               Quay lại
