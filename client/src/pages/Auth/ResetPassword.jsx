@@ -63,14 +63,14 @@ const ResetPassword = () => {
       className="auth-wrap flex min-h-screen w-full py-10 px-4 items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: `url(${imageUrl})` }}
     >
-      <div className="flex w-full max-w-6xl h-180 overflow-hidden rounded-xl shadow-2xl bg-white/10 backdrop-blur-md border border-white/30">
+      <div className="flex w-full max-w-6xl h-[600px] overflow-hidden rounded-xl shadow-2xl bg-white/10 backdrop-blur-md border border-white/30">
         <div className="auth-side w-full md:w-[50%] relative h-full flex flex-col justify-between p-10">
           <div className="absolute inset- z-0 overflow-hidden rounded-l-3xl" />
           <div className="auth-side-content relative z-10 text-entrance delay-100">
-            <h2 className="text-white text-xs font-bold tracking-[0.2em] uppercase mb-4 opacity-90">
+            <h2 className="text-white text-[10px] font-bold tracking-[0.2em] uppercase mb-4 opacity-90">
               Our Mission
             </h2>
-            <h1 className="text-white text-5xl font-black leading-tight drop-shadow-md text-glow">
+            <h1 className="text-white text-4xl font-black leading-tight drop-shadow-md">
               Sẻ Chia <br /> Hương Vị <br /> Yêu Thương
             </h1>
           </div>
@@ -125,23 +125,23 @@ const ResetPassword = () => {
                 ✅ {message}
               </div>
             )}
-            <div className="flex items-center justify-center">
-              <MysicButton type="submit" isLoading={loading}>
+            <div className="flex items-center justify-center w-full">
+              <MysicButton type="submit" isLoading={loading} className="w-full max-w-xs">
                 {loading ? "Đang xử lý..." : "Đặt lại mật khẩu"}
               </MysicButton>
             </div>
-
-            <div className="mt-4 text-center text-sm text-[#334155] opacity-90">
-              Quay lại đăng nhập?{" "}
-              <button
-                type="button"
-                onClick={handleBackToLogin}
-                className="font-bold text-[#10B981] hover:underline opacity-100"
-              >
-                Đăng nhập
-              </button>
-            </div>
           </form>
+
+          <div className="mt-6 text-center text-sm text-[#334155] opacity-90">
+            Quay lại đăng nhập?{" "}
+            <button
+              type="button"
+              onClick={handleBackToLogin}
+              className="font-bold text-[#10B981] hover:underline opacity-100"
+            >
+              Đăng nhập
+            </button>
+          </div>
         </div>
       </div>
     </div>

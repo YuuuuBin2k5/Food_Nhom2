@@ -66,10 +66,10 @@ const LoginPage = () => {
   return (
     <div
       ref={wrapperRef}
-      className="auth-wrap flex min-h-screen w-full py-10 px-4 items-center justify-center bg-cover bg-center"
+      className="auth-wrap flex h-screen w-full items-center justify-center bg-cover bg-center overflow-hidden"
       style={{ backgroundImage: `url(${imageUrl})` }}
     >
-      <div className="flex w-full max-w-6xl h-180 overflow-hidden rounded-xl shadow-2xl bg-white/10 backdrop-blur-md border border-white/30">
+      <div className="flex w-full max-w-6xl h-[600px] overflow-hidden rounded-xl shadow-2xl bg-white/10 backdrop-blur-md border border-white/30">
         {/* --- LEFT --- */}
         <div className="auth-side w-full md:w-[50%] relative h-full flex flex-col justify-between p-10">
           <div className="absolute inset- z-0 overflow-hidden rounded-l-3xl" />{" "}

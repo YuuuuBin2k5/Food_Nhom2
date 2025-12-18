@@ -233,10 +233,10 @@ const SellerApproval = ({ onUpdate }) => {
       {/* MAIN CONTENT - Balanced Layout: 2 columns left, 3 columns right */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* LEFT: Seller Info - 2 columns (40%) */}
-        <div className="lg:col-span-2 flex flex-col gap-3">
+        <div className="lg:col-span-2 space-y-3">
           {/* Seller Card - Ultra Compact */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] p-3 text-white">
+            <div className="bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] p-4 text-white">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center text-xl">
                   🏪
@@ -248,7 +248,7 @@ const SellerApproval = ({ onUpdate }) => {
               </div>
             </div>
 
-            <div className="p-3 space-y-2">
+            <div className="p-4 space-y-3">
               {/* Contact Info - Readable Size */}
               <div className="space-y-1.5">
                 <div className="flex items-center gap-2 text-sm">
@@ -305,7 +305,7 @@ const SellerApproval = ({ onUpdate }) => {
           </div>
 
           {/* Action Buttons - Compact */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3 mt-auto">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-3">
             <div className="grid grid-cols-2 gap-2">
               <button
                 onClick={handleApprove}
@@ -391,7 +391,7 @@ const SellerApproval = ({ onUpdate }) => {
               </div>
             </div>
             
-            <div className="relative bg-black rounded-lg overflow-hidden" style={{ minHeight: '380px' }}>
+            <div className="relative bg-black rounded-lg overflow-hidden flex-1" style={{ minHeight: '400px' }}>
               <div className="absolute inset-0 flex items-center justify-center p-4">
                 <img
                   src={seller.businessLicenseUrl || "https://via.placeholder.com/800x600?text=Không+có+ảnh"}

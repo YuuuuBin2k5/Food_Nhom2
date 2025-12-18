@@ -87,7 +87,7 @@ const RegisterPage = () => {
       className="auth-wrap flex min-h-screen w-full py-10 px-4 items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: `url(${imageUrl})` }}
     >
-      <div className="flex w-full max-w-6xl h-180 overflow-hidden rounded-xl shadow-2xl bg-white/10 backdrop-blur-md border border-white/30">
+      <div className="flex w-full max-w-6xl h-[650px] overflow-hidden rounded-xl shadow-2xl bg-white/10 backdrop-blur-md border border-white/30">
         {/* LEFT: FORM (will animate in from left when page mounts) */}
         <div className="auth-form w-full md:w-[50%] px-8 py-10 bg-white flex flex-col justify-start">
           <div className="flex flex-col mb-4 items-center text-center">
@@ -125,7 +125,7 @@ const RegisterPage = () => {
           </div>
 
           <Form
-            className="flex flex-col gap-6"
+            className="flex flex-col gap-4"
             validationBehavior="native"
             onSubmit={handleSubmit}
           >
