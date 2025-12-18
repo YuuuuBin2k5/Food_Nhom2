@@ -11,6 +11,7 @@ import com.ecommerce.entity.Shipper;
 import com.ecommerce.entity.User;
 import com.ecommerce.util.DBUtil;
 import com.ecommerce.util.MailUtil;
+import com.ecommerce.util.PasswordUtil;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
@@ -29,8 +30,8 @@ public class AuthService {
                 throw new Exception("EMAIL_NOT_FOUND");
             }
 
-            // plain text password (theo hiện trạng project)
-            if (!user.getPassword().equals(password)) {
+            // ✅ Use BCrypt to verify password
+            if (!PasswordUtil.verify(password, user.getPassword())) {
                 throw new Exception("INVALID_PASSWORD");
             }
 
@@ -130,7 +131,9 @@ public class AuthService {
                 return false;
             }
 
-            user.setPassword(newPassword); // plain text for now
+            // ✅ Hash password before saving
+            String hashedPassword = PasswordUtil.hash(newPassword);
+            user.setPassword(hashedPassword);
 
             token.markUsed();
 

@@ -2,6 +2,7 @@ package com.ecommerce.service;
 
 import com.ecommerce.entity.*;
 import com.ecommerce.util.DBUtil;
+import com.ecommerce.util.PasswordUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
@@ -67,7 +68,9 @@ public class RegisterService {
 
             newUser.setFullName(fullName);
             newUser.setEmail(email);
-            newUser.setPassword(password);
+            // ✅ Hash password before saving
+            String hashedPassword = PasswordUtil.hash(password);
+            newUser.setPassword(hashedPassword);
             newUser.setPhoneNumber(phone);
             newUser.setCreatedDate(new Date());
             newUser.setRole(enumRole);
