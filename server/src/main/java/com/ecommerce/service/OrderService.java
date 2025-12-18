@@ -6,209 +6,214 @@ import com.ecommerce.entity.*;
 import com.ecommerce.util.DBUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class OrderService {
-    
-    // Tạo đơn hàng mới (Checkout)
-    public String placeOrder(CheckoutRequest request) throws Exception {
+
+    // 1. Đặt hàng (ĐÃ SỬA: Tách đơn hàng theo Seller)
+    public List<String> placeOrder(CheckoutRequest request) throws Exception {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
-        
+        List<String> orderIds = new ArrayList<>();
+
         try {
             em.getTransaction().begin();
-            
-            // 1. Tìm Buyer
+
             Buyer buyer = em.find(Buyer.class, request.getUserId());
-            if (buyer == null) {
-                throw new Exception("Buyer not found: " + request.getUserId());
-            }
-            
-            // 2. Tạo Order mới
-            Order order = new Order();
-            // orderDate và status đã được set trong constructor
-            order.setShippingAddress(request.getShippingAddress());
-            order.setBuyer(buyer);
-            order.setOrderDetails(new ArrayList<>());
-            
-            double totalAmount = 0.0;
-            
-            // 3. Xử lý từng item trong giỏ hàng
-            for (CartItemDTO item : request.getItems()) {
-                // Convert String productId to Long
-                Long productId = Long.parseLong(item.getProductId());
-                Product product = em.find(Product.class, productId);
-                if (product == null) {
-                    throw new Exception("Product not found: " + item.getProductId());
+            if (buyer == null) throw new Exception("Buyer not found");
+
+            // Nhóm các item theo Seller ID
+            Map<String, List<CartItemDTO>> itemsBySeller = new HashMap<>();
+
+            for (CartItemDTO itemDTO : request.getItems()) {
+                Product p = em.find(Product.class, Long.parseLong(itemDTO.getProductId()));
+                if (p == null) throw new Exception("Sản phẩm không tồn tại: " + itemDTO.getProductId());
+
+                // Validate tồn kho
+                if (p.getQuantity() < itemDTO.getQuantity()) {
+                    throw new Exception("Sản phẩm '" + p.getName() + "' không đủ số lượng tồn kho!");
                 }
-                
-                // Kiểm tra tồn kho
-                if (product.getQuantity() < item.getQuantity()) {
-                    throw new Exception("Not enough stock for product: " + product.getName());
-                }
-                
-                // Trừ tồn kho
-                product.setQuantity(product.getQuantity() - item.getQuantity());
-                em.merge(product);
-                
-                // Tạo OrderDetail
-                OrderDetail detail = new OrderDetail();
-                detail.setProduct(product);
-                detail.setQuantity(item.getQuantity());
-                detail.setPriceAtPurchase(product.getSalePrice());
-                detail.setOrder(order);
-                
-                order.getOrderDetails().add(detail);
-                
-                totalAmount += product.getSalePrice() * item.getQuantity();
+
+                String sellerId = p.getSeller().getUserId();
+                itemsBySeller.computeIfAbsent(sellerId, k -> new ArrayList<>()).add(itemDTO);
             }
-            
-            // 4. Tạo Payment
-            Payment payment = new Payment();
-            payment.setAmount(totalAmount);
-            payment.setMethod(PaymentMethod.valueOf(request.getPaymentMethod().toUpperCase()));
-            payment.setPaymentDate(new Date());
-            
-            order.setPayment(payment);
-            
-            // 5. Lưu Order (cascade sẽ tự động lưu OrderDetail và Payment)
-            em.persist(order);
-            
+
+            // Tạo Order riêng cho từng Seller
+            for (Map.Entry<String, List<CartItemDTO>> entry : itemsBySeller.entrySet()) {
+                List<CartItemDTO> sellerItems = entry.getValue();
+
+                Order order = new Order();
+                order.setBuyer(buyer);
+                order.setShippingAddress(request.getShippingAddress());
+                order.setStatus(OrderStatus.PENDING);
+                order.setOrderDate(new Date());
+                order.setOrderDetails(new ArrayList<>());
+
+                double subTotal = 0;
+
+                for (CartItemDTO itemDTO : sellerItems) {
+                    Product product = em.find(Product.class, Long.parseLong(itemDTO.getProductId()));
+
+                    // TRỪ TỒN KHO
+                    product.setQuantity(product.getQuantity() - itemDTO.getQuantity());
+                    em.merge(product);
+
+                    OrderDetail detail = new OrderDetail();
+                    detail.setOrder(order);
+                    detail.setProduct(product);
+                    detail.setQuantity(itemDTO.getQuantity());
+                    detail.setPriceAtPurchase(product.getSalePrice());
+
+                    order.getOrderDetails().add(detail);
+                    subTotal += product.getSalePrice() * itemDTO.getQuantity();
+                }
+
+                // Phí ship (Giả định mỗi đơn 30k)
+                double shippingFee = 30000;
+                double total = subTotal + shippingFee;
+
+                Payment payment = new Payment();
+                payment.setAmount(total);
+                payment.setMethod(PaymentMethod.valueOf(request.getPaymentMethod()));
+                payment.setPaymentDate(new Date());
+                payment.setOrder(order);
+                order.setPayment(payment);
+
+                em.persist(order);
+                em.flush(); // Để lấy được ID ngay
+                orderIds.add(order.getOrderId().toString());
+            }
+
             em.getTransaction().commit();
-            
-            return order.getOrderId().toString();
-            
+            return orderIds;
+
         } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
             throw e;
         } finally {
             em.close();
         }
     }
 
-    // Lấy tất cả đơn hàng
-    public List<Order> getAllOrders() {
+    // 2. Hủy đơn hàng (Hoàn lại tồn kho)
+    public void cancelOrder(Long orderId, String userId, String role) throws Exception {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
-            TypedQuery<Order> query = em.createQuery("SELECT o FROM Order o", Order.class);
-            return query.getResultList();
+            em.getTransaction().begin();
+            Order order = em.find(Order.class, orderId);
+            if (order == null) throw new Exception("Đơn hàng không tồn tại");
+
+            // Check quyền
+            if ("BUYER".equals(role) && !order.getBuyer().getUserId().equals(userId)) {
+                throw new Exception("Bạn không có quyền hủy đơn này");
+            }
+            // Seller chỉ được hủy đơn có chứa sản phẩm của mình (Logic tách đơn đã đảm bảo 1 order = 1 seller)
+            if ("SELLER".equals(role)) {
+                boolean isOwner = order.getOrderDetails().stream()
+                        .anyMatch(od -> od.getProduct().getSeller().getUserId().equals(userId));
+                if (!isOwner) throw new Exception("Đơn hàng này không thuộc về Shop của bạn");
+            }
+
+            // Chỉ hủy khi chưa giao
+            if (order.getStatus() == OrderStatus.SHIPPING || order.getStatus() == OrderStatus.DELIVERED) {
+                throw new Exception("Không thể hủy đơn đang giao hoặc đã giao");
+            }
+
+            if (order.getStatus() == OrderStatus.CANCELLED) {
+                return; // Đã hủy rồi thì thôi
+            }
+
+            order.setStatus(OrderStatus.CANCELLED);
+
+            // LOGIC HOÀN KHO
+            for (OrderDetail od : order.getOrderDetails()) {
+                Product p = od.getProduct();
+                p.setQuantity(p.getQuantity() + od.getQuantity());
+                em.merge(p);
+            }
+
+            em.merge(order);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            throw e;
         } finally {
             em.close();
         }
     }
 
-    // Lấy đơn hàng theo buyer
+    // 3. Update Status (Dành cho Seller duyệt/giao hàng)
+    public void updateOrderStatus(Long orderId, OrderStatus newStatus, String sellerId) throws Exception {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            em.getTransaction().begin();
+            Order order = em.find(Order.class, orderId);
+            if (order == null) throw new Exception("Order not found");
+
+            // Verify Seller Ownership
+            boolean isOwner = order.getOrderDetails().stream()
+                    .anyMatch(od -> od.getProduct().getSeller().getUserId().equals(sellerId));
+            if (!isOwner) throw new Exception("Unauthorized Seller");
+
+            // Nếu Seller chọn CANCELLED -> Gọi hàm cancelOrder để hoàn kho
+            if (newStatus == OrderStatus.CANCELLED) {
+                // Rollback transaction này để gọi hàm cancelOrder trọn vẹn
+                em.getTransaction().rollback();
+                em.close();
+                cancelOrder(orderId, sellerId, "SELLER");
+                return;
+            }
+
+            order.setStatus(newStatus);
+            em.merge(order);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            throw e;
+        } finally {
+            if (em.isOpen()) em.close();
+        }
+    }
+
+    // 4. Get Orders By Buyer (Fix Lazy Loading)
     public List<Order> getOrdersByBuyer(String buyerId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
-            TypedQuery<Order> query = em.createQuery(
-                "SELECT o FROM Order o WHERE o.buyer.userId = :buyerId ORDER BY o.orderDate DESC", 
-                Order.class
-            );
-            query.setParameter("buyerId", buyerId);
-            return query.getResultList();
+            return em.createQuery(
+                            "SELECT DISTINCT o FROM Order o " +
+                                    "LEFT JOIN FETCH o.orderDetails od " +
+                                    "LEFT JOIN FETCH od.product p " +
+                                    "LEFT JOIN FETCH p.seller " +
+                                    "WHERE o.buyer.userId = :uid ORDER BY o.orderDate DESC", Order.class)
+                    .setParameter("uid", buyerId)
+                    .getResultList();
         } finally {
             em.close();
         }
     }
 
-    // Lấy đơn hàng theo shipper
-    public List<Order> getOrdersByShipper(String shipperId) {
+    // 5. Get Orders By Seller (Cho trang quản lý Seller)
+    public List<Order> getOrdersBySeller(String sellerId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
-            TypedQuery<Order> query = em.createQuery(
-                "SELECT o FROM Order o WHERE o.shipper.userId = :shipperId ORDER BY o.orderDate DESC", 
-                Order.class
-            );
-            query.setParameter("shipperId", shipperId);
-            return query.getResultList();
+            // Chỉ lấy những Order mà sản phẩm bên trong thuộc về Seller này
+            return em.createQuery(
+                            "SELECT DISTINCT o FROM Order o " +
+                                    "JOIN FETCH o.orderDetails od " +
+                                    "JOIN FETCH od.product p " +
+                                    "JOIN FETCH o.buyer " +
+                                    "WHERE p.seller.userId = :sid ORDER BY o.orderDate DESC", Order.class)
+                    .setParameter("sid", sellerId)
+                    .getResultList();
         } finally {
             em.close();
         }
     }
 
-    // Lấy đơn hàng theo status
-    public List<Order> getOrdersByStatus(OrderStatus status) {
+    public Order getOrderById(Long id) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
-            TypedQuery<Order> query = em.createQuery(
-                "SELECT o FROM Order o WHERE o.status = :status ORDER BY o.orderDate DESC", 
-                Order.class
-            );
-            query.setParameter("status", status);
-            return query.getResultList();
-        } finally {
-            em.close();
-        }
-    }
-
-    // Lấy đơn hàng theo ID
-    public Order getOrderById(Long orderId) throws Exception {
-        EntityManager em = DBUtil.getEmFactory().createEntityManager();
-        try {
-            Order order = em.find(Order.class, orderId);
-            if (order == null) {
-                throw new Exception("Order not found: " + orderId);
-            }
-            return order;
-        } finally {
-            em.close();
-        }
-    }
-
-    // Cập nhật trạng thái đơn hàng
-    public void updateOrderStatus(Long orderId, OrderStatus newStatus) throws Exception {
-        EntityManager em = DBUtil.getEmFactory().createEntityManager();
-        try {
-            em.getTransaction().begin();
-            
-            Order order = em.find(Order.class, orderId);
-            if (order == null) {
-                throw new Exception("Order not found: " + orderId);
-            }
-            
-            order.setStatus(newStatus);
-            em.merge(order);
-            
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
-        } finally {
-            em.close();
-        }
-    }
-
-    // Gán shipper cho đơn hàng
-    public void assignShipper(Long orderId, String shipperId) throws Exception {
-        EntityManager em = DBUtil.getEmFactory().createEntityManager();
-        try {
-            em.getTransaction().begin();
-            
-            Order order = em.find(Order.class, orderId);
-            if (order == null) {
-                throw new Exception("Order not found: " + orderId);
-            }
-            
-            Shipper shipper = em.find(Shipper.class, shipperId);
-            if (shipper == null) {
-                throw new Exception("Shipper not found: " + shipperId);
-            }
-            
-            order.setShipper(shipper);
-            em.merge(order);
-            
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw e;
+            return em.find(Order.class, id);
         } finally {
             em.close();
         }

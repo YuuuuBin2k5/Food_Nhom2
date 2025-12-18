@@ -4,81 +4,54 @@ import com.ecommerce.dto.CheckoutRequest;
 import com.ecommerce.dto.CheckoutResponse;
 import com.ecommerce.service.OrderService;
 import com.google.gson.Gson;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import jakarta.servlet.http.*;
+import java.io.*;
+import java.util.List;
 
 @WebServlet("/api/checkout")
 public class CheckoutServlet extends HttpServlet {
-
     private final OrderService orderService = new OrderService();
     private final Gson gson = new Gson();
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
-
-        resp.setHeader("Access-Control-Allow-Origin", "*");
-        resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
-
-        PrintWriter out = resp.getWriter();
+        setCors(resp);
 
         try {
             String userId = (String) req.getAttribute("userId");
-            if (userId == null) {
-                resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                out.print(gson.toJson(CheckoutResponse.error("Unauthorized")));
-                return;
-            }
-
-            BufferedReader reader = req.getReader();
-            CheckoutRequest request = gson.fromJson(reader, CheckoutRequest.class);
+            CheckoutRequest request = gson.fromJson(req.getReader(), CheckoutRequest.class);
             request.setUserId(userId);
 
-            if (request.getShippingAddress() == null || request.getShippingAddress().isEmpty()) {
-                throw new IllegalArgumentException("Shipping address is required");
-            }
+            // Gọi service (giờ trả về List<String> id các đơn hàng con)
+            List<String> orderIds = orderService.placeOrder(request);
 
-            if (request.getItems() == null || request.getItems().isEmpty()) {
-                throw new IllegalArgumentException("Cart is empty");
-            }
+            // Trả về ID đơn hàng đầu tiên hoặc chuỗi gộp để Frontend hiển thị
+            String combinedOrderId = String.join(", ", orderIds);
 
-            if (request.getPaymentMethod() == null || request.getPaymentMethod().isEmpty()) {
-                throw new IllegalArgumentException("Payment method is required");
-            }
+            PrintWriter out = resp.getWriter();
+            out.print(gson.toJson(CheckoutResponse.success(combinedOrderId)));
+            out.flush();
 
-            String orderId = orderService.placeOrder(request);
-
-            resp.setStatus(HttpServletResponse.SC_OK);
-            out.print(gson.toJson(CheckoutResponse.success(orderId)));
-
-        } catch (IllegalArgumentException e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            out.print(gson.toJson(CheckoutResponse.error(e.getMessage())));
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            out.print(gson.toJson(CheckoutResponse.error("Internal server error")));
-        } finally {
-            out.close();
+            resp.setStatus(500);
+            resp.getWriter().print(gson.toJson(CheckoutResponse.error(e.getMessage())));
         }
     }
 
     @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp)
-            throws ServletException, IOException {
+    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) {
+        setCors(resp);
+        resp.setStatus(200);
+    }
 
-        resp.setHeader("Access-Control-Allow-Origin", "*");
-        resp.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    private void setCors(HttpServletResponse resp) {
+        resp.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+        resp.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
         resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-        resp.setStatus(HttpServletResponse.SC_OK);
+        resp.setHeader("Access-Control-Allow-Credentials", "true");
     }
 }
