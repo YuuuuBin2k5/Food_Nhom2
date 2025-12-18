@@ -20,57 +20,17 @@ const SellerProducts = () => {
     });
 
     useEffect(() => {
-        // Check user info
-        const token = localStorage.getItem('token');
-        console.log("=== [SellerProducts] Token exists:", !!token);
-        
-        // Try to decode token to see userId
-        if (token) {
-            try {
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                console.log("=== [SellerProducts] Token payload:", payload);
-                console.log("=== [SellerProducts] User ID (sub):", payload.sub);
-                console.log("=== [SellerProducts] Role:", payload.role);
-            } catch (e) {
-                console.error("=== [SellerProducts] Cannot decode token:", e);
-            }
-        }
-        
-        // Test if backend is responding at all
-        console.log("=== [SellerProducts] Testing backend connection...");
-        api.get("/products").then(res => {
-            console.log("=== [SellerProducts] Public products endpoint works:", res.data?.length || 0, "products");
-        }).catch(err => {
-            console.error("=== [SellerProducts] Public products endpoint failed:", err);
-        });
-        
         loadProducts();
     }, []);
 
     const loadProducts = async () => {
         setLoading(true);
         try {
-            console.log("=== [SellerProducts] Fetching products...");
             const res = await api.get("/seller/products");
-            console.log("=== [SellerProducts] Full Response:", res);
-            console.log("=== [SellerProducts] Response Status:", res.status);
-            console.log("=== [SellerProducts] Response Headers:", res.headers);
-            console.log("=== [SellerProducts] Content-Type:", res.headers['content-type']);
-            console.log("=== [SellerProducts] Response Data:", res.data);
-            console.log("=== [SellerProducts] Data Type:", typeof res.data);
-            console.log("=== [SellerProducts] Data Length:", res.data?.length);
-            console.log("=== [SellerProducts] Is Array:", Array.isArray(res.data));
-            
-            if (res.data) {
-                console.log("=== [SellerProducts] First item:", res.data[0]);
-            }
-            
             const productsData = res.data || [];
             setProducts(productsData);
-            console.log("=== [SellerProducts] Products set to state:", productsData.length, "items");
         } catch (error) {
-            console.error("=== [SellerProducts] Error:", error);
-            console.error("=== [SellerProducts] Error response:", error.response?.data);
+            console.error("Error loading products:", error);
             showToast.error("Không thể tải danh sách sản phẩm");
         } finally {
             setLoading(false);

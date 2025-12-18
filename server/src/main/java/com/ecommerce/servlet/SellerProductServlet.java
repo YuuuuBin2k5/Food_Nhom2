@@ -29,59 +29,38 @@ public class SellerProductServlet extends HttpServlet {
     // --- 1. GET: LẤY DANH SÁCH SẢN PHẨM ---
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        System.out.println("=== [SellerProductServlet] doGet() called");
-        System.out.println("=== [SellerProductServlet] Request URI: " + req.getRequestURI());
-        System.out.println("=== [SellerProductServlet] Method: " + req.getMethod());
-        
-        // Set headers FIRST before any response writing
         resp.setContentType("application/json");
         resp.setCharacterEncoding("UTF-8");
 
         try {
             String sellerId = (String) req.getAttribute("userId");
-            System.out.println("=== [SellerProductServlet] Seller ID from request: " + sellerId);
             
             if (sellerId == null) {
-                System.out.println("=== [SellerProductServlet] ERROR: Seller ID is null!");
                 sendError(resp, 401, "Unauthorized: Vui lòng đăng nhập lại");
                 return;
             }
 
             // Lấy danh sách từ Service
-            System.out.println("=== [SellerProductServlet] Getting products for seller: " + sellerId);
             List<Product> products = productService.getProductsBySeller(sellerId);
             if (products == null) products = new ArrayList<>();
-            System.out.println("=== [SellerProductServlet] Found " + products.size() + " products");
 
             // Chuyển đổi Entity -> DTO (Tránh lỗi vòng lặp)
             List<ProductDTO> dtoList = new ArrayList<>();
             for (Product p : products) {
                 try {
-                    System.out.println("=== [SellerProductServlet] Converting product: " + p.getName() + " (ID: " + p.getProductId() + ")");
                     ProductDTO dto = new ProductDTO(p);
                     dtoList.add(dto);
                 } catch (Exception e) {
-                    System.out.println("=== [SellerProductServlet] ERROR converting product " + p.getProductId() + ": " + e.getMessage());
-                    e.printStackTrace();
+                    System.err.println("[SellerProductServlet] Error converting product " + p.getProductId() + ": " + e.getMessage());
                 }
             }
-            System.out.println("=== [SellerProductServlet] Successfully converted " + dtoList.size() + " DTOs");
 
             String jsonResponse = gson.toJson(dtoList);
-            System.out.println("=== [SellerProductServlet] JSON Response length: " + jsonResponse.length());
-            if (jsonResponse.length() < 500) {
-                System.out.println("=== [SellerProductServlet] JSON Response: " + jsonResponse);
-            } else {
-                System.out.println("=== [SellerProductServlet] JSON Response (first 500 chars): " + jsonResponse.substring(0, 500));
-            }
-            
             PrintWriter out = resp.getWriter();
             out.print(jsonResponse);
             out.flush();
-            System.out.println("=== [SellerProductServlet] Response written and flushed successfully");
 
         } catch (Exception e) {
-            System.out.println("=== [SellerProductServlet] Exception occurred: " + e.getMessage());
             e.printStackTrace();
             sendError(resp, 500, "Lỗi Server: " + e.getMessage());
         }
@@ -102,11 +81,6 @@ public class SellerProductServlet extends HttpServlet {
 
             // Parse JSON từ Body
             ProductDTO dto = gson.fromJson(req.getReader(), ProductDTO.class);
-
-            // DEBUG: log payload to server console to help trace 500 errors in dev
-            try {
-                System.out.println("[SellerProductServlet] Received DTO: " + gson.toJson(dto));
-            } catch (Exception ignore) {}
 
             // VALIDATION
             if(dto.getName() == null || dto.getName().isEmpty()) throw new Exception("Tên sản phẩm trống");
