@@ -32,6 +32,7 @@ public class ApiResetPasswordServlet extends HttpServlet {
             String line;
             while ((line = reader.readLine()) != null) sb.append(line).append('\n');
         }
+        
         String body = sb.toString().trim();
         String token = null;
         String password = null;

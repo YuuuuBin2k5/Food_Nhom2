@@ -51,6 +51,8 @@ function App() {
                 {/* Admin Routes */}
                 <Route path="/admin/dashboard" element={<AdminPage />} />
                 <Route path="/admin/users" element={<AdminPage />} />
+                <Route path="/admin/seller-approval" element={<AdminPage />} />
+                <Route path="/admin/product-approval" element={<AdminPage />} />
 
                 {/* Seller Routes */}
                 <Route path="/seller/dashboard" element={<SellerDashboard />} />

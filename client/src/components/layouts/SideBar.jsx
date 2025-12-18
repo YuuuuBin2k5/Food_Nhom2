@@ -90,8 +90,10 @@ export default function Sidebar() {
       { to: "/seller/settings", label: "Cài đặt", icon: "⚙️" },
     ],
     ADMIN: [
-      { to: "/admin/dashboard", label: "Dashboard", icon: "⚙️" },
-      { to: "/admin/users", label: "Users", icon: "👥" },
+      { to: "/admin/dashboard", label: "Trang chủ", icon: "📊" },
+      { to: "/admin/users", label: "Quản lý User", icon: "👥" },
+      { to: "/admin/seller-approval", label: "Duyệt Seller", icon: "🏪" },
+      { to: "/admin/product-approval", label: "Duyệt Product", icon: "📦" },
     ],
     SHIPPER: [{ to: "/shipper/orders", label: "Đơn cần giao", icon: "🚚" }],
   };
@@ -99,6 +101,12 @@ export default function Sidebar() {
   const getMenuItems = () => {
     const role = user?.role || "BUYER";
     const roleItems = menuConfig[role] || menuConfig.BUYER;
+    
+    // Admin không cần common menu (trang chủ buyer)
+    if (role === "ADMIN") {
+      return roleItems;
+    }
+    
     return [...menuConfig.common, ...roleItems];
   };
 

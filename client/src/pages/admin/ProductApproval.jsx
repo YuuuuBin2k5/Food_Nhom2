@@ -9,6 +9,8 @@ const ProductApproval = ({ onUpdate }) => {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [imageZoom, setImageZoom] = useState(1);
+  const [imageRotation, setImageRotation] = useState(0);
 
   useEffect(() => {
     loadPendingProducts();
@@ -33,9 +35,7 @@ const ProductApproval = ({ onUpdate }) => {
     setLoading(false);
   };
 
-  const handleSelectProduct = (selectedProduct) => {
-    setProduct(selectedProduct);
-  };
+
 
   const handleApprove = async () => {
     if (!product) return;
@@ -108,159 +108,275 @@ const ProductApproval = ({ onUpdate }) => {
     });
   };
 
+  const handleZoomIn = () => setImageZoom(prev => Math.min(prev + 0.25, 3));
+  const handleZoomOut = () => setImageZoom(prev => Math.max(prev - 0.25, 0.5));
+  const handleRotate = () => setImageRotation(prev => (prev + 90) % 360);
+  const handleResetImage = () => {
+    setImageZoom(1);
+    setImageRotation(0);
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e) => {
+      if (e.ctrlKey && e.key === 'a') {
+        e.preventDefault();
+        handleApprove();
+      } else if (e.ctrlKey && e.key === 'r') {
+        e.preventDefault();
+        handleReject();
+      } else if (e.key === '+' || e.key === '=') {
+        e.preventDefault();
+        handleZoomIn();
+      } else if (e.key === '-') {
+        e.preventDefault();
+        handleZoomOut();
+      }
+    };
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [product]);
+
   const currentIndex = product ? allProducts.findIndex(p => p.productId === product.productId) : -1;
 
   return (
-    <div className="animate-in fade-in duration-300">
-      {/* HEADER */}
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Duyệt sản phẩm</h2>
-          {product && pendingCount > 0 && (
-            <p className="text-sm text-gray-500 mt-1">
-              Đang xem: <span className="font-semibold">{currentIndex + 1}/{pendingCount}</span>
-            </p>
-          )}
+    <div className="animate-in fade-in duration-300 space-y-4">
+      {/* COMPACT HEADER - Single Line */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">📦</span>
+              <h2 className="text-lg font-bold text-gray-900 whitespace-nowrap">Duyệt sản phẩm</h2>
+            </div>
+            {product && pendingCount > 0 && (
+              <>
+                <div className="h-8 w-px bg-gray-200"></div>
+                <p className="text-sm text-gray-600">
+                  Sản phẩm <span className="font-bold text-[#FF6B6B]">{currentIndex + 1}</span>/{pendingCount}
+                </p>
+              </>
+            )}
+          </div>
+          
+          {/* Status Badge - Compact */}
+          <div className="px-4 py-2 bg-orange-100 text-orange-700 rounded-lg font-bold text-sm whitespace-nowrap">
+            {pendingCount} đang chờ
+          </div>
         </div>
-        <span className="px-4 py-2 bg-orange-500 text-white rounded-full text-sm font-semibold">
-          {pendingCount} đang chờ
-        </span>
       </div>
 
-      {/* ALERTS */}
+      {/* ALERTS - Compact */}
       {message && (
-        <div className="mb-4 p-3 bg-green-50 border border-green-200 text-green-700 rounded-lg">
-          {message}
+        <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg p-3 flex items-center gap-2 animate-in slide-in-from-top duration-300">
+          <span className="text-lg">✅</span>
+          <span className="font-semibold text-sm">{message}</span>
         </div>
       )}
       {error && (
-        <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg">
-          {error}
+        <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-3 flex items-center gap-2 animate-in slide-in-from-top duration-300">
+          <span className="text-lg">❌</span>
+          <span className="font-semibold text-sm">{error}</span>
         </div>
       )}
 
       {/* CONTENT */}
       {loading ? (
-        <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-          <p className="text-gray-500">Đang tải...</p>
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-[#FF6B6B] mx-auto mb-4"></div>
+            <p className="text-gray-500">Đang tải...</p>
+          </div>
         </div>
       ) : product ? (
-        <div className="flex gap-6 h-[calc(100vh-200px)]">
-          {/* LEFT: QUEUE LIST */}
-          <div className="w-80 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
-            <div className="p-4 border-b border-gray-200 bg-gray-50">
-              <h3 className="font-semibold text-gray-700">Hàng đợi ({pendingCount})</h3>
-            </div>
-            <div className="flex-1 overflow-y-auto">
-              {allProducts.map((p, index) => (
-                <div
-                  key={p.productId}
-                  onClick={() => handleSelectProduct(p)}
-                  className={`p-4 border-b border-gray-100 cursor-pointer transition ${
-                    product.productId === p.productId
-                      ? 'bg-blue-50 border-l-4 border-l-blue-500'
-                      : 'hover:bg-gray-50'
-                  }`}
-                >
-                  <div className="flex items-start gap-3">
-                    <span className="text-xs font-bold text-gray-400 mt-1">#{index + 1}</span>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-gray-900 truncate">{p.name}</p>
-                      <p className="text-sm text-red-600 font-medium">{formatCurrency(p.salePrice)}</p>
-                      <p className="text-xs text-gray-500 truncate">{p.shopName || 'N/A'}</p>
-                      <p className="text-xs text-gray-400 mt-1">
-                        ⏱️ {formatDateTime(p.createdDate)}
-                      </p>
-                    </div>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          {/* LEFT: INFO - 2 columns - NO SCROLL NEEDED */}
+          <div className="lg:col-span-2 space-y-3">
+            {/* Product Card - Compact */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+              <div className="p-3 bg-gradient-to-r from-orange-50 to-red-50">
+                <h3 className="text-base font-bold text-gray-900 truncate">{product.name}</h3>
+                <p className="text-xs text-gray-600 truncate">🏪 {product.shopName || "N/A"}</p>
+              </div>
+
+              <div className="p-3 space-y-2">
+                {/* Price - Inline */}
+                <div className="flex items-center justify-between p-2 bg-gradient-to-r from-red-50 to-orange-50 rounded-lg border border-red-200">
+                  <div>
+                    <p className="text-xs text-gray-500 line-through">{formatCurrency(product.originalPrice)}</p>
+                    <p className="text-lg font-bold text-red-600">{formatCurrency(product.salePrice)}</p>
+                  </div>
+                  <span className="text-2xl">💰</span>
+                </div>
+
+                {/* Quick Info Grid */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-blue-50 rounded-lg p-2 text-center border border-blue-200">
+                    <p className="text-xs text-blue-600 font-semibold">📦</p>
+                    <p className="text-sm font-bold text-gray-900">{product.quantity}</p>
+                    <p className="text-xs text-gray-500">SL</p>
+                  </div>
+                  <div className="bg-purple-50 rounded-lg p-2 text-center border border-purple-200">
+                    <p className="text-xs text-purple-600 font-semibold">📅</p>
+                    <p className="text-xs font-bold text-gray-900">{formatDate(product.expirationDate)}</p>
+                    <p className="text-xs text-gray-500">HSD</p>
+                  </div>
+                  <div className="bg-green-50 rounded-lg p-2 text-center border border-green-200">
+                    <p className="text-xs text-green-600 font-semibold">🕐</p>
+                    <p className="text-xs font-bold text-gray-900">{formatDateTime(product.createdDate).split(' ')[0]}</p>
+                    <p className="text-xs text-gray-500">Ngày</p>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          {/* MIDDLE: INFO */}
-          <div className="w-96 bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col overflow-hidden">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-xl font-bold text-gray-900">{product.name}</h3>
-              <p className="text-gray-600">Shop: {product.shopName || "N/A"}</p>
-            </div>
-
-            <div className="flex-1 p-6 overflow-y-auto space-y-4">
-              {/* Price Box */}
-              <div className="flex gap-3 p-4 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <span className="block text-xs text-gray-500 uppercase mb-1">Giá gốc</span>
-                  <span className="text-sm text-gray-500 line-through">
-                    {formatCurrency(product.originalPrice)}
-                  </span>
-                </div>
-                <div className="flex-1">
-                  <span className="block text-xs text-gray-500 uppercase mb-1">Giá bán</span>
-                  <span className="text-lg font-bold text-red-600">
-                    {formatCurrency(product.salePrice)}
-                  </span>
+                {/* Description - Collapsible */}
+                <div className="bg-gray-50 rounded-lg p-2">
+                  <p className="text-xs text-gray-600 font-semibold mb-1">📝 Mô tả</p>
+                  <p className="text-xs text-gray-900 leading-relaxed line-clamp-3">
+                    {product.description || "Không có mô tả"}
+                  </p>
                 </div>
               </div>
+            </div>
 
-              <div>
-                <span className="block text-xs text-gray-500 uppercase mb-1">Mô tả</span>
-                <span className="text-gray-900 text-sm leading-relaxed">
-                  {product.description || "Không có mô tả"}
-                </span>
+            {/* Verification Guide - Compact */}
+            <div className="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 rounded-xl p-3 border border-blue-200">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-6 h-6 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center text-white text-xs">
+                  ✓
+                </div>
+                <h4 className="font-bold text-gray-900 text-xs">Tiêu chí xác minh</h4>
               </div>
-              <div>
-                <span className="block text-xs text-gray-500 uppercase mb-1">Số lượng</span>
-                <span className="text-gray-900">{product.quantity}</span>
-              </div>
-              <div>
-                <span className="block text-xs text-gray-500 uppercase mb-1">Hạn sử dụng</span>
-                <span className="text-red-600 font-medium">{formatDate(product.expirationDate)}</span>
-              </div>
-              <div>
-                <span className="block text-xs text-gray-500 uppercase mb-1">Ngày đăng bán</span>
-                <span className="text-gray-900">{formatDateTime(product.createdDate)}</span>
+              <div className="space-y-1">
+                <div className="flex items-center gap-1.5 text-xs">
+                  <span className="text-green-600">1️⃣</span>
+                  <span className="text-gray-700">Thông tin đầy đủ, chính xác</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs">
+                  <span className="text-blue-600">2️⃣</span>
+                  <span className="text-gray-700">Giá cả hợp lý, không gian lận</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs">
+                  <span className="text-purple-600">3️⃣</span>
+                  <span className="text-gray-700">Ảnh rõ ràng, đúng sản phẩm</span>
+                </div>
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-200">
-              <div className="flex gap-3">
+            {/* Action Buttons - Always Visible */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-3">
+              <div className="flex gap-2">
                 <button
                   onClick={handleApprove}
-                  className="flex-1 py-3 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 transition"
+                  className="flex-1 py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white rounded-xl font-bold hover:from-green-700 hover:to-emerald-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
+                  title="Ctrl+A"
                 >
-                  ✓ Duyệt
+                  <span className="text-lg">✓</span>
+                  <span>Duyệt</span>
                 </button>
                 <button
                   onClick={handleReject}
-                  className="flex-1 py-3 bg-red-600 text-white rounded-lg font-semibold hover:bg-red-700 transition"
+                  className="flex-1 py-3 bg-gradient-to-r from-red-600 to-rose-600 text-white rounded-xl font-bold hover:from-red-700 hover:to-rose-700 transition-all shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center gap-2"
+                  title="Ctrl+R"
                 >
-                  ✕ Từ chối
+                  <span className="text-lg">✕</span>
+                  <span>Từ chối</span>
                 </button>
+              </div>
+              <div className="mt-2 p-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg text-xs text-gray-700 text-center border border-blue-100">
+                ⌨️ <kbd className="px-1 py-0.5 bg-white rounded shadow-sm text-xs">Ctrl+A</kbd> Duyệt | <kbd className="px-1 py-0.5 bg-white rounded shadow-sm text-xs">Ctrl+R</kbd> Từ chối
               </div>
             </div>
           </div>
 
-          {/* RIGHT: IMAGE */}
-          <div className="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 flex items-center justify-center p-6 relative">
-            <img
-              src={product.imageUrl || "https://via.placeholder.com/600x400?text=Không+có+ảnh"}
-              alt={product.name}
-              className="max-w-full max-h-full object-contain rounded-lg shadow-lg cursor-zoom-in"
-              onClick={() => setLightboxOpen(true)}
-              onError={(e) => {
-                e.target.src = "https://via.placeholder.com/600x400?text=Không+tải+được+ảnh";
-              }}
-            />
-            <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full text-sm">
-              Click vào ảnh để xem chi tiết
+          {/* RIGHT: INTERACTIVE IMAGE VIEWER - 3 columns */}
+          <div className="lg:col-span-3 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+            <div className="bg-gradient-to-r from-purple-50 to-blue-50 p-3 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h4 className="font-bold text-gray-900 flex items-center gap-2 text-sm">
+                    <span>🖼️</span>
+                    Hình ảnh sản phẩm
+                  </h4>
+                  <p className="text-xs text-gray-500 mt-0.5">Sử dụng các nút điều khiển để xem chi tiết</p>
+                </div>
+                <button
+                  onClick={() => setLightboxOpen(true)}
+                  className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition"
+                >
+                  🔍 Toàn màn hình
+                </button>
+              </div>
+            </div>
+            
+            {/* Interactive Image Viewer with Controls */}
+            <div className="flex-1 p-3 bg-gray-900 flex flex-col">
+              <div className="flex items-center justify-between mb-2 px-2">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleZoomOut}
+                    className="w-8 h-8 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center transition text-white"
+                    title="Zoom out (-)"
+                  >
+                    <span className="text-lg">−</span>
+                  </button>
+                  <span className="text-xs font-semibold text-white min-w-[50px] text-center bg-white/10 backdrop-blur-sm px-2 py-1 rounded">
+                    {Math.round(imageZoom * 100)}%
+                  </span>
+                  <button
+                    onClick={handleZoomIn}
+                    className="w-8 h-8 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center transition text-white"
+                    title="Zoom in (+)"
+                  >
+                    <span className="text-lg">+</span>
+                  </button>
+                  <button
+                    onClick={handleRotate}
+                    className="w-8 h-8 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg flex items-center justify-center transition text-white"
+                    title="Xoay ảnh"
+                  >
+                    <span className="text-lg">↻</span>
+                  </button>
+                  <button
+                    onClick={handleResetImage}
+                    className="px-2 h-8 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-xs font-semibold transition text-white"
+                    title="Reset"
+                  >
+                    Reset
+                  </button>
+                </div>
+                <div className="text-xs text-white/70 bg-white/10 backdrop-blur-sm px-2 py-1 rounded">
+                  💡 <strong>+/-</strong> zoom
+                </div>
+              </div>
+              
+              <div className="relative bg-black rounded-lg overflow-hidden flex-1">
+                <div className="absolute inset-0 flex items-center justify-center p-4">
+                  <img
+                    src={product.imageUrl || "https://via.placeholder.com/600x400?text=Không+có+ảnh"}
+                    alt={product.name}
+                    className="max-w-full max-h-full object-contain transition-all duration-300 shadow-2xl"
+                    style={{
+                      transform: `scale(${imageZoom}) rotate(${imageRotation}deg)`,
+                      transformOrigin: 'center'
+                    }}
+                    onError={(e) => {
+                      e.target.src = "https://via.placeholder.com/600x400?text=Không+tải+được+ảnh";
+                    }}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </div>
       ) : (
-        <div className="bg-white rounded-xl shadow-sm p-12 text-center">
-          <span className="text-6xl">✓</span>
-          <h3 className="mt-4 text-xl font-semibold text-gray-700">Không có sản phẩm nào</h3>
-          <p className="text-gray-500">Tất cả sản phẩm đã được xử lý</p>
+        <div className="animate-in fade-in duration-300">
+          <div className="bg-white rounded-2xl shadow-sm p-16 text-center border-2 border-dashed border-gray-200">
+            <div className="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <span className="text-5xl">✓</span>
+            </div>
+            <h3 className="text-2xl font-bold text-gray-900 mb-3">Tuyệt vời! Đã xử lý hết</h3>
+            <p className="text-gray-500 text-lg">Không có sản phẩm nào đang chờ duyệt</p>
+          </div>
         </div>
       )}
 

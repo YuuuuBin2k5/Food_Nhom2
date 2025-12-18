@@ -64,12 +64,12 @@ const UserManagement = () => {
 
   const getRoleBadge = (role) => {
     const styles = {
-      SELLER: "bg-blue-100 text-blue-700",
-      BUYER: "bg-purple-100 text-purple-700",
-      SHIPPER: "bg-orange-100 text-orange-700",
+      SELLER: "bg-blue-100 text-blue-700 border border-blue-200",
+      BUYER: "bg-purple-100 text-purple-700 border border-purple-200",
+      SHIPPER: "bg-orange-100 text-orange-700 border border-orange-200",
     };
     return (
-      <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase ${styles[role]}`}>
+      <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase ${styles[role]}`}>
         {role}
       </span>
     );
@@ -165,8 +165,8 @@ const UserManagement = () => {
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Role</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Email</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">SĐT</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Trạng thái</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Hành động</th>
+                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Trạng thái</th>
+                <th className="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase">Hành động</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -184,24 +184,24 @@ const UserManagement = () => {
                   <td className="px-6 py-4">{getRoleBadge(user.role)}</td>
                   <td className="px-6 py-4 text-sm text-gray-700">{user.email}</td>
                   <td className="px-6 py-4 text-sm text-gray-700">{user.phoneNumber}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-center">
                     {user.banned ? (
-                      <span className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-semibold">
-                        Đã ban
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-bold border border-red-200">
+                        🚫 Đã ban
                       </span>
                     ) : (
-                      <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">
-                        Hoạt động
+                      <span className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold border border-green-200">
+                        ✓ Hoạt động
                       </span>
                     )}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 text-center">
                     <button
                       onClick={() => handleBanToggle(user)}
-                      className={`px-4 py-2 rounded-lg text-sm font-semibold transition ${
+                      className={`px-5 py-2 rounded-lg text-sm font-bold transition shadow-sm ${
                         user.banned
-                          ? "bg-green-600 text-white hover:bg-green-700"
-                          : "bg-red-600 text-white hover:bg-red-700"
+                          ? "bg-green-600 text-white hover:bg-green-700 hover:shadow-md"
+                          : "bg-red-600 text-white hover:bg-red-700 hover:shadow-md"
                       }`}
                     >
                       {user.banned ? "Unban" : "Ban"}

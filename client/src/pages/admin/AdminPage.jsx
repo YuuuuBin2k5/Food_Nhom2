@@ -1,13 +1,15 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useLocation } from "react-router-dom";
 import api from "../../services/api";
 import UserManagement from "./UserManagement";
 import ProductApproval from "./ProductApproval";
 import SellerApproval from "./SellerApproval";
+import AdminDashboard from "./AdminDashboard";
 
 const AdminPage = () => {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const location = useLocation();
   const [stats, setStats] = useState({
     totalUsers: 0,
     totalSellers: 0,
@@ -58,37 +60,11 @@ const AdminPage = () => {
     }
   };
 
-  const tabs = [
-    { 
-      id: "dashboard", 
-      label: "Tổng quan", 
-      icon: "📊",
-      badge: null
-    },
-    { 
-      id: "users", 
-      label: "Quản lý User", 
-      icon: "👥",
-      badge: stats.bannedUsers > 0 ? stats.bannedUsers : null,
-      badgeColor: "bg-red-500"
-    },
-    { 
-      id: "products", 
-      label: "Duyệt sản phẩm", 
-      icon: "📦",
-      badge: stats.pendingProducts,
-      badgeColor: "bg-orange-500"
-    },
-    { 
-      id: "sellers", 
-      label: "Duyệt Seller", 
-      icon: "🏪",
-      badge: stats.pendingSellers,
-      badgeColor: "bg-yellow-500"
-    },
-  ];
 
-  const renderDashboard = () => (
+
+  // Removed renderDashboard - now using separate AdminDashboard component
+  
+  const oldRenderDashboard = () => (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] rounded-2xl p-8 text-white shadow-xl">
@@ -242,52 +218,24 @@ const AdminPage = () => {
   );
 
   const renderContent = () => {
-    switch (activeTab) {
-      case "dashboard":
-        return renderDashboard();
-      case "users":
-        return <UserManagement />;
-      case "products":
-        return <ProductApproval onUpdate={loadStats} />;
-      case "sellers":
-        return <SellerApproval onUpdate={loadStats} />;
-      default:
-        return renderDashboard();
+    const path = location.pathname;
+    
+    if (path === "/admin/dashboard") {
+      return <AdminDashboard stats={stats} />;
+    } else if (path === "/admin/users") {
+      return <UserManagement />;
+    } else if (path === "/admin/product-approval") {
+      return <ProductApproval onUpdate={loadStats} />;
+    } else if (path === "/admin/seller-approval") {
+      return <SellerApproval onUpdate={loadStats} />;
+    } else {
+      return <AdminDashboard stats={stats} />;
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
-      {/* Header with Tabs */}
-      <div className="bg-white border-b border-gray-200 sticky top-16 z-40 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Tabs Navigation */}
-          <div className="flex gap-2 overflow-x-auto py-4 -mb-px scrollbar-hide">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`relative flex items-center gap-2 px-6 py-3 rounded-xl font-semibold text-sm transition-all whitespace-nowrap ${
-                  activeTab === tab.id
-                    ? "bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] text-white shadow-lg scale-105"
-                    : "bg-gray-100 text-[#334155] hover:bg-gray-200 hover:scale-102"
-                }`}
-              >
-                <span className="text-lg">{tab.icon}</span>
-                {tab.label}
-                {tab.badge !== null && tab.badge > 0 && (
-                  <span className={`absolute -top-1 -right-1 ${tab.badgeColor} text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center animate-pulse`}>
-                    {tab.badge}
-                  </span>
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {loading ? (
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF6B6B]"></div>
