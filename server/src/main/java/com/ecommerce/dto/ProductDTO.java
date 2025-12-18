@@ -46,10 +46,18 @@ public class ProductDTO {
         this.isVerified = product.isVerified();
         
         // Get seller info without triggering lazy load issues
-        if (product.getSeller() != null) {
-            this.sellerId = product.getSeller().getUserId();
-            this.sellerName = product.getSeller().getFullName();
-            this.shopName = product.getSeller().getShopName();
+        try {
+            if (product.getSeller() != null) {
+                this.sellerId = product.getSeller().getUserId();
+                this.sellerName = product.getSeller().getFullName();
+                this.shopName = product.getSeller().getShopName();
+            }
+        } catch (Exception e) {
+            System.out.println("[ProductDTO] Warning: Could not load seller info - " + e.getMessage());
+            // Set defaults if seller can't be loaded
+            this.sellerId = null;
+            this.sellerName = "Unknown";
+            this.shopName = "Unknown Shop";
         }
     }
 

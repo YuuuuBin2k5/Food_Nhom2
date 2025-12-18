@@ -6,6 +6,7 @@ com\ecommerce\service\AdminService.class
 com\ecommerce\service\AuthService.class
 com\ecommerce\util\MailUtil$1.class
 com\ecommerce\service\SellerService.class
+com\ecommerce\servlet\ShipperOrderServlet.class
 com\ecommerce\entity\PaymentMethod.class
 com\ecommerce\servlet\RegisterServlet.class
 com\ecommerce\service\LoginService.class
@@ -24,7 +25,9 @@ com\ecommerce\dto\CartItemDTO.class
 com\ecommerce\entity\Admin.class
 com\ecommerce\dto\CheckoutResponse.class
 com\ecommerce\entity\SellerStatus.class
+com\ecommerce\servlet\SellerOrderServlet.class
 com\ecommerce\entity\Product.class
+com\ecommerce\servlet\BuyerOrderServlet.class
 com\ecommerce\dto\SellerDTO.class
 com\ecommerce\entity\PasswordResetToken.class
 com\ecommerce\entity\Buyer.class

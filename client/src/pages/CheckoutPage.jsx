@@ -217,34 +217,34 @@ const CheckoutPage = () => {
   // --- RENDER SUCCESS STATE ---
   if (successData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center p-4">
         <div className="bg-white rounded-3xl shadow-xl p-12 text-center max-w-lg">
-          <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-full flex items-center justify-center">
-            <svg className="w-12 h-12 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
+            <svg className="w-12 h-12 text-[#FF6B6B]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           </div>
           
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] bg-clip-text text-transparent mb-2">
             Đặt hàng thành công! 🎉
           </h2>
-          <p className="text-gray-500 mb-8">
+          <p className="text-[#334155] mb-8">
             Cảm ơn bạn đã mua sắm tại FoodNhom2
           </p>
 
-          <div className="bg-gradient-to-br from-emerald-50 to-teal-50 rounded-2xl p-6 mb-8 border border-emerald-100">
+          <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-6 mb-8 border border-orange-100">
             <div className="flex justify-between mb-3 text-sm">
-              <span className="text-gray-600">Mã đơn hàng:</span>
-              <span className="font-bold text-gray-900">#{successData.orderId}</span>
+              <span className="text-[#334155]">Mã đơn hàng:</span>
+              <span className="font-bold text-[#0f172a]">#{successData.orderId}</span>
             </div>
             <div className="flex justify-between mb-3 text-sm">
-              <span className="text-gray-600">Phương thức:</span>
-              <span className="font-medium text-gray-900">
+              <span className="text-[#334155]">Phương thức:</span>
+              <span className="font-medium text-[#0f172a]">
                 {formData.paymentMethod === "COD" ? "💵 Thanh toán khi nhận" : "🏦 Chuyển khoản"}
               </span>
             </div>
-            <div className="border-t border-emerald-200 my-3"></div>
-            <div className="flex justify-between text-xl font-bold text-emerald-600">
+            <div className="border-t border-orange-200 my-3"></div>
+            <div className="flex justify-between text-xl font-bold text-[#FF6B6B]">
               <span>Tổng tiền:</span>
               <span>{formatPrice(successData.total)}</span>
             </div>
@@ -253,13 +253,13 @@ const CheckoutPage = () => {
           <div className="space-y-3">
             <button
               onClick={() => navigate("/orders")}
-              className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg hover:shadow-xl"
+              className="w-full py-4 bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
             >
               Xem đơn hàng của tôi
             </button>
             <button
               onClick={() => navigate("/products")}
-              className="w-full py-3 bg-white text-emerald-600 font-medium rounded-xl border-2 border-emerald-200 hover:bg-emerald-50 transition-colors"
+              className="w-full py-3 bg-white text-[#FF6B6B] font-medium rounded-xl border-2 border-orange-200 hover:bg-orange-50 transition-colors"
             >
               Tiếp tục mua sắm
             </button>
@@ -271,7 +271,7 @@ const CheckoutPage = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center">
         <LoadingSpinner />
       </div>
     );
@@ -279,14 +279,14 @@ const CheckoutPage = () => {
 
   // --- RENDER MAIN FORM ---
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
       {/* Header */}
-      <header className="bg-gradient-to-r from-emerald-600 via-green-500 to-teal-500 shadow-lg">
+      <header className="bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 text-white hover:text-emerald-100 transition-colors"
+              className="flex items-center gap-2 text-white hover:text-white/80 transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -302,16 +302,16 @@ const CheckoutPage = () => {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {cartItems.length === 0 ? (
           <div className="bg-white rounded-3xl shadow-xl p-12 text-center max-w-lg mx-auto">
-            <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-amber-100 to-orange-100 rounded-full flex items-center justify-center">
+            <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center">
               <span className="text-6xl">⚠️</span>
             </div>
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">Giỏ hàng trống</h2>
-            <p className="text-gray-500 mb-8">
+            <h2 className="text-2xl font-bold text-[#0f172a] mb-2">Giỏ hàng trống</h2>
+            <p className="text-[#334155] mb-8">
               Bạn cần thêm sản phẩm vào giỏ hàng trước khi thanh toán
             </p>
             <button
               onClick={() => navigate("/products")}
-              className="px-8 py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg hover:shadow-xl"
+              className="px-8 py-4 bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
             >
               🛍️ Khám phá sản phẩm
             </button>
@@ -322,8 +322,8 @@ const CheckoutPage = () => {
             <div className="lg:col-span-2 space-y-6">
               {/* 1. Thông tin giao hàng */}
               <div className="bg-white rounded-2xl shadow-sm p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-600 flex items-center justify-center text-sm font-bold">
+                <h3 className="text-lg font-bold text-[#0f172a] mb-4 flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 text-[#FF6B6B] flex items-center justify-center text-sm font-bold">
                     1
                   </span>
                   📍 Thông tin nhận hàng
@@ -342,11 +342,11 @@ const CheckoutPage = () => {
                         onChange={handleChange}
                         placeholder="Nhập tên người nhận"
                         disabled={loading}
-                        className={`w-full px-4 py-3 rounded-xl border text-gray-900 placeholder-gray-400 ${
+                        className={`w-full px-4 py-3 rounded-xl border text-[#0f172a] placeholder-gray-400 ${
                           fieldErrors.recipientName
                             ? "border-red-300 bg-red-50"
                             : "border-gray-200"
-                        } focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
+                        } focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
                       />
                       {fieldErrors.recipientName && (
                         <p className="text-red-500 text-xs mt-1">{fieldErrors.recipientName}</p>
@@ -364,11 +364,11 @@ const CheckoutPage = () => {
                         onChange={handleChange}
                         placeholder="Nhập số điện thoại"
                         disabled={loading}
-                        className={`w-full px-4 py-3 rounded-xl border text-gray-900 placeholder-gray-400 ${
+                        className={`w-full px-4 py-3 rounded-xl border text-[#0f172a] placeholder-gray-400 ${
                           fieldErrors.recipientPhone
                             ? "border-red-300 bg-red-50"
                             : "border-gray-200"
-                        } focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
+                        } focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
                       />
                       {fieldErrors.recipientPhone && (
                         <p className="text-red-500 text-xs mt-1">{fieldErrors.recipientPhone}</p>
@@ -387,11 +387,11 @@ const CheckoutPage = () => {
                       onChange={handleChange}
                       placeholder="Số nhà, tên đường"
                       disabled={loading}
-                      className={`w-full px-4 py-3 rounded-xl border text-gray-900 placeholder-gray-400 ${
+                      className={`w-full px-4 py-3 rounded-xl border text-[#0f172a] placeholder-gray-400 ${
                         fieldErrors.street
                           ? "border-red-300 bg-red-50"
                           : "border-gray-200"
-                      } focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
+                      } focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
                     />
                     {fieldErrors.street && (
                       <p className="text-red-500 text-xs mt-1">{fieldErrors.street}</p>
@@ -406,7 +406,7 @@ const CheckoutPage = () => {
                       onChange={handleChange}
                       placeholder="Phường / Xã"
                       disabled={loading}
-                      className="px-4 py-3 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-3 rounded-xl border border-gray-200 text-[#0f172a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <input
                       type="text"
@@ -415,7 +415,7 @@ const CheckoutPage = () => {
                       onChange={handleChange}
                       placeholder="Quận / Huyện"
                       disabled={loading}
-                      className="px-4 py-3 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-3 rounded-xl border border-gray-200 text-[#0f172a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                     <input
                       type="text"
@@ -424,7 +424,7 @@ const CheckoutPage = () => {
                       onChange={handleChange}
                       placeholder="Tỉnh / TP"
                       disabled={loading}
-                      className="px-4 py-3 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-3 rounded-xl border border-gray-200 text-[#0f172a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
 
@@ -439,7 +439,7 @@ const CheckoutPage = () => {
                       placeholder="VD: Giao giờ hành chính, gọi trước khi giao..."
                       rows="3"
                       disabled={loading}
-                      className="w-full px-4 py-3 rounded-xl border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full px-4 py-3 rounded-xl border border-gray-200 text-[#0f172a] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] transition-all resize-none disabled:opacity-50 disabled:cursor-not-allowed"
                     />
                   </div>
                 </div>
@@ -447,8 +447,8 @@ const CheckoutPage = () => {
 
               {/* 2. Phương thức thanh toán */}
               <div className="bg-white rounded-2xl shadow-sm p-6">
-                <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-100 to-teal-100 text-emerald-600 flex items-center justify-center text-sm font-bold">
+                <h3 className="text-lg font-bold text-[#0f172a] mb-4 flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 text-[#FF6B6B] flex items-center justify-center text-sm font-bold">
                     2
                   </span>
                   💳 Phương thức thanh toán
@@ -462,20 +462,20 @@ const CheckoutPage = () => {
                       loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                     } ${
                       formData.paymentMethod === "COD"
-                        ? "border-emerald-500 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-md"
-                        : "border-gray-200 hover:border-emerald-200 hover:bg-gray-50"
+                        ? "border-[#FF6B6B] bg-gradient-to-br from-orange-50 to-amber-50 shadow-md"
+                        : "border-gray-200 hover:border-orange-200 hover:bg-gray-50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-green-100 to-emerald-100 flex items-center justify-center text-2xl flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-2xl flex-shrink-0">
                         💵
                       </div>
                       <div className="flex-1">
-                        <div className="font-bold text-gray-800">Tiền mặt (COD)</div>
-                        <div className="text-xs text-gray-500">Thanh toán khi nhận hàng</div>
+                        <div className="font-bold text-[#0f172a]">Tiền mặt (COD)</div>
+                        <div className="text-xs text-[#334155]">Thanh toán khi nhận hàng</div>
                       </div>
                       {formData.paymentMethod === "COD" && (
-                        <svg className="w-6 h-6 text-emerald-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-6 h-6 text-[#FF6B6B] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       )}
@@ -489,20 +489,20 @@ const CheckoutPage = () => {
                       loading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
                     } ${
                       formData.paymentMethod === "BANKING"
-                        ? "border-emerald-500 bg-gradient-to-br from-emerald-50 to-teal-50 shadow-md"
-                        : "border-gray-200 hover:border-emerald-200 hover:bg-gray-50"
+                        ? "border-[#FF6B6B] bg-gradient-to-br from-orange-50 to-amber-50 shadow-md"
+                        : "border-gray-200 hover:border-orange-200 hover:bg-gray-50"
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-purple-100 to-pink-100 flex items-center justify-center text-2xl flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-100 to-amber-100 flex items-center justify-center text-2xl flex-shrink-0">
                         🏦
                       </div>
                       <div className="flex-1">
-                        <div className="font-bold text-gray-800">Chuyển khoản</div>
-                        <div className="text-xs text-gray-500">Qua QR Code / E-Banking</div>
+                        <div className="font-bold text-[#0f172a]">Chuyển khoản</div>
+                        <div className="text-xs text-[#334155]">Qua QR Code / E-Banking</div>
                       </div>
                       {formData.paymentMethod === "BANKING" && (
-                        <svg className="w-6 h-6 text-emerald-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg className="w-6 h-6 text-[#FF6B6B] flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                       )}
@@ -515,7 +515,7 @@ const CheckoutPage = () => {
             {/* RIGHT COLUMN: ORDER SUMMARY */}
             <div className="lg:col-span-1">
               <div className="bg-white rounded-2xl shadow-sm p-6 sticky top-4">
-                <h2 className="text-xl font-bold text-gray-800 mb-6 pb-4 border-b">
+                <h2 className="text-xl font-bold text-[#0f172a] mb-6 pb-4 border-b">
                   Đơn hàng ({cartItems.length} món)
                 </h2>
 
@@ -537,12 +537,12 @@ const CheckoutPage = () => {
                         )}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800 line-clamp-2 mb-1">
+                        <p className="text-sm font-medium text-[#0f172a] line-clamp-2 mb-1">
                           {item.product?.name}
                         </p>
                         <div className="flex justify-between items-center">
-                          <span className="text-xs text-gray-500">x{item.quantity}</span>
-                          <span className="text-sm font-semibold text-emerald-600">
+                          <span className="text-xs text-[#334155]">x{item.quantity}</span>
+                          <span className="text-sm font-semibold text-[#FF6B6B]">
                             {formatPrice((item.product?.salePrice || item.product?.originalPrice || 0) * item.quantity)}
                           </span>
                         </div>
@@ -553,11 +553,11 @@ const CheckoutPage = () => {
 
                 {/* Calculations */}
                 <div className="space-y-3 mb-6">
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-[#334155]">
                     <span>Tạm tính</span>
                     <span className="font-medium">{formatPrice(totals.subtotal)}</span>
                   </div>
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-[#334155]">
                     <span>Phí vận chuyển</span>
                     <span className="font-medium">{formatPrice(totals.shipping)}</span>
                   </div>
@@ -565,8 +565,8 @@ const CheckoutPage = () => {
 
                 <div className="border-t pt-4 mb-6">
                   <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold text-gray-800">Tổng cộng</span>
-                    <span className="text-2xl font-bold text-emerald-600">
+                    <span className="text-lg font-semibold text-[#0f172a]">Tổng cộng</span>
+                    <span className="text-2xl font-bold text-[#FF6B6B]">
                       {formatPrice(totals.total)}
                     </span>
                   </div>
@@ -583,7 +583,7 @@ const CheckoutPage = () => {
                 <button
                   type="submit"
                   disabled={loading || cartItems.length === 0}
-                  className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl hover:from-emerald-600 hover:to-teal-600 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full py-4 bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {loading ? "Đang xử lý..." : "🛒 ĐẶT HÀNG"}
                 </button>

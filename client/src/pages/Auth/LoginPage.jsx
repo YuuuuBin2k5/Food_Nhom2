@@ -66,7 +66,7 @@ const LoginPage = () => {
   return (
     <div
       ref={wrapperRef}
-      className="auth-wrap flex min-h-screen w-full py-10 px-4 items-center justify-center"
+      className="auth-wrap flex min-h-screen w-full py-10 px-4 items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: `url(${imageUrl})` }}
     >
       <div className="flex w-full max-w-6xl h-180 overflow-hidden rounded-xl shadow-2xl bg-white/10 backdrop-blur-md border border-white/30">
@@ -137,7 +137,10 @@ const LoginPage = () => {
                   type="checkbox"
                   className="w-4 h-4 rounded border-gray-300 text-[#FF6B6B] focus:ring-[#FF6B6B]"
                 />
-                <label htmlFor="remember" className="text-sm text-[#334155] font-medium select-none">
+                <label
+                  htmlFor="remember"
+                  className="text-sm text-[#334155] font-medium select-none"
+                >
                   Ghi nhớ tôi
                 </label>
               </div>
@@ -156,7 +159,11 @@ const LoginPage = () => {
             )}
 
             <div className="flex items-center justify-center w-full">
-              <MysicButton type="submit" isLoading={loading} className="w-full max-w-xs">
+              <MysicButton
+                type="submit"
+                isLoading={loading}
+                className="w-full max-w-xs"
+              >
                 {loading ? "Đang xác thực" : "Đăng nhập"}
               </MysicButton>
             </div>

@@ -6,7 +6,7 @@ import LoginPage from "./pages/Auth/LoginPage";
 import RegisterPage from "./pages/Auth/RegisterPage";
 import ForgotPassword from "./pages/Auth/ForgotPassword";
 import ResetPassword from "./pages/Auth/ResetPassword";
-import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminPage from "./pages/admin/AdminPage";
 import PrivateRoute from "./components/common/PrivateRoute";
 import MainLayout from "./components/layouts/MainLayout";
 import SellerDashboard from "./pages/seller/SellerDashboard";
@@ -19,6 +19,10 @@ import BuyerHomePage from "./pages/Buyer/homePage";
 import ProductDetailPage from "./pages/Buyer/ProductDetailPage";
 import ShoppingCartPage from "./pages/Buyer/ShoppingCartPage";
 import OrderSuccessPage from "./pages/Buyer/OrderSuccessPage";
+import OrderHistoryPage from "./pages/Buyer/OrderHistoryPage";
+import SellerOrders from "./pages/seller/SellerOrders";
+import SellerProducts from "./pages/seller/SellerProducts";
+import SellerSettings from "./pages/seller/SellerSettings";
 
 function App() {
   return (
@@ -42,12 +46,17 @@ function App() {
                 <Route path="/products/:productId" element={<ProductDetailPage />} />
                 <Route path="/cart" element={<ShoppingCartPage />} />
                 <Route path="/order-success" element={<OrderSuccessPage />} />
+                <Route path="/orders" element={<OrderHistoryPage />} />
 
                 {/* Admin Routes */}
-                <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                <Route path="/admin/dashboard" element={<AdminPage />} />
+                <Route path="/admin/users" element={<AdminPage />} />
 
                 {/* Seller Routes */}
                 <Route path="/seller/dashboard" element={<SellerDashboard />} />
+                <Route path="/seller/products" element={<SellerProducts />} />
+                <Route path="/seller/orders" element={<SellerOrders />} />
+                <Route path="/seller/settings" element={<SellerSettings />} />
                 
                 {/* Checkout Routes */}
                 <Route path="/checkout" element={<CheckoutPage />} />

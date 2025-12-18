@@ -10,23 +10,23 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
       {/* Hero Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Welcome Card */}
         {user && (
           <div className="bg-white rounded-2xl shadow-lg p-6 mb-8">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] flex items-center justify-center text-white text-2xl font-bold">
                 {user?.fullName?.charAt(0).toUpperCase()}
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-gray-800">
+                <h2 className="text-2xl font-bold text-[#0f172a]">
                   Chào mừng, {user?.fullName}!
                 </h2>
-                <p className="text-gray-600">{user?.email}</p>
-                <p className="text-sm text-gray-500 mt-1">
-                  Vai trò: <span className="font-semibold text-blue-600">{user?.role}</span>
+                <p className="text-[#334155]">{user?.email}</p>
+                <p className="text-sm text-[#334155] mt-1">
+                  Vai trò: <span className="font-semibold text-[#FF6B6B]">{user?.role}</span>
                 </p>
               </div>
             </div>
@@ -35,13 +35,13 @@ const HomePage = () => {
 
         {/* Hero Content */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
+          <h1 className="text-5xl md:text-6xl font-bold text-[#0f172a] mb-6">
             Giải cứu thực phẩm,<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F]">
               Tiết kiệm chi phí
             </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+          <p className="text-xl text-[#334155] max-w-3xl mx-auto mb-8">
             Mua thực phẩm sắp hết hạn với giá giảm đến 70%. Vừa tiết kiệm tiền, vừa bảo vệ môi trường!
           </p>
         </div>
@@ -53,17 +53,17 @@ const HomePage = () => {
             className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all cursor-pointer p-6 text-center group"
           >
             <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">🛍️</div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Sản phẩm</h3>
-            <p className="text-gray-600 text-sm">Xem danh sách sản phẩm</p>
+            <h3 className="text-xl font-bold text-[#0f172a] mb-2">Sản phẩm</h3>
+            <p className="text-[#334155] text-sm">Xem danh sách sản phẩm</p>
           </div>
 
           <div
             onClick={() => navigate("/cart")}
-            className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg hover:shadow-xl transition-all cursor-pointer p-6 text-center group"
+            className="bg-gradient-to-br from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] rounded-2xl shadow-lg hover:shadow-xl transition-all cursor-pointer p-6 text-center group"
           >
             <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">🛒</div>
             <h3 className="text-xl font-bold text-white mb-2">Giỏ hàng</h3>
-            <p className="text-blue-100 text-sm">Xem giỏ hàng của bạn</p>
+            <p className="text-white/90 text-sm">Xem giỏ hàng của bạn</p>
           </div>
 
           <div
@@ -71,8 +71,8 @@ const HomePage = () => {
             className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all cursor-pointer p-6 text-center group"
           >
             <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">📦</div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Đơn hàng</h3>
-            <p className="text-gray-600 text-sm">Quản lý đơn hàng</p>
+            <h3 className="text-xl font-bold text-[#0f172a] mb-2">Đơn hàng</h3>
+            <p className="text-[#334155] text-sm">Quản lý đơn hàng</p>
           </div>
 
           <div
@@ -80,31 +80,31 @@ const HomePage = () => {
             className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all cursor-pointer p-6 text-center group"
           >
             <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">⚙️</div>
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Cài đặt</h3>
-            <p className="text-gray-600 text-sm">Quản lý tài khoản</p>
+            <h3 className="text-xl font-bold text-[#0f172a] mb-2">Cài đặt</h3>
+            <p className="text-[#334155] text-sm">Quản lý tài khoản</p>
           </div>
         </div>
 
         {/* Stats Section */}
         <div className="bg-white rounded-2xl shadow-lg p-8">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
+          <h2 className="text-2xl font-bold text-[#0f172a] mb-6 text-center">
             Tác động của chúng ta
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
               <div className="text-4xl mb-2">🌍</div>
-              <div className="text-3xl font-bold text-blue-600 mb-1">5.2 tấn</div>
-              <div className="text-gray-600">Thực phẩm đã cứu</div>
+              <div className="text-3xl font-bold text-[#FF6B6B] mb-1">5.2 tấn</div>
+              <div className="text-[#334155]">Thực phẩm đã cứu</div>
             </div>
             <div className="text-center">
               <div className="text-4xl mb-2">💰</div>
-              <div className="text-3xl font-bold text-blue-600 mb-1">-70%</div>
-              <div className="text-gray-600">Giảm giá trung bình</div>
+              <div className="text-3xl font-bold text-[#FF8E53] mb-1">-70%</div>
+              <div className="text-[#334155]">Giảm giá trung bình</div>
             </div>
             <div className="text-center">
               <div className="text-4xl mb-2">🏪</div>
-              <div className="text-3xl font-bold text-blue-600 mb-1">56+</div>
-              <div className="text-gray-600">Cửa hàng đối tác</div>
+              <div className="text-3xl font-bold text-[#FFC75F] mb-1">56+</div>
+              <div className="text-[#334155]">Cửa hàng đối tác</div>
             </div>
           </div>
         </div>
@@ -127,17 +127,17 @@ const HomePage = () => {
             <div>
               <h4 className="text-white font-semibold mb-4">Liên kết</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="/" className="hover:text-blue-400 transition-colors">Trang chủ</a></li>
-                <li><a href="/products" className="hover:text-blue-400 transition-colors">Sản phẩm</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Về chúng tôi</a></li>
+                <li><a href="/" className="hover:text-[#FF8E53] transition-colors">Trang chủ</a></li>
+                <li><a href="/products" className="hover:text-[#FF8E53] transition-colors">Sản phẩm</a></li>
+                <li><a href="#" className="hover:text-[#FF8E53] transition-colors">Về chúng tôi</a></li>
               </ul>
             </div>
             <div>
               <h4 className="text-white font-semibold mb-4">Hỗ trợ</h4>
               <ul className="space-y-2 text-gray-400">
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Liên hệ</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">FAQ</a></li>
-                <li><a href="#" className="hover:text-blue-400 transition-colors">Điều khoản</a></li>
+                <li><a href="#" className="hover:text-[#FF8E53] transition-colors">Liên hệ</a></li>
+                <li><a href="#" className="hover:text-[#FF8E53] transition-colors">FAQ</a></li>
+                <li><a href="#" className="hover:text-[#FF8E53] transition-colors">Điều khoản</a></li>
               </ul>
             </div>
           </div>

@@ -60,7 +60,7 @@ const ResetPassword = () => {
   return (
     <div
       ref={wrapperRef}
-      className="auth-wrap flex min-h-screen w-full py-10 px-4 items-center justify-center"
+      className="auth-wrap flex min-h-screen w-full py-10 px-4 items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: `url(${imageUrl})` }}
     >
       <div className="flex w-full max-w-6xl h-180 overflow-hidden rounded-xl shadow-2xl bg-white/10 backdrop-blur-md border border-white/30">

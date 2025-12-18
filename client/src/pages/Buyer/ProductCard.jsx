@@ -91,9 +91,9 @@ function ProductCard({ product }) {
     return (
         <div
             className="group bg-white rounded-2xl overflow-hidden cursor-pointer border border-gray-100 
-                       shadow-md hover:shadow-2xl hover:shadow-emerald-200/40
+                       shadow-md hover:shadow-2xl hover:shadow-orange-200/40
                        transition-all duration-400 ease-out
-                       hover:-translate-y-2 hover:border-emerald-200
+                       hover:-translate-y-2 hover:border-orange-200
                        flex flex-col h-full
                        transform animate-fadeIn"
             onClick={handleClick}
@@ -148,7 +148,7 @@ function ProductCard({ product }) {
                         <button
                             onClick={handleAddToCart}
                             disabled={isAdding}
-                            className={`w-full py-3 bg-gradient-to-r ${isAdding ? 'from-gray-400 to-gray-500' : 'from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600'}
+                            className={`w-full py-3 bg-gradient-to-r ${isAdding ? 'from-gray-400 to-gray-500' : 'from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] hover:opacity-90'}
                                        text-white font-semibold rounded-xl shadow-lg hover:shadow-xl
                                        transition-all duration-300 flex items-center justify-center gap-2
                                        active:scale-95`}
@@ -181,12 +181,12 @@ function ProductCard({ product }) {
                 {/* Product Name */}
                 <h3 className="text-gray-900 font-semibold text-base leading-snug
                                line-clamp-2 min-h-[2.75rem]
-                               group-hover:text-emerald-600 transition-colors duration-300">
+                               group-hover:text-[#FF6B6B] transition-colors duration-300">
                     {product.name}
                 </h3>
 
                 {/* Shop Name with icon */}
-                <p className="text-sm text-gray-500 flex items-center gap-1.5 hover:text-emerald-600 transition-colors">
+                <p className="text-sm text-gray-500 flex items-center gap-1.5 hover:text-[#FF8E53] transition-colors">
                     <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
                     </svg>
@@ -196,7 +196,7 @@ function ProductCard({ product }) {
                 {/* ===== PRICE SECTION ===== */}
                 <div className="mt-auto pt-3 border-t border-gray-100">
                     <div className="flex items-baseline gap-2 flex-wrap">
-                        <span className="text-xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+                        <span className="text-xl font-bold bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] bg-clip-text text-transparent">
                             {formatPrice(product.salePrice)}
                         </span>
                         {product.originalPrice > product.salePrice && (

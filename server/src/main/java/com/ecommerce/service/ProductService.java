@@ -119,8 +119,9 @@ public class ProductService {
     public List<Product> getProductsBySeller(String sellerId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
+            // Eager fetch seller để tránh LazyInitializationException
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p WHERE p.seller.userId = :sid", Product.class);
+                "SELECT p FROM Product p JOIN FETCH p.seller WHERE p.seller.userId = :sid", Product.class);
             query.setParameter("sid", sellerId);
             return query.getResultList();
         } finally {

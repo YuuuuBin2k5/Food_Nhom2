@@ -117,17 +117,29 @@ function HomePage() {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-amber-50">
+        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
 
             {/* Hero Banner */}
-            <div className="bg-gradient-to-r from-emerald-500 to-teal-500 py-8">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="relative bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] py-12 overflow-hidden">
+                {/* Decorative Elements */}
+                <div className="absolute inset-0 opacity-10">
+                    <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-10 right-10 w-40 h-40 bg-white rounded-full blur-3xl"></div>
+                </div>
+                
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center">
-                        <h2 className="text-2xl md:text-3xl font-bold text-white mb-3">
-                            🌱 Thực phẩm tươi ngon, giá siêu hời!
+                        <div className="inline-block mb-4">
+                            <span className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-full text-sm font-semibold">
+                                🌱 Giải cứu thực phẩm, bảo vệ môi trường
+                            </span>
+                        </div>
+                        <h2 className="text-3xl md:text-4xl font-black text-white mb-4 leading-tight">
+                            Thực phẩm tươi ngon,<br className="hidden sm:block" /> giá siêu hời!
                         </h2>
-                        <p className="text-emerald-100 text-base max-w-2xl mx-auto mb-6">
-                            Mua thực phẩm sắp hết hạn với giá giảm đến 70%. Vừa tiết kiệm, vừa bảo vệ môi trường!
+                        <p className="text-white/90 text-lg max-w-2xl mx-auto mb-8">
+                            Mua thực phẩm sắp hết hạn với giá giảm đến <span className="font-bold text-yellow-200">70%</span>. 
+                            Vừa tiết kiệm, vừa bảo vệ môi trường!
                         </p>
 
                         {/* Search Bar */}
@@ -139,37 +151,75 @@ function HomePage() {
             </div>
 
             {/* Stats Bar */}
-            <div className="bg-white shadow-sm border-b">
+            <div className="bg-white shadow-md border-b border-gray-100">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div className="text-center group hover:scale-105 transition-transform">
+                            <div className="flex items-center justify-center gap-3 mb-2">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                    🍎
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-2xl font-bold text-[#FF6B6B]">{products.length}+</div>
+                                    <div className="text-xs text-[#334155]">Sản phẩm</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-center group hover:scale-105 transition-transform">
+                            <div className="flex items-center justify-center gap-3 mb-2">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                    🏪
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-2xl font-bold text-[#FF8E53]">56</div>
+                                    <div className="text-xs text-[#334155]">Cửa hàng</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-center group hover:scale-105 transition-transform">
+                            <div className="flex items-center justify-center gap-3 mb-2">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                    🌍
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-2xl font-bold text-[#10B981]">5.2 tấn</div>
+                                    <div className="text-xs text-[#334155]">Đã cứu</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="text-center group hover:scale-105 transition-transform">
+                            <div className="flex items-center justify-center gap-3 mb-2">
+                                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                                    💰
+                                </div>
+                                <div className="text-left">
+                                    <div className="text-2xl font-bold text-[#FFC75F]">-70%</div>
+                                    <div className="text-xs text-[#334155]">Giảm đến</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Category Quick Filters */}
+            <div className="bg-white border-b border-gray-100 sticky top-16 z-30 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex flex-wrap justify-center gap-8 text-center">
-                        <div className="flex items-center gap-2">
-                            <span className="text-2xl">🍎</span>
-                            <div>
-                                <div className="text-2xl font-bold text-emerald-600">1,234+</div>
-                                <div className="text-sm text-gray-500">Sản phẩm</div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-2xl">🏪</span>
-                            <div>
-                                <div className="text-2xl font-bold text-emerald-600">56</div>
-                                <div className="text-sm text-gray-500">Cửa hàng</div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-2xl">🌍</span>
-                            <div>
-                                <div className="text-2xl font-bold text-emerald-600">5.2 tấn</div>
-                                <div className="text-sm text-gray-500">Thực phẩm cứu</div>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <span className="text-2xl">💰</span>
-                            <div>
-                                <div className="text-2xl font-bold text-orange-500">-70%</div>
-                                <div className="text-sm text-gray-500">Giảm đến</div>
-                            </div>
-                        </div>
+                    <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-2">
+                        <span className="text-sm font-semibold text-[#334155] whitespace-nowrap">Danh mục:</span>
+                        {CATEGORY_FILTERS.map((cat) => (
+                            <button
+                                key={cat.id}
+                                onClick={() => handleQuickFilter('category', cat.value)}
+                                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                                    filters.category === cat.value
+                                        ? 'bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] text-white shadow-md scale-105'
+                                        : 'bg-gray-100 text-[#334155] hover:bg-gray-200 hover:scale-102'
+                                }`}
+                            >
+                                {cat.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
             </div>
@@ -182,57 +232,65 @@ function HomePage() {
 
 
                         {/* Results Header */}
-                        <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-                            <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                                <span className="bg-blue-100 text-blue-600 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold">
-                                    {products.length}
-                                </span>
-                                sản phẩm tìm thấy
-                            </h3>
+                        <div className="flex flex-col sm:flex-row items-center justify-between mb-6 gap-4 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
                             <div className="flex items-center gap-3">
-                                <span className="text-sm text-gray-500 whitespace-nowrap">Sắp xếp theo:</span>
+                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-100 to-amber-100 flex items-center justify-center">
+                                    <span className="text-[#FF6B6B] font-bold text-lg">{products.length}</span>
+                                </div>
+                                <div>
+                                    <h3 className="text-lg font-bold text-[#0f172a]">Sản phẩm tìm thấy</h3>
+                                    <p className="text-xs text-[#334155]">Trang {currentPage + 1} / {totalPages}</p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <span className="text-sm text-[#334155] whitespace-nowrap hidden sm:block">Sắp xếp:</span>
                                 <select
                                     value={filters.sortBy}
                                     onChange={(e) => handleFilterChange({ sortBy: e.target.value })}
-                                    className="px-4 py-2 border border-gray-200 rounded-lg text-sm text-gray-700 bg-gray-50 hover:bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all cursor-pointer"
+                                    className="px-4 py-2.5 border border-gray-200 rounded-xl text-sm text-[#0f172a] font-medium bg-white hover:border-[#FF6B6B] focus:outline-none focus:ring-2 focus:ring-[#FF6B6B] focus:border-transparent transition-all cursor-pointer"
                                 >
-                                    <option value="newest">Mới nhất</option>
-                                    <option value="price_asc">Giá thấp → cao</option>
-                                    <option value="price_desc">Giá cao → thấp</option>
-                                    <option value="discount_desc">Giảm giá nhiều</option>
+                                    <option value="newest">🆕 Mới nhất</option>
+                                    <option value="price_asc">💰 Giá thấp → cao</option>
+                                    <option value="price_desc">💎 Giá cao → thấp</option>
+                                    <option value="discount_desc">🔥 Giảm giá nhiều</option>
                                 </select>
                             </div>
                         </div>
 
                         {/* Products */}
                         {loading ? (
-                            <div className="flex justify-center py-32 bg-white rounded-2xl shadow-sm">
+                            <div className="flex flex-col items-center justify-center py-32 bg-white rounded-2xl shadow-sm">
                                 <LoadingSpinner />
+                                <p className="mt-4 text-[#334155] text-sm">Đang tải sản phẩm...</p>
                             </div>
                         ) : products.length === 0 ? (
-                            <div className="text-center py-32 bg-white rounded-2xl shadow-sm border border-dashed border-gray-300">
-                                <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <span className="text-4xl">🔍</span>
+                            <div className="text-center py-32 bg-white rounded-2xl shadow-sm border-2 border-dashed border-gray-200">
+                                <div className="w-32 h-32 bg-gradient-to-br from-orange-50 to-amber-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <span className="text-6xl">🔍</span>
                                 </div>
-                                <h3 className="text-xl font-semibold text-gray-800 mb-2">
+                                <h3 className="text-2xl font-bold text-[#0f172a] mb-3">
                                     Không tìm thấy sản phẩm
                                 </h3>
-                                <p className="text-gray-500 max-w-md mx-auto">
+                                <p className="text-[#334155] max-w-md mx-auto mb-6">
                                     Rất tiếc, chúng tôi không tìm thấy sản phẩm nào phù hợp với bộ lọc của bạn.
                                 </p>
                                 <button
-                                    onClick={() => handleFilterChange({
-                                        minPrice: 0,
-                                        maxPrice: 1000000,
-                                        sortBy: 'newest',
-                                        sellerId: '',
-                                        hasDiscount: false,
-                                        inStock: false,
-                                        search: ''
-                                    })}
-                                    className="mt-6 px-6 py-2 bg-blue-50 text-blue-600 font-medium rounded-lg hover:bg-blue-100 transition-colors"
+                                    onClick={() => {
+                                        setFilters({
+                                            search: '',
+                                            category: '',
+                                            minPrice: 0,
+                                            maxPrice: 1000000,
+                                            sortBy: 'newest',
+                                            sellerId: '',
+                                            hasDiscount: false,
+                                            inStock: false
+                                        });
+                                        setCurrentPage(0);
+                                    }}
+                                    className="px-8 py-3 bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] text-white font-semibold rounded-xl hover:opacity-90 transition-all shadow-lg hover:shadow-xl"
                                 >
-                                    Xóa bộ lọc tìm kiếm
+                                    🔄 Xóa bộ lọc
                                 </button>
                             </div>
                         ) : (
@@ -276,17 +334,17 @@ function HomePage() {
                         <div>
                             <h4 className="text-white font-semibold mb-4">Liên kết</h4>
                             <ul className="space-y-2 text-gray-400">
-                                <li><a href="#" className="hover:text-emerald-400 transition-colors">Trang chủ</a></li>
-                                <li><a href="#" className="hover:text-emerald-400 transition-colors">Sản phẩm</a></li>
-                                <li><a href="#" className="hover:text-emerald-400 transition-colors">Về chúng tôi</a></li>
+                                <li><a href="/" className="hover:text-[#FF8E53] transition-colors">Trang chủ</a></li>
+                                <li><a href="/products" className="hover:text-[#FF8E53] transition-colors">Sản phẩm</a></li>
+                                <li><a href="#" className="hover:text-[#FF8E53] transition-colors">Về chúng tôi</a></li>
                             </ul>
                         </div>
                         <div>
                             <h4 className="text-white font-semibold mb-4">Hỗ trợ</h4>
                             <ul className="space-y-2 text-gray-400">
-                                <li><a href="#" className="hover:text-emerald-400 transition-colors">Liên hệ</a></li>
-                                <li><a href="#" className="hover:text-emerald-400 transition-colors">FAQ</a></li>
-                                <li><a href="#" className="hover:text-emerald-400 transition-colors">Điều khoản</a></li>
+                                <li><a href="#" className="hover:text-[#FF8E53] transition-colors">Liên hệ</a></li>
+                                <li><a href="#" className="hover:text-[#FF8E53] transition-colors">FAQ</a></li>
+                                <li><a href="#" className="hover:text-[#FF8E53] transition-colors">Điều khoản</a></li>
                             </ul>
                         </div>
                     </div>

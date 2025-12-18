@@ -104,6 +104,11 @@ public class JwtAuthFilter implements Filter {
                 return;
             }
 
+            if (path.startsWith("/api/buyer") && !"BUYER".equals(role)) {
+                sendJsonError(response, HttpServletResponse.SC_FORBIDDEN, "Forbidden: Buyer only");
+                return;
+            }
+
             // ===============================
             // 5️⃣ Gắn thông tin user cho Controller
             // ===============================

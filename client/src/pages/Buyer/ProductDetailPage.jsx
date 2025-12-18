@@ -108,7 +108,7 @@ function ProductDetailPage() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center">
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center">
                 <LoadingSpinner />
             </div>
         );
@@ -133,13 +133,13 @@ function ProductDetailPage() {
     const expiryStatus = getExpiryStatus();
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
             {/* Header */}
-            <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-blue-100">
+            <header className="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-orange-100">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
                     <button
                         onClick={() => navigate('/products')}
-                        className="flex items-center gap-2 text-gray-600 hover:text-blue-600 transition-colors font-medium"
+                        className="flex items-center gap-2 text-gray-600 hover:text-[#FF6B6B] transition-colors font-medium"
                     >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
@@ -175,7 +175,7 @@ function ProductDetailPage() {
                         <div className="p-8 md:pr-12 flex flex-col">
                             {/* Breadcrumb & Shop Info */}
                             <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                                <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full font-medium">
+                                <span className="bg-orange-100 text-[#FF6B6B] px-3 py-1 rounded-full font-medium">
                                     {product.category || 'Thực phẩm'}
                                 </span>
                                 <span>•</span>
@@ -204,9 +204,9 @@ function ProductDetailPage() {
                             </div>
 
                             {/* Price Block */}
-                            <div className="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
+                            <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-6 mb-8 border border-orange-100">
                                 <div className="flex items-end gap-3 mb-2">
-                                    <span className="text-4xl font-bold text-blue-600">
+                                    <span className="text-4xl font-bold text-[#FF6B6B]">
                                         {formatPrice(product.salePrice)}
                                     </span>
                                     {product.originalPrice > product.salePrice && (
@@ -221,7 +221,7 @@ function ProductDetailPage() {
                                             ⏰ {expiryStatus.text}
                                         </span>
                                     )}
-                                    <span className={`px-3 py-1 rounded-full font-medium ${product.quantity > 0 ? 'bg-blue-100 text-blue-700' : 'bg-red-100 text-red-700'
+                                    <span className={`px-3 py-1 rounded-full font-medium ${product.quantity > 0 ? 'bg-orange-100 text-[#FF8E53]' : 'bg-red-100 text-red-700'
                                         }`}>
                                         {product.quantity > 0 ? `Còn ${product.quantity} sản phẩm` : 'Hết hàng'}
                                     </span>
@@ -270,7 +270,7 @@ function ProductDetailPage() {
                                     <button
                                         onClick={() => handleAddToCart(false)}
                                         disabled={product.quantity === 0 || addingToCart}
-                                        className="flex-1 px-8 py-3 bg-white border-2 border-blue-500 text-blue-600 font-bold rounded-xl hover:bg-blue-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 px-8 py-3 bg-white border-2 border-[#FF6B6B] text-[#FF6B6B] font-bold rounded-xl hover:bg-orange-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
@@ -280,7 +280,7 @@ function ProductDetailPage() {
                                     <button
                                         onClick={() => handleAddToCart(true)}
                                         disabled={product.quantity === 0 || addingToCart}
-                                        className="flex-1 px-8 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white font-bold rounded-xl hover:from-blue-600 hover:to-indigo-600 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                                        className="flex-1 px-8 py-3 bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] text-white font-bold rounded-xl hover:opacity-90 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                     >
                                         Mua ngay
                                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -328,7 +328,7 @@ function ProductDetailPage() {
 
                                         <button
                                             onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(product.seller?.address || '456 Lê Lợi, Quận 3, TP.HCM')}`, '_blank')}
-                                            className="w-full mt-4 py-2.5 bg-white border border-gray-300 hover:border-blue-500 hover:text-blue-600 rounded-xl text-gray-700 font-medium flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-md active:scale-95"
+                                            className="w-full mt-4 py-2.5 bg-white border border-gray-300 hover:border-[#FF6B6B] hover:text-[#FF6B6B] rounded-xl text-gray-700 font-medium flex items-center justify-center gap-2 transition-all shadow-sm hover:shadow-md active:scale-95"
                                         >
                                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />

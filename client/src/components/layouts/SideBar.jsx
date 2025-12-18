@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
@@ -84,8 +84,10 @@ export default function Sidebar() {
       { to: "/orders", label: "Đơn mua", icon: "📦" },
     ],
     SELLER: [
-      { to: "/seller/dashboard", label: "Kênh Bán Hàng", icon: "📊" },
-      { to: "/seller/products", label: "Kho Hàng", icon: "📦" },
+      { to: "/seller/dashboard", label: "Tổng quan", icon: "📊" },
+      { to: "/seller/products", label: "Kho hàng", icon: "📦" },
+      { to: "/seller/orders", label: "Đơn hàng", icon: "📄" },
+      { to: "/seller/settings", label: "Cài đặt", icon: "⚙️" },
     ],
     ADMIN: [
       { to: "/admin/dashboard", label: "Dashboard", icon: "⚙️" },
@@ -103,7 +105,7 @@ export default function Sidebar() {
   const navLinks = getMenuItems();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700 shadow-lg font-sans">
+    <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] shadow-lg font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* 1. LOGO & DESKTOP NAV */}
@@ -117,7 +119,7 @@ export default function Sidebar() {
                 <span className="text-xl font-bold text-white tracking-tight block leading-tight">
                   Food Rescue
                 </span>
-                <span className="text-xs text-blue-100">Nhóm 2</span>
+                <span className="text-xs text-white/80">Nhóm 2</span>
               </div>
             </Link>
 
@@ -131,7 +133,7 @@ export default function Sidebar() {
                     `px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
                       isActive
                         ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
-                        : "text-blue-100 hover:text-white hover:bg-white/10"
+                        : "text-white/80 hover:text-white hover:bg-white/10"
                     }`
                   }
                 >
@@ -161,7 +163,7 @@ export default function Sidebar() {
                 {isFilterOpen && (
                   <div className="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 max-h-[80vh] overflow-y-auto">
                     {/* Filter Header */}
-                    <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-4 sticky top-0 z-10">
+                    <div className="bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] px-5 py-4 sticky top-0 z-10">
                       <h3 className="text-lg font-bold text-white flex items-center gap-2">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
@@ -184,8 +186,8 @@ export default function Sidebar() {
                             { label: '100.000đ - 200.000đ', value: '100000-200000' },
                             { label: 'Trên 200.000đ', value: '200000-1000000' },
                           ].map((range) => (
-                            <label key={range.value} className="flex items-center gap-3 p-2 rounded-lg hover:bg-blue-50 cursor-pointer transition-colors">
-                              <input type="radio" name="priceRange" className="w-4 h-4 text-blue-600" />
+                            <label key={range.value} className="flex items-center gap-3 p-2 rounded-lg hover:bg-orange-50 cursor-pointer transition-colors">
+                              <input type="radio" name="priceRange" className="w-4 h-4 text-[#FF6B6B]" />
                               <span className="text-sm text-gray-700">{range.label}</span>
                             </label>
                           ))}
@@ -203,7 +205,7 @@ export default function Sidebar() {
                           {['Tất cả', 'Cơm', 'Bánh mì', 'Đồ uống', 'Trái cây', 'Rau củ'].map((cat) => (
                             <button
                               key={cat}
-                              className="px-3 py-1.5 text-sm rounded-full border border-gray-200 hover:border-blue-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                              className="px-3 py-1.5 text-sm rounded-full border border-gray-200 hover:border-[#FF6B6B] hover:bg-orange-50 hover:text-[#FF6B6B] transition-all"
                             >
                               {cat}
                             </button>
@@ -224,8 +226,8 @@ export default function Sidebar() {
                               <span className="text-xs text-gray-500">Sản phẩm có khuyến mãi</span>
                             </div>
                           </label>
-                          <label className="flex items-center gap-3 p-3 rounded-lg bg-blue-50 border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors">
-                            <input type="checkbox" className="w-4 h-4 text-blue-600 rounded" />
+                          <label className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 border border-amber-100 cursor-pointer hover:bg-amber-100 transition-colors">
+                            <input type="checkbox" className="w-4 h-4 text-[#FFC75F] rounded" />
                             <div>
                               <span className="text-sm font-medium text-gray-800 block">✅ Còn hàng</span>
                               <span className="text-xs text-gray-500">Ẩn sản phẩm hết hàng</span>
@@ -254,14 +256,14 @@ export default function Sidebar() {
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
                   className="flex items-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl transition-all focus:outline-none"
                 >
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-blue-600 font-bold shadow-lg">
+                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#FF6B6B] font-bold shadow-lg">
                     {user.fullName?.charAt(0).toUpperCase()}
                   </div>
                   <div className="hidden sm:flex flex-col items-start">
                     <span className="text-sm font-bold text-white leading-none">
                       {user.fullName}
                     </span>
-                    <span className="text-xs text-blue-100 font-medium uppercase mt-0.5">
+                    <span className="text-xs text-white/80 font-medium uppercase mt-0.5">
                       {user.role}
                     </span>
                   </div>
@@ -274,12 +276,12 @@ export default function Sidebar() {
                 {isProfileOpen && (
                   <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                     {/* User Info Header */}
-                    <div className="px-5 py-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-b border-gray-100">
+                    <div className="px-5 py-4 bg-gradient-to-r from-orange-50 to-amber-50 border-b border-gray-100">
                       <p className="text-base font-bold text-gray-900">
                         {user.fullName}
                       </p>
                       <p className="text-sm text-gray-600">{user.email}</p>
-                      <span className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-bold rounded-full uppercase">
+                      <span className="inline-block mt-2 px-3 py-1 bg-orange-100 text-[#FF6B6B] text-xs font-bold rounded-full uppercase">
                         {user.role}
                       </span>
                     </div>
@@ -288,7 +290,7 @@ export default function Sidebar() {
                     <div className="py-2">
                       <Link
                         to="/settings"
-                        className="flex items-center gap-3 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors"
+                        className="flex items-center gap-3 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-[#FF6B6B] transition-colors"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -324,7 +326,7 @@ export default function Sidebar() {
                 </Link>
                 <Link
                   to="/register"
-                  className="px-5 py-2 text-sm font-semibold bg-white text-blue-600 rounded-xl hover:bg-blue-50 shadow-lg transition-all"
+                  className="px-5 py-2 text-sm font-semibold bg-white text-[#FF6B6B] rounded-xl hover:bg-orange-50 shadow-lg transition-all"
                 >
                   Đăng ký
                 </Link>
@@ -346,7 +348,7 @@ export default function Sidebar() {
 
       {/* 3. MOBILE MENU (Collapsible) */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-white/20 bg-gradient-to-b from-blue-600 to-indigo-700">
+        <div className="md:hidden border-t border-white/20 bg-gradient-to-b from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F]">
           <div className="px-4 pt-3 pb-4 space-y-2">
             {navLinks.map((link) => (
               <NavLink
@@ -357,7 +359,7 @@ export default function Sidebar() {
                   `flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold transition-all ${
                     isActive
                       ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
-                      : "text-blue-100 hover:bg-white/10 hover:text-white"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
                   }`
                 }
               >
@@ -375,7 +377,7 @@ export default function Sidebar() {
                 </Link>
                 <Link
                   to="/register"
-                  className="flex justify-center py-3 bg-white text-blue-600 rounded-xl font-semibold hover:bg-blue-50 shadow-lg transition-all"
+                  className="flex justify-center py-3 bg-white text-[#FF6B6B] rounded-xl font-semibold hover:bg-orange-50 shadow-lg transition-all"
                 >
                   Đăng ký
                 </Link>

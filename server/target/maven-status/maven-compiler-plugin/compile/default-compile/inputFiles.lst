@@ -39,12 +39,15 @@ C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecom
 C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\AdminUserServlet.java
 C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ApiForgotPasswordServlet.java
 C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ApiResetPasswordServlet.java
+C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\BuyerOrderServlet.java
 C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\CheckoutServlet.java
 C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\LoginServlet.java
 C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ProductServlet.java
 C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\RegisterServlet.java
+C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerOrderServlet.java
 C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerProductServlet.java
 C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerProfileServlet.java
+C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ShipperOrderServlet.java
 C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\util\DBUtil.java
 C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\util\JwtUtil.java
 C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\util\MailUtil.java
