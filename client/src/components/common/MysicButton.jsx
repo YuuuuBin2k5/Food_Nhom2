@@ -6,7 +6,7 @@ const MysicButton = ({ children, className = "", style = {}, ...props }) => {
     <HeroButton
       size="lg"
       radius="md"
-      className={`mt-2 w-40 h-10 rounded-2xl font-bold shadow-lg transition-transform active:scale-[0.98] cursor-pointer ${className}`}
+      className={`mt-2 h-10 rounded-2xl font-bold shadow-lg transition-transform active:scale-[0.98] cursor-pointer ${className || 'w-40'}`}
       style={{
         backgroundImage:
           "linear-gradient(90deg,#FF6B6B 0%,#FF8E53 65%,#FFC75F 100%)",

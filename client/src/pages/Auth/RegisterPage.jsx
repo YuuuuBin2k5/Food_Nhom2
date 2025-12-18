@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import { useState, useRef } from "react";
 import { Form, Tab, Tabs } from "@heroui/react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -55,7 +55,7 @@ const RegisterPage = () => {
 
       if (result.success) {
         alert("Đăng ký thành công! Vui lòng đăng nhập.");
-        navigate("/login");
+        handleToLogin();
       } else {
         // If server returned field errors, format them for display
         if (result.errors && typeof result.errors === "object") {
@@ -187,23 +187,23 @@ const RegisterPage = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-center">
-              <MysicButton type="submit" isLoading={loading}>
+            <div className="flex items-center justify-center w-full">
+              <MysicButton type="submit" isLoading={loading} className="w-full max-w-xs">
                 {loading ? "Đang xử lý..." : "Đăng Ký"}
               </MysicButton>
             </div>
-
-            <div className="mt-1 text-center text-sm text-[#334155] opacity-90">
-              Đã có tài khoản?{" "}
-              <button
-                type="button"
-                onClick={handleToLogin}
-                className="font-bold text-[#10B981] hover:underline opacity-100 cursor-pointer"
-              >
-                Đăng nhập ngay
-              </button>
-            </div>
           </Form>
+
+          <div className="mt-6 text-center text-sm text-[#334155] opacity-90">
+            Đã có tài khoản?{" "}
+            <button
+              type="button"
+              onClick={handleToLogin}
+              className="font-bold text-[#10B981] hover:underline opacity-100 cursor-pointer"
+            >
+              Đăng nhập ngay
+            </button>
+          </div>
         </div>
 
         {/* RIGHT: IMAGE + PROMO TEXT (translucent image with different text) */}

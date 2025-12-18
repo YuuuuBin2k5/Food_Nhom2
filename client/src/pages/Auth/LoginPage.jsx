@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { Form, Checkbox } from "@heroui/react";
+import { useState, useRef } from "react";
+import { Form } from "@heroui/react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { loginAPI } from "../../services/authService";
@@ -129,19 +129,18 @@ const LoginPage = () => {
               type="password"
             />
 
-            <div className="flex items-center justify-between -mt-1">
-              <div className="flex items-center ml-5 gap-2">
+            <div className="flex items-center justify-between w-full -mt-1">
+              <div className="flex items-center gap-2">
                 <input
                   id="remember"
                   name="remember"
                   type="checkbox"
-                  className="w-4 h-4 rounded border-gray-300 text-[#FF6B6B] focus:ring-0"
+                  className="w-4 h-4 rounded border-gray-300 text-[#FF6B6B] focus:ring-[#FF6B6B]"
                 />
-                <label htmlFor="remember" className="text-sm text-[#e9d5ff] font-medium select-none">
+                <label htmlFor="remember" className="text-sm text-[#334155] font-medium select-none">
                   Ghi nhớ tôi
                 </label>
               </div>
-
               <Link
                 to="/forgot-password"
                 className="text-sm font-bold text-[#FF6B6B] hover:text-[#FF8E53] hover:underline transition-colors"
@@ -156,23 +155,23 @@ const LoginPage = () => {
               </div>
             )}
 
-            <div className="flex items-center justify-center">
-              <MysicButton type="submit" isLoading={loading}>
+            <div className="flex items-center justify-center w-full">
+              <MysicButton type="submit" isLoading={loading} className="w-full max-w-xs">
                 {loading ? "Đang xác thực" : "Đăng nhập"}
               </MysicButton>
             </div>
-
-            <div className="mt-4 text-center text-sm text-[#334155] opacity-90">
-              Chưa có tài khoản?{" "}
-              <button
-                type="button"
-                onClick={handleToRegister}
-                className="font-bold text-[#10B981] hover:underline opacity-100 cursor-pointer"
-              >
-                Tạo tài khoản mới
-              </button>
-            </div>
           </Form>
+
+          <div className="mt-6 text-center text-sm text-[#334155] opacity-90">
+            Chưa có tài khoản?{" "}
+            <button
+              type="button"
+              onClick={handleToRegister}
+              className="font-bold text-[#10B981] hover:underline opacity-100 cursor-pointer"
+            >
+              Tạo tài khoản mới
+            </button>
+          </div>
         </div>
       </div>
     </div>

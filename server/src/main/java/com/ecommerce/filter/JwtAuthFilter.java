@@ -54,12 +54,7 @@ public class JwtAuthFilter implements Filter {
         if (path.equals("/api/login") ||
             path.equals("/api/register") ||
             path.equals("/api/forgot-password") ||
-            path.equals("/forgot-password") ||
-            path.equals("/api/reset-password") ||
-            path.equals("/reset-password") ||
-            path.equals("/api/ping") ||
-            path.equals("/api/test") ||
-            path.equals("/api/debug/sellers")) {
+            path.equals("/api/reset-password")) {
             chain.doFilter(req, res);
             return;
         }

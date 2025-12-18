@@ -6,7 +6,7 @@ const MysicInput = ({ label, type = "text", className = "", ...props }) => {
   const isPassword = type === "password";
 
   return (
-    <div className={`relative ${className}`}>
+    <div className={`relative w-full ${className}`}>
       <Input
         label={label}
         labelPlacement="outside"
@@ -14,7 +14,7 @@ const MysicInput = ({ label, type = "text", className = "", ...props }) => {
         radius="md"
         type={isPassword && showPassword ? "text" : type}
         classNames={{
-          mainWrapper: "mt-1",
+          mainWrapper: "mt-1 w-full",
           errorMessage: ["text-sm", "text-red-500"],
           label: [
             "absolute z-20",
@@ -49,7 +49,7 @@ const MysicInput = ({ label, type = "text", className = "", ...props }) => {
         <button
           type="button"
           onClick={() => setShowPassword(!showPassword)}
-          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          className="absolute right-3 top-[60%] -translate-y-1/2 text-gray-400 hover:text-gray-600 z-30"
         >
           {showPassword ? (
             // Icon mắt mở
