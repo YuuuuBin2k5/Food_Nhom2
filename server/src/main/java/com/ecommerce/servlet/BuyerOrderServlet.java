@@ -29,50 +29,79 @@ public class BuyerOrderServlet extends HttpServlet {
     // --- GET: LẤY DANH SÁCH ĐƠN HÀNG CỦA BUYER ---
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        setHeaders(resp);
-        String buyerId = (String) req.getAttribute("userId"); // Lấy từ Token
-
-        // Kiểm tra Role
+        String buyerId = (String) req.getAttribute("userId");
         String role = (String) req.getAttribute("role");
+        
+        // Kiểm tra Role
         if (!"BUYER".equals(role)) {
             sendError(resp, 403, "Access Denied");
             return;
         }
 
-        try (PrintWriter out = resp.getWriter()) {
+        try {
+            // Set headers BEFORE getting writer
+            resp.setContentType("application/json");
+            resp.setCharacterEncoding("UTF-8");
+            resp.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
+            resp.setHeader("Access-Control-Allow-Credentials", "true");
+            
             // Lấy danh sách đơn hàng
             List<Order> orders = orderService.getOrdersByBuyer(buyerId);
 
-            // Convert sang JSON (Custom để tránh vòng lặp và lấy đủ thông tin cần thiết)
+            // Convert sang JSON
             JsonArray jsonOrders = new JsonArray();
 
             for (Order o : orders) {
-                JsonObject orderJson = new JsonObject();
-                orderJson.addProperty("orderId", o.getOrderId());
-                orderJson.addProperty("orderDate", o.getOrderDate().toString());
-                orderJson.addProperty("status", o.getStatus().toString());
-                orderJson.addProperty("shippingAddress", o.getShippingAddress());
-                orderJson.addProperty("totalAmount", o.getPayment().getAmount());
-                orderJson.addProperty("paymentMethod", o.getPayment().getMethod().toString());
+                try {
+                    JsonObject orderJson = new JsonObject();
+                    orderJson.addProperty("orderId", o.getOrderId());
+                    orderJson.addProperty("orderDate", o.getOrderDate().toString());
+                    orderJson.addProperty("status", o.getStatus().toString());
+                    orderJson.addProperty("shippingAddress", o.getShippingAddress());
+                    
+                    // Safely get payment info
+                    if (o.getPayment() != null) {
+                        orderJson.addProperty("totalAmount", o.getPayment().getAmount());
+                        orderJson.addProperty("paymentMethod", o.getPayment().getMethod().toString());
+                    } else {
+                        orderJson.addProperty("totalAmount", 0);
+                        orderJson.addProperty("paymentMethod", "UNKNOWN");
+                    }
 
-                // Items
-                JsonArray itemsJson = new JsonArray();
-                for (OrderDetail od : o.getOrderDetails()) {
-                    JsonObject item = new JsonObject();
-                    item.addProperty("productId", od.getProduct().getProductId());
-                    item.addProperty("name", od.getProduct().getName());
-                    item.addProperty("quantity", od.getQuantity());
-                    item.addProperty("price", od.getPriceAtPurchase());
-                    item.addProperty("imageUrl", od.getProduct().getImageUrl());
-                    item.addProperty("shopName", od.getProduct().getSeller().getShopName());
-                    itemsJson.add(item);
+                    // Items
+                    JsonArray itemsJson = new JsonArray();
+                    if (o.getOrderDetails() != null) {
+                        for (OrderDetail od : o.getOrderDetails()) {
+                            try {
+                                JsonObject item = new JsonObject();
+                                item.addProperty("productId", od.getProduct().getProductId());
+                                item.addProperty("name", od.getProduct().getName());
+                                item.addProperty("quantity", od.getQuantity());
+                                item.addProperty("price", od.getPriceAtPurchase());
+                                item.addProperty("imageUrl", od.getProduct().getImageUrl() != null ? od.getProduct().getImageUrl() : "");
+                                item.addProperty("shopName", od.getProduct().getSeller() != null ? od.getProduct().getSeller().getShopName() : "Unknown");
+                                itemsJson.add(item);
+                            } catch (Exception e) {
+                                // Skip this item if error
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                    orderJson.add("items", itemsJson);
+
+                    jsonOrders.add(orderJson);
+                } catch (Exception e) {
+                    // Skip this order if error
+                    e.printStackTrace();
                 }
-                orderJson.add("items", itemsJson);
-
-                jsonOrders.add(orderJson);
             }
 
-            out.print(gson.toJson(jsonOrders));
+            String jsonResponse = gson.toJson(jsonOrders);
+            
+            // Write response
+            PrintWriter out = resp.getWriter();
+            out.write(jsonResponse);
+            out.flush();
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -137,12 +166,12 @@ public class BuyerOrderServlet extends HttpServlet {
     }
 
     private void setHeaders(HttpServletResponse resp) {
+        resp.setContentType("application/json");
+        resp.setCharacterEncoding("UTF-8");
         resp.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
         resp.setHeader("Access-Control-Allow-Methods", "GET, PUT, OPTIONS");
         resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
         resp.setHeader("Access-Control-Allow-Credentials", "true");
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
     }
 
     private void sendError(HttpServletResponse resp, int code, String message) throws IOException {

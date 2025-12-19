@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useDebounce } from '../../hooks/useDebounce';
 
-function SearchBar({ onSearch }) {
+function SearchBar({ onSearch, placeholder = "Tìm kiếm rau củ, trái cây, thực phẩm..." }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
@@ -36,6 +36,8 @@ function SearchBar({ onSearch }) {
         setIsSearching(false);
     };
 
+    const searchSuggestions = ['Rau xanh', 'Trái cây', 'Sữa', 'Bánh mì', 'Thịt tươi'];
+
     return (
         <form onSubmit={handleSubmit} className="relative">
             <div className={`
@@ -53,7 +55,7 @@ function SearchBar({ onSearch }) {
                 {/* Input */}
                 <input
                     type="text"
-                    placeholder="Tìm kiếm rau củ, trái cây, thực phẩm..."
+                    placeholder={placeholder}
                     value={searchTerm}
                     onChange={handleChange}
                     onFocus={() => setIsFocused(true)}
@@ -87,12 +89,12 @@ function SearchBar({ onSearch }) {
                 </button>
             </div>
 
-            {/* Search Suggestions (optional) */}
+            {/* Search Suggestions */}
             {isFocused && !searchTerm && (
                 <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg p-4 z-10">
                     <p className="text-sm text-gray-500 mb-2">Gợi ý tìm kiếm:</p>
                     <div className="flex flex-wrap gap-2">
-                        {['Rau xanh', 'Trái cây', 'Sữa', 'Bánh mì', 'Thịt tươi'].map(tag => (
+                        {searchSuggestions.map(tag => (
                             <button
                                 key={tag}
                                 type="button"

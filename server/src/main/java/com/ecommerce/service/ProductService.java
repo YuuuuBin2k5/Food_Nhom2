@@ -7,6 +7,8 @@ import com.ecommerce.dto.ProductDTO;
 import com.ecommerce.dto.ProductFilter;
 import com.ecommerce.dto.ProductPageResponse;
 import com.ecommerce.dto.SellerDTO;
+import com.ecommerce.entity.Admin;
+import com.ecommerce.entity.NotificationType;
 import com.ecommerce.entity.Product;
 import com.ecommerce.entity.ProductStatus;
 import com.ecommerce.entity.Seller;
@@ -17,6 +19,8 @@ import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 
 public class ProductService {
+    
+    private final NotificationService notificationService = new NotificationService();
     
     private static final String BASE_JPQL = "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE 1=1";
     private static final String BASE_COUNT_JPQL = "SELECT COUNT(p) FROM Product p WHERE 1=1";
@@ -43,6 +47,36 @@ public class ProductService {
             product.setVerified(false); // Chưa được xác minh
 
             em.persist(product);
+            
+            // Flush để lấy productId
+            em.flush();
+            
+            // Gửi notification cho tất cả admin
+            System.out.println("=== [ProductService] Product created, creating notifications for admins");
+            
+            TypedQuery<Admin> adminQuery = em.createQuery("SELECT a FROM Admin a", Admin.class);
+            List<Admin> admins = adminQuery.getResultList();
+            
+            System.out.println("=== [ProductService] Found " + admins.size() + " admins");
+            
+            for (Admin admin : admins) {
+                try {
+                    System.out.println("=== [ProductService] Creating notification for admin: " + admin.getEmail());
+                    notificationService.createNotification(
+                        em,
+                        admin.getUserId(),
+                        NotificationType.NEW_PRODUCT_PENDING,
+                        "Sản phẩm mới chờ duyệt",
+                        "Sản phẩm '" + dto.getName() + "' từ seller '" + seller.getShopName() + "' chờ duyệt.",
+                        product.getProductId()
+                    );
+                    System.out.println("=== [ProductService] ✅ Notification created successfully");
+                } catch (Exception e) {
+                    System.err.println("=== [ProductService] ❌ Failed to create notification: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            
             trans.commit();
         } catch (Exception e) {
             if (trans.isActive()) trans.rollback();

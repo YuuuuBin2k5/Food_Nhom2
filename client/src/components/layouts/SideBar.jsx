@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import NotificationBell from "../common/NotificationBell";
 
 // --- ICONS (SVG) ---
 const Icons = {
@@ -152,8 +153,11 @@ export default function Sidebar() {
             </nav>
           </div>
 
-          {/* 2. RIGHT ACTIONS (Filter, Profile, Mobile Toggle) */}
+          {/* 2. RIGHT ACTIONS (Notification, Filter, Profile, Mobile Toggle) */}
           <div className="flex items-center gap-3">
+            {/* Notification Bell */}
+            {user && <NotificationBell userId={user.userId} />}
+
             {/* Filter Button - Only show on products page */}
             {isProductsPage && (
               <div className="relative" ref={filterRef}>

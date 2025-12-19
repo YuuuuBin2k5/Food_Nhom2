@@ -1,77 +1,19 @@
-import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showToast } from '../../utils/toast';
 import { formatPrice } from '../../utils/format';
-import CartItem from './CartItem';
-import LoadingSpinner from '../../components/common/LoadingSpinner';
+import CartItem from '../../components/buyer/CartItem';
+import { useCart } from '../../hooks/useCart';
 
 function ShoppingCartPage() {
     const navigate = useNavigate();
-    const [cartItems, setCartItems] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        loadCart();
-    }, []);
-
-    const loadCart = () => {
-        try {
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            setCartItems(cart);
-        } catch (error) {
-            console.error('Error loading cart:', error);
-            showToast.error('Lỗi khi tải giỏ hàng');
-        } finally {
-            setLoading(false);
-        }
-    };
+    const { cart: cartItems, total, updateQuantity, removeItem, clearCart: clearCartItems } = useCart();
 
     const handleUpdateQuantity = async (productId, newQuantity) => {
-        try {
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const index = cart.findIndex(item => item.product.productId === productId);
-            
-            if (index >= 0) {
-                if (newQuantity <= 0) {
-                    cart.splice(index, 1);
-                } else {
-                    cart[index].quantity = newQuantity;
-                }
-                localStorage.setItem('cart', JSON.stringify(cart));
-                
-                // Dispatch event
-                window.dispatchEvent(new CustomEvent('cartUpdated', {
-                    detail: { cart, count: cart.reduce((acc, item) => acc + item.quantity, 0) }
-                }));
-                
-                loadCart();
-            }
-        } catch (error) {
-            throw error;
-        }
+        updateQuantity(productId, newQuantity);
     };
 
     const handleRemoveItem = async (productId) => {
-        try {
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            const filtered = cart.filter(item => item.product.productId !== productId);
-            localStorage.setItem('cart', JSON.stringify(filtered));
-            
-            // Dispatch event
-            window.dispatchEvent(new CustomEvent('cartUpdated', {
-                detail: { cart: filtered, count: filtered.reduce((acc, item) => acc + item.quantity, 0) }
-            }));
-            
-            loadCart();
-        } catch (error) {
-            throw error;
-        }
-    };
-
-    const calculateSubtotal = () => {
-        return cartItems.reduce((total, item) => {
-            return total + (item.product.salePrice * item.quantity);
-        }, 0);
+        removeItem(productId);
     };
 
     const handleContinueShopping = () => {
@@ -80,14 +22,7 @@ function ShoppingCartPage() {
 
     const handleClearCart = () => {
         if (window.confirm('Bạn có chắc muốn xóa toàn bộ giỏ hàng?')) {
-            localStorage.removeItem('cart');
-            
-            // Dispatch event
-            window.dispatchEvent(new CustomEvent('cartUpdated', {
-                detail: { cart: [], count: 0 }
-            }));
-            
-            loadCart();
+            clearCartItems();
             showToast.success('Đã xóa giỏ hàng');
         }
     };
@@ -97,18 +32,8 @@ function ShoppingCartPage() {
             showToast.warning('Giỏ hàng trống!');
             return;
         }
-        
-        // Navigate to checkout page
         navigate('/checkout');
     };
-
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center">
-                <LoadingSpinner />
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
@@ -211,7 +136,7 @@ function ShoppingCartPage() {
                                     <div className="flex justify-between items-center">
                                         <span className="text-lg font-semibold text-[#0f172a]">Tổng cộng</span>
                                         <span className="text-2xl font-bold text-[#FF6B6B]">
-                                            {formatPrice(calculateSubtotal())}
+                                            {formatPrice(total)}
                                         </span>
                                     </div>
                                 </div>

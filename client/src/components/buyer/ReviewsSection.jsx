@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import StarRating from '../../components/common/StarRating';
+import StarRating from '../common/StarRating';
 import { showToast } from '../../utils/toast';
+import { formatDateShort } from '../../utils/format';
 
 function ReviewsSection({ productId }) {
     const [reviews, setReviews] = useState([]);
@@ -13,6 +14,7 @@ function ReviewsSection({ productId }) {
 
     useEffect(() => {
         loadReviews();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [productId]);
 
     const loadReviews = async () => {
@@ -40,6 +42,7 @@ function ReviewsSection({ productId }) {
         }
 
         try {
+            // TODO: Call API to submit review
             showToast.success('Đã thêm đánh giá thành công!');
             setNewReview({ rating: 5, comment: '' });
             setShowAddReview(false);
@@ -53,10 +56,6 @@ function ReviewsSection({ productId }) {
         if (reviews.length === 0) return 0;
         const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
         return (sum / reviews.length).toFixed(1);
-    };
-
-    const formatDate = (date) => {
-        return new Date(date).toLocaleDateString('vi-VN');
     };
 
     if (loading) {
@@ -86,10 +85,11 @@ function ReviewsSection({ productId }) {
                 </div>
                 <button
                     onClick={() => setShowAddReview(!showAddReview)}
-                    className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${showAddReview
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                        showAddReview
                             ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             : 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white hover:from-blue-600 hover:to-indigo-600 shadow-lg hover:shadow-xl'
-                        }`}
+                    }`}
                 >
                     {showAddReview ? (
                         <>
@@ -159,7 +159,7 @@ function ReviewsSection({ productId }) {
                                     </div>
                                     <div>
                                         <p className="font-semibold text-gray-800">{review.buyer?.fullName || 'Người dùng'}</p>
-                                        <p className="text-sm text-gray-500">{formatDate(review.reviewDate)}</p>
+                                        <p className="text-sm text-gray-500">{formatDateShort(review.reviewDate)}</p>
                                     </div>
                                 </div>
                                 <StarRating rating={review.rating} size="small" />

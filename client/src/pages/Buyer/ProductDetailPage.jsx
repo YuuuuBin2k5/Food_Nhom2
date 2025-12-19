@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../../services/api';
 import { showToast } from '../../utils/toast';
+import { formatPrice, calculateDiscount, getExpiryStatus } from '../../utils/format';
+import { getImageUrl } from '../../utils/imageHelper';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
-import ReviewsSection from './ReviewsSection';
-import RecommendedProducts from './RecommendedProducts';
+import ReviewsSection from '../../components/buyer/ReviewsSection';
+import RecommendedProducts from '../../components/buyer/RecommendedProducts';
 import CartIcon from '../../components/common/CartIcon';
-import { formatPrice } from '../../utils/format';
+import { getProductById } from '../../services/productService';
+import { addToCart } from '../../services/cartService';
 
 function ProductDetailPage() {
     const { productId } = useParams();
@@ -23,8 +25,8 @@ function ProductDetailPage() {
 
     const loadProduct = async () => {
         try {
-            const response = await api.get(`/products/${productId}`);
-            setProduct(response.data);
+            const data = await getProductById(productId);
+            setProduct(data);
         } catch (error) {
             console.error('Error loading product:', error);
             showToast.error('Không thể tải thông tin sản phẩm');
@@ -38,26 +40,7 @@ function ProductDetailPage() {
 
         setAddingToCart(true);
         try {
-            // Get cart from localStorage
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            
-            // Check if product already in cart
-            const existingIndex = cart.findIndex(item => item.product.productId === product.productId);
-            
-            if (existingIndex >= 0) {
-                cart[existingIndex].quantity += quantity;
-            } else {
-                cart.push({
-                    product: product,
-                    quantity: quantity,
-                    addedAt: new Date().toISOString()
-                });
-            }
-            
-            localStorage.setItem('cart', JSON.stringify(cart));
-            window.dispatchEvent(new CustomEvent('cartUpdated', {
-                detail: { cart, count: cart.reduce((acc, item) => acc + item.quantity, 0) }
-            }));
+            addToCart(product, quantity);
 
             if (isBuyNow) {
                 navigate('/cart');
@@ -79,32 +62,10 @@ function ProductDetailPage() {
         }
     };
 
-    const calculateDiscount = () => {
-        if (product?.originalPrice && product?.salePrice) {
-            return Math.round(
-                ((product.originalPrice - product.salePrice) / product.originalPrice) * 100
-            );
-        }
-        return 0;
-    };
-
-    const getExpiryStatus = () => {
-        if (!product?.expirationDate) return null;
-        const days = Math.ceil((new Date(product.expirationDate) - new Date()) / (1000 * 60 * 60 * 24));
-        if (days <= 1) return { text: 'Hết hạn hôm nay', color: 'bg-red-100 text-red-700' };
-        if (days <= 3) return { text: `Còn ${days} ngày`, color: 'bg-orange-100 text-orange-700' };
-        if (days <= 7) return { text: `Còn ${days} ngày`, color: 'bg-amber-100 text-amber-700' };
-        return { text: `HSD: ${new Date(product.expirationDate).toLocaleDateString('vi-VN')}`, color: 'bg-blue-50 text-blue-700' };
-    };
-
-    const getImageUrl = () => {
-        if (product?.imageUrl && !product.imageUrl.includes('placeholder')) {
-            return product.imageUrl;
-        }
-        const colors = ['3B82F6', '6366F1', '8B5CF6', '06B6D4', '10B981', 'F59E0B'];
-        const randomColor = colors[(product?.productId || 0) % colors.length];
-        return `https://placehold.co/600x600/${randomColor}/FFFFFF?text=${encodeURIComponent(product?.name || 'Food')}`;
-    };
+    // Use utility functions
+    const discount = calculateDiscount(product?.originalPrice, product?.salePrice);
+    const expiryStatus = getExpiryStatus(product?.expirationDate);
+    const imageUrl = getImageUrl(product?.imageUrl, product?.productId, product?.name);
 
     if (loading) {
         return (
@@ -129,8 +90,7 @@ function ProductDetailPage() {
         );
     }
 
-    const discount = calculateDiscount();
-    const expiryStatus = getExpiryStatus();
+
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
@@ -157,7 +117,7 @@ function ProductDetailPage() {
                         <div className="p-8 bg-gray-50 flex flex-col items-center justify-center">
                             <div className="relative aspect-square w-full max-w-lg mx-auto rounded-2xl overflow-hidden shadow-lg bg-white">
                                 <img
-                                    src={getImageUrl()}
+                                    src={imageUrl}
                                     alt={product.name}
                                     className="w-full h-full object-cover"
                                 />

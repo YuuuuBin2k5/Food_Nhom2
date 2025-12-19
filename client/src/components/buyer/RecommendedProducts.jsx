@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import ProductCard from './ProductCard';
-import api from '../../services/api';
+import { getRecommendedProducts } from '../../services/productService';
 
 function RecommendedProducts({ currentProductId }) {
     const [products, setProducts] = useState([]);
@@ -8,19 +8,13 @@ function RecommendedProducts({ currentProductId }) {
 
     useEffect(() => {
         loadRecommendedProducts();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentProductId]);
 
     const loadRecommendedProducts = async () => {
         try {
-            // TODO: Call API to get recommended products
-            // const response = await api.get(`/products/recommended/${currentProductId}`);
-            // setProducts(response.data);
-            
-            // For now, get random products from main list
-            const response = await api.get('/products?page=0&size=4&sortBy=newest');
-            const allProducts = response.data?.data || [];
-            const filtered = allProducts.filter(p => p.productId !== parseInt(currentProductId));
-            setProducts(filtered.slice(0, 4));
+            const data = await getRecommendedProducts(currentProductId, 4);
+            setProducts(data.slice(0, 4));
         } catch (error) {
             console.error('Error loading recommended products:', error);
             setProducts([]);

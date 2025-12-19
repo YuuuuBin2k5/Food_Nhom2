@@ -15,7 +15,7 @@ import NotFound from "./pages/NotFound";
 import CheckoutPage from "./pages/CheckoutPage";
 import { CartProvider } from "./context/CartContext";
 import HomePage from "./pages/HomePage";
-import BuyerHomePage from "./pages/Buyer/homePage";
+import ProductListPage from "./pages/Buyer/ProductListPage";
 import ProductDetailPage from "./pages/Buyer/ProductDetailPage";
 import ShoppingCartPage from "./pages/Buyer/ShoppingCartPage";
 import OrderSuccessPage from "./pages/Buyer/OrderSuccessPage";
@@ -42,7 +42,7 @@ function App() {
               <Route element={<MainLayout />}>
                 {/* Buyer Routes */}
                 <Route path="/" element={<HomePage />} />
-                <Route path="/products" element={<BuyerHomePage />} />
+                <Route path="/products" element={<ProductListPage />} />
                 <Route path="/products/:productId" element={<ProductDetailPage />} />
                 <Route path="/cart" element={<ShoppingCartPage />} />
                 <Route path="/order-success" element={<OrderSuccessPage />} />

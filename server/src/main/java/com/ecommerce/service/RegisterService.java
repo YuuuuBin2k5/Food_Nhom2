@@ -7,8 +7,11 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 import java.util.Date;
+import java.util.List;
 
 public class RegisterService {
+    
+    private final NotificationService notificationService = new NotificationService();
 
     public void registerUser(String fullName, String email, String password, String phone, String role, String shopName) throws Exception {
         
@@ -77,6 +80,39 @@ public class RegisterService {
 
             trans.begin();
             em.persist(newUser);
+            
+            // Flush để lấy userId
+            em.flush();
+            
+            // Nếu là seller mới đăng ký, gửi notification cho tất cả admin
+            if (enumRole == Role.SELLER) {
+                System.out.println("=== [RegisterService] Seller registered, creating notifications for admins");
+                
+                // Lấy danh sách admin
+                TypedQuery<Admin> adminQuery = em.createQuery("SELECT a FROM Admin a", Admin.class);
+                List<Admin> admins = adminQuery.getResultList();
+                
+                System.out.println("=== [RegisterService] Found " + admins.size() + " admins");
+                
+                for (Admin admin : admins) {
+                    try {
+                        System.out.println("=== [RegisterService] Creating notification for admin: " + admin.getEmail());
+                        notificationService.createNotification(
+                            em,
+                            admin.getUserId(),
+                            NotificationType.NEW_SELLER_REGISTRATION,
+                            "Seller mới đăng ký",
+                            "Seller '" + shopName + "' vừa đăng ký và chờ duyệt.",
+                            null
+                        );
+                        System.out.println("=== [RegisterService] ✅ Notification created successfully");
+                    } catch (Exception e) {
+                        System.err.println("=== [RegisterService] ❌ Failed to create notification: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }
+            
             trans.commit();
 
         } catch (Exception e) {

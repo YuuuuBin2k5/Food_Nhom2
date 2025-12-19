@@ -1,6 +1,9 @@
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 import { showToast } from '../../utils/toast';
+import { formatPrice, calculateDiscount, getExpiryStatus } from '../../utils/format';
+import { getImageUrl } from '../../utils/imageHelper';
+import { addToCart } from '../../services/cartService';
 
 function ProductCard({ product }) {
     const navigate = useNavigate();
@@ -17,30 +20,7 @@ function ProductCard({ product }) {
 
         setIsAdding(true);
         try {
-            // Get cart from localStorage
-            const cart = JSON.parse(localStorage.getItem('cart') || '[]');
-            
-            // Check if product already in cart
-            const existingIndex = cart.findIndex(item => item.product.productId === product.productId);
-            
-            if (existingIndex >= 0) {
-                cart[existingIndex].quantity += 1;
-            } else {
-                cart.push({
-                    product: product,
-                    quantity: 1,
-                    addedAt: new Date().toISOString()
-                });
-            }
-            
-            // Save to localStorage
-            localStorage.setItem('cart', JSON.stringify(cart));
-            
-            // Dispatch event for cart update
-            window.dispatchEvent(new CustomEvent('cartUpdated', {
-                detail: { cart, count: cart.reduce((acc, item) => acc + item.quantity, 0) }
-            }));
-            
+            addToCart(product, 1);
             showToast.success('Đã thêm vào danh sách giải cứu!');
         } catch (error) {
             showToast.error(error.message || 'Không thể giải cứu món này');
@@ -49,44 +29,9 @@ function ProductCard({ product }) {
         }
     };
 
-    const formatPrice = (price) => {
-        return new Intl.NumberFormat('vi-VN', {
-            style: 'currency',
-            currency: 'VND'
-        }).format(price);
-    };
-
-    const calculateDiscount = () => {
-        if (product.originalPrice && product.salePrice) {
-            return Math.round(
-                ((product.originalPrice - product.salePrice) / product.originalPrice) * 100
-            );
-        }
-        return 0;
-    };
-
-    const getExpiryStatus = () => {
-        if (!product.expirationDate) return null;
-        const days = Math.ceil((new Date(product.expirationDate) - new Date()) / (1000 * 60 * 60 * 24));
-        if (days <= 1) return { text: 'Hết hạn hôm nay', color: 'bg-red-100 text-red-700' };
-        if (days <= 3) return { text: `Còn ${days} ngày`, color: 'bg-orange-100 text-orange-700' };
-        if (days <= 7) return { text: `Còn ${days} ngày`, color: 'bg-amber-100 text-amber-700' };
-        return { text: `HSD: ${new Date(product.expirationDate).toLocaleDateString('vi-VN')}`, color: 'bg-gray-100 text-gray-600' };
-    };
-
-    // Placeholder image nếu không có ảnh
-    const getImageUrl = () => {
-        if (product.imageUrl && !product.imageUrl.includes('placeholder')) {
-            return product.imageUrl;
-        }
-        // Sử dụng placehold.co thay vì via.placeholder.com
-        const colors = ['2ECC71', '3498DB', 'E74C3C', 'F39C12', '9B59B6', '1ABC9C'];
-        const randomColor = colors[product.productId % colors.length];
-        return `https://placehold.co/400x400/${randomColor}/FFFFFF?text=${encodeURIComponent(product.name?.substring(0, 10) || 'Food')}`;
-    };
-
-    const expiryStatus = getExpiryStatus();
-    const discount = calculateDiscount();
+    const expiryStatus = getExpiryStatus(product.expirationDate);
+    const discount = calculateDiscount(product.originalPrice, product.salePrice);
+    const imageUrl = getImageUrl(product.imageUrl, product.productId, product.name);
 
     return (
         <div
@@ -98,28 +43,27 @@ function ProductCard({ product }) {
                        transform animate-fadeIn"
             onClick={handleClick}
         >
-            {/* ===== IMAGE SECTION ===== */}
+            {/* IMAGE SECTION */}
             <div className="relative w-full aspect-square overflow-hidden bg-gradient-to-br from-gray-100 to-gray-200">
-                {/* Loading skeleton */}
                 {!isImageLoaded && (
                     <div className="absolute inset-0 bg-gradient-to-r from-gray-100 via-gray-50 to-gray-100 animate-pulse" />
                 )}
 
                 <img
-                    src={getImageUrl()}
+                    src={imageUrl}
                     alt={product.name}
-                    className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-125 ${isImageLoaded ? 'opacity-100' : 'opacity-0'
-                        }`}
+                    className={`w-full h-full object-cover transition-all duration-700 group-hover:scale-125 ${
+                        isImageLoaded ? 'opacity-100' : 'opacity-0'
+                    }`}
                     onLoad={() => setIsImageLoaded(true)}
                     onError={(e) => {
-                        // Fallback to solid color background if image fails
                         e.target.style.display = 'none';
                         e.target.parentElement.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
                         setIsImageLoaded(true);
                     }}
                 />
 
-                {/* Discount Badge - animated */}
+                {/* Discount Badge */}
                 {discount > 0 && (
                     <div className="absolute top-3 left-3 z-10 animate-scaleIn">
                         <div className="bg-gradient-to-r from-orange-500 via-red-500 to-rose-500 text-white 
@@ -140,7 +84,7 @@ function ProductCard({ product }) {
                     </div>
                 )}
 
-                {/* Quick Add Button on Hover - animated entrance */}
+                {/* Quick Add Button */}
                 {product.quantity > 0 && (
                     <div className="absolute bottom-0 left-0 right-0 p-4 
                                     opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 
@@ -148,10 +92,11 @@ function ProductCard({ product }) {
                         <button
                             onClick={handleAddToCart}
                             disabled={isAdding}
-                            className={`w-full py-3 bg-gradient-to-r ${isAdding ? 'from-gray-400 to-gray-500' : 'from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] hover:opacity-90'}
-                                       text-white font-semibold rounded-xl shadow-lg hover:shadow-xl
-                                       transition-all duration-300 flex items-center justify-center gap-2
-                                       active:scale-95`}
+                            className={`w-full py-3 bg-gradient-to-r ${
+                                isAdding ? 'from-gray-400 to-gray-500' : 'from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] hover:opacity-90'
+                            } text-white font-semibold rounded-xl shadow-lg hover:shadow-xl
+                               transition-all duration-300 flex items-center justify-center gap-2
+                               active:scale-95`}
                         >
                             {isAdding ? (
                                 <span className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full mr-2"></span>
@@ -166,10 +111,9 @@ function ProductCard({ product }) {
                 )}
             </div>
 
-            {/* ===== CONTENT SECTION ===== */}
+            {/* CONTENT SECTION */}
             <div className="p-5 flex flex-col gap-3 flex-1">
-
-                {/* Expiry Status Badge - animated */}
+                {/* Expiry Status Badge */}
                 {expiryStatus && (
                     <div className="self-start animate-slideInLeft">
                         <span className={`inline-block px-3 py-1 rounded-full text-xs font-medium transition-all ${expiryStatus.color}`}>
@@ -185,7 +129,7 @@ function ProductCard({ product }) {
                     {product.name}
                 </h3>
 
-                {/* Shop Name with icon */}
+                {/* Shop Name */}
                 <p className="text-sm text-gray-500 flex items-center gap-1.5 hover:text-[#FF8E53] transition-colors">
                     <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
@@ -193,7 +137,7 @@ function ProductCard({ product }) {
                     <span className="truncate">{product.seller?.shopName || 'Cửa hàng'}</span>
                 </p>
 
-                {/* ===== PRICE SECTION ===== */}
+                {/* PRICE SECTION */}
                 <div className="mt-auto pt-3 border-t border-gray-100">
                     <div className="flex items-baseline gap-2 flex-wrap">
                         <span className="text-xl font-bold bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] bg-clip-text text-transparent">

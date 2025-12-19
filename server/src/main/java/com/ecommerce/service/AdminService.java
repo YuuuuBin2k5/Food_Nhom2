@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class AdminService {
+    
+    private final NotificationService notificationService = new NotificationService();
 
     // ==================== USER MANAGEMENT ====================
     
@@ -234,6 +236,20 @@ public class AdminService {
             
             seller.setVerificationStatus(SellerStatus.APPROVED);
             em.merge(seller);
+            
+            // Flush để đảm bảo seller được update
+            em.flush();
+            
+            // Gửi notification cho seller
+            notificationService.createNotification(
+                em,
+                sellerId,
+                NotificationType.SELLER_APPROVED,
+                "Tài khoản đã được duyệt",
+                "Chúc mừng! Tài khoản seller của bạn đã được phê duyệt. Bạn có thể bắt đầu bán hàng.",
+                null
+            );
+            
             trans.commit();
         } catch (Exception e) {
             if (trans.isActive()) trans.rollback();
@@ -256,6 +272,20 @@ public class AdminService {
             
             seller.setVerificationStatus(SellerStatus.REJECTED);
             em.merge(seller);
+            
+            // Flush để đảm bảo seller được update
+            em.flush();
+            
+            // Gửi notification cho seller
+            notificationService.createNotification(
+                em,
+                sellerId,
+                NotificationType.SELLER_REJECTED,
+                "Tài khoản bị từ chối",
+                "Tài khoản seller của bạn bị từ chối. Vui lòng liên hệ admin để biết thêm chi tiết.",
+                null
+            );
+            
             trans.commit();
         } catch (Exception e) {
             if (trans.isActive()) trans.rollback();
@@ -336,6 +366,21 @@ public class AdminService {
             product.setStatus(ProductStatus.ACTIVE);
             product.setVerified(true);
             em.merge(product);
+            
+            // Flush để đảm bảo product được update
+            em.flush();
+            
+            // Gửi notification cho seller
+            String sellerId = product.getSeller().getUserId();
+            notificationService.createNotification(
+                em,
+                sellerId,
+                NotificationType.PRODUCT_APPROVED,
+                "Sản phẩm đã được duyệt",
+                "Sản phẩm '" + product.getName() + "' đã được admin phê duyệt và có thể bán.",
+                productId
+            );
+            
             trans.commit();
         } catch (Exception e) {
             if (trans.isActive()) trans.rollback();
@@ -358,6 +403,21 @@ public class AdminService {
             
             product.setStatus(ProductStatus.REJECTED);
             em.merge(product);
+            
+            // Flush để đảm bảo product được update
+            em.flush();
+            
+            // Gửi notification cho seller
+            String sellerId = product.getSeller().getUserId();
+            notificationService.createNotification(
+                em,
+                sellerId,
+                NotificationType.PRODUCT_REJECTED,
+                "Sản phẩm bị từ chối",
+                "Sản phẩm '" + product.getName() + "' bị từ chối. Vui lòng kiểm tra lại thông tin sản phẩm.",
+                productId
+            );
+            
             trans.commit();
         } catch (Exception e) {
             if (trans.isActive()) trans.rollback();

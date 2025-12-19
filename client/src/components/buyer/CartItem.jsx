@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { showToast } from '../../utils/toast';
-import { formatPrice } from '../../utils/format';
+import { formatPrice, formatDateShort, calculateDiscount } from '../../utils/format';
+import { getImageUrl } from '../../utils/imageHelper';
 
 function CartItem({ item, onUpdateQuantity, onRemove }) {
     const { product, quantity } = item;
@@ -36,17 +37,16 @@ function CartItem({ item, onUpdateQuantity, onRemove }) {
         }
     };
 
-    const discount = product.originalPrice > product.salePrice
-        ? Math.round(((product.originalPrice - product.salePrice) / product.originalPrice) * 100)
-        : 0;
+    const discount = calculateDiscount(product.originalPrice, product.salePrice);
+    const imageUrl = getImageUrl(product.imageUrl, product.productId, product.name);
 
     return (
         <div className={`bg-white rounded-2xl shadow-sm hover:shadow-lg border border-gray-100 hover:border-emerald-200 p-4 transition-all duration-300 ${isUpdating ? 'opacity-60' : ''}`}>
             <div className="flex gap-4">
-                {/* Product Image - với hover effect */}
+                {/* Product Image */}
                 <div className="relative w-24 h-24 flex-shrink-0 rounded-xl overflow-hidden group">
                     <img
-                        src={product.imageUrl || '/placeholder.png'}
+                        src={imageUrl}
                         alt={product.name}
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
                     />
@@ -72,12 +72,12 @@ function CartItem({ item, onUpdateQuantity, onRemove }) {
                             </p>
                             {product.expirationDate && (
                                 <p className="text-xs text-amber-600 mt-1 font-medium">
-                                    ⏰ HSD: {new Date(product.expirationDate).toLocaleDateString('vi-VN')}
+                                    ⏰ HSD: {formatDateShort(product.expirationDate)}
                                 </p>
                             )}
                         </div>
 
-                        {/* Remove Button - với animation */}
+                        {/* Remove Button */}
                         <button
                             onClick={handleRemove}
                             disabled={isUpdating}
@@ -91,7 +91,7 @@ function CartItem({ item, onUpdateQuantity, onRemove }) {
 
                     {/* Price & Quantity */}
                     <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                        {/* Quantity Controls - improved design */}
+                        {/* Quantity Controls */}
                         <div className="flex items-center gap-1 bg-gray-100 rounded-xl p-1">
                             <button
                                 onClick={() => handleQuantityChange(-1)}
@@ -116,7 +116,7 @@ function CartItem({ item, onUpdateQuantity, onRemove }) {
                             </button>
                         </div>
 
-                        {/* Price - highlighted */}
+                        {/* Price */}
                         <div className="text-right">
                             <div className="text-lg font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
                                 {formatPrice(product.salePrice * quantity)}
