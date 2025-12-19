@@ -4,9 +4,6 @@ import com.ecommerce.entity.Seller;
 import com.ecommerce.entity.SellerStatus;
 import java.util.Date;
 
-/**
- * DTO for Seller to avoid LazyInitializationException when serializing to JSON
- */
 public class SellerDTO {
     private String userId;
     private String fullName;
@@ -24,7 +21,6 @@ public class SellerDTO {
     public SellerDTO() {
     }
 
-    // Constructor from Seller entity
     public SellerDTO(Seller seller) {
         this.userId = seller.getUserId();
         this.fullName = seller.getFullName();
@@ -40,7 +36,6 @@ public class SellerDTO {
         this.verificationStatus = seller.getVerificationStatus();
     }
 
-    // Getters and Setters
     public String getUserId() {
         return userId;
     }

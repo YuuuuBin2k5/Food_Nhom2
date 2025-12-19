@@ -16,6 +16,7 @@ public class ProductFilter {
     private String sellerId;
     private Boolean hasDiscount;
     private Boolean inStock;
+    private String category;
     
     // Getters and Setters
     public String getSearch() {
@@ -88,5 +89,13 @@ public class ProductFilter {
 
     public void setInStock(Boolean inStock) {
         this.inStock = inStock;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

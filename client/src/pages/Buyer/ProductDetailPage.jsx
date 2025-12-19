@@ -123,7 +123,7 @@ function ProductDetailPage() {
                                 />
                                 {discount > 0 && (
                                     <div className="absolute top-4 left-4">
-                                        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-full text-lg font-bold shadow-lg">
+                                        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded text-lg font-bold shadow-lg">
                                             -{discount}%
                                         </div>
                                     </div>
@@ -135,7 +135,7 @@ function ProductDetailPage() {
                         <div className="p-8 md:pr-12 flex flex-col">
                             {/* Breadcrumb & Shop Info */}
                             <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-                                <span className="bg-orange-100 text-[#FF6B6B] px-3 py-1 rounded-full font-medium">
+                                <span className="bg-orange-100 text-[#FF6B6B] px-3 py-1 rounded font-medium">
                                     {product.category || 'Thực phẩm'}
                                 </span>
                                 <span>•</span>
@@ -177,11 +177,11 @@ function ProductDetailPage() {
                                 </div>
                                 <div className="flex items-center gap-4 text-sm mt-2">
                                     {expiryStatus && (
-                                        <span className={`px-3 py-1 rounded-full font-medium ${expiryStatus.color}`}>
+                                        <span className={`px-3 py-1 rounded font-medium ${expiryStatus.color}`}>
                                             ⏰ {expiryStatus.text}
                                         </span>
                                     )}
-                                    <span className={`px-3 py-1 rounded-full font-medium ${product.quantity > 0 ? 'bg-orange-100 text-[#FF8E53]' : 'bg-red-100 text-red-700'
+                                    <span className={`px-3 py-1 rounded font-medium ${product.quantity > 0 ? 'bg-orange-100 text-[#FF8E53]' : 'bg-red-100 text-red-700'
                                         }`}>
                                         {product.quantity > 0 ? `Còn ${product.quantity} sản phẩm` : 'Hết hàng'}
                                     </span>

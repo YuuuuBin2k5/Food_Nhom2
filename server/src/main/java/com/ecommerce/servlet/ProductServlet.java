@@ -14,7 +14,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import static java.lang.System.out;
 
 @WebServlet("/api/products/*")
 public class ProductServlet extends HttpServlet {
@@ -32,11 +31,9 @@ public class ProductServlet extends HttpServlet {
         String pathInfo = request.getPathInfo();
         
         if (pathInfo != null && pathInfo.length() > 1) {
-            // GET /api/products/{id}
             String productId = pathInfo.substring(1);
             getProductById(productId, response);
         } else {
-            // GET /api/products (list with filters)
             getProducts(request, response);
         }
     }
@@ -48,7 +45,6 @@ public class ProductServlet extends HttpServlet {
         response.setCharacterEncoding("UTF-8");
         
         try (PrintWriter out = response.getWriter()) {
-            // Get query parameters
             String search = request.getParameter("search");
             String minPriceStr = request.getParameter("minPrice");
             String maxPriceStr = request.getParameter("maxPrice");
@@ -59,7 +55,6 @@ public class ProductServlet extends HttpServlet {
             String hasDiscountStr = request.getParameter("hasDiscount");
             String inStockStr = request.getParameter("inStock");
             
-            // Parse parameters
             Double minPrice = minPriceStr != null ? Double.parseDouble(minPriceStr) : null;
             Double maxPrice = maxPriceStr != null ? Double.parseDouble(maxPriceStr) : null;
             int page = pageStr != null ? Integer.parseInt(pageStr) : 0;
@@ -67,7 +62,6 @@ public class ProductServlet extends HttpServlet {
             Boolean hasDiscount = hasDiscountStr != null ? Boolean.parseBoolean(hasDiscountStr) : null;
             Boolean inStock = inStockStr != null ? Boolean.parseBoolean(inStockStr) : null;
             
-            // Create filter object
             ProductFilter filter = new ProductFilter();
             filter.setSearch(search);
             filter.setMinPrice(minPrice);
@@ -79,10 +73,8 @@ public class ProductServlet extends HttpServlet {
             filter.setHasDiscount(hasDiscount);
             filter.setInStock(inStock);
             
-            // Get products
             ProductPageResponse pageResponse = productService.getProducts(filter);
             
-            // Return response
             response.setStatus(HttpServletResponse.SC_OK);
             out.print(gson.toJson(pageResponse));
             
@@ -106,7 +98,6 @@ public class ProductServlet extends HttpServlet {
             Long id = Long.parseLong(productId);
             ProductDTO product = productService.getProductById(id);
             
-            // Return direct product object (frontend expects this format)
             response.setStatus(HttpServletResponse.SC_OK);
             out.print(gson.toJson(product));
             
@@ -115,13 +106,13 @@ public class ProductServlet extends HttpServlet {
             JsonObject error = new JsonObject();
             error.addProperty("success", false);
             error.addProperty("message", "Invalid product ID");
-            out.print(gson.toJson(error));
+            response.getWriter().print(gson.toJson(error));
         } catch (Exception e) {
             response.setStatus(HttpServletResponse.SC_NOT_FOUND);
             JsonObject error = new JsonObject();
             error.addProperty("success", false);
             error.addProperty("message", e.getMessage());
-            out.print(gson.toJson(error));
+            response.getWriter().print(gson.toJson(error));
         }
     }
     

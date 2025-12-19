@@ -158,9 +158,9 @@ export default function Sidebar() {
             {/* Notification Bell */}
             {user && <NotificationBell userId={user.userId} />}
 
-            {/* Filter Button - Only show on products page */}
+            {/* Filter Button - Only show on products page and mobile/tablet */}
             {isProductsPage && (
-              <div className="relative" ref={filterRef}>
+              <div className="relative lg:hidden" ref={filterRef}>
                 <button
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
                   className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl transition-all"

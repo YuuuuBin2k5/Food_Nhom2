@@ -11,6 +11,9 @@ export const useProduct = (initialFilters = {}) => {
         minPrice: 0,
         maxPrice: 1000000,
         sortBy: 'newest',
+        sellerId: '',
+        hasDiscount: false,
+        inStock: false,
         page: 0,
         size: 12,
         ...initialFilters
@@ -30,6 +33,9 @@ export const useProduct = (initialFilters = {}) => {
         filters.minPrice,
         filters.maxPrice,
         filters.sortBy,
+        filters.sellerId,
+        filters.hasDiscount,
+        filters.inStock,
         filters.page
     ]);
 
@@ -69,6 +75,9 @@ export const useProduct = (initialFilters = {}) => {
             minPrice: 0,
             maxPrice: 1000000,
             sortBy: 'newest',
+            sellerId: '',
+            hasDiscount: false,
+            inStock: false,
             page: 0,
             size: 12
         });
