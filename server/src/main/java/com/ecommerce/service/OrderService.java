@@ -8,9 +8,13 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class OrderService {
+    
+    private final NotificationService notificationService = new NotificationService();
     
     // Tạo đơn hàng mới (Checkout)
     public String placeOrder(CheckoutRequest request) throws Exception {
@@ -75,9 +79,49 @@ public class OrderService {
             // 5. Lưu Order (cascade sẽ tự động lưu OrderDetail và Payment)
             em.persist(order);
             
+            // 6. Thu thập thông tin seller TRƯỚC KHI commit (tránh LazyInitializationException)
+            Set<String> sellerIds = new HashSet<>();
+            for (OrderDetail detail : order.getOrderDetails()) {
+                String sellerId = detail.getProduct().getSeller().getUserId();
+                sellerIds.add(sellerId);
+            }
+            String buyerName = buyer.getFullName();
+            Long orderId = order.getOrderId();
+            
             em.getTransaction().commit();
             
-            return order.getOrderId().toString();
+            // 7. Gửi thông báo cho các seller (SAU KHI commit thành công)
+            for (String sellerId : sellerIds) {
+                try {
+                    // Create new EntityManager for notification (after main transaction committed)
+                    EntityManager notifEm = DBUtil.getEmFactory().createEntityManager();
+                    try {
+                        notifEm.getTransaction().begin();
+                        notificationService.createNotification(
+                            notifEm,
+                            sellerId,
+                            NotificationType.NEW_ORDER,
+                            "Đơn hàng mới #" + orderId,
+                            "Bạn có đơn hàng mới từ " + buyerName,
+                            orderId
+                        );
+                        notifEm.getTransaction().commit();
+                    } catch (Exception e) {
+                        if (notifEm.getTransaction().isActive()) {
+                            notifEm.getTransaction().rollback();
+                        }
+                        throw e;
+                    } finally {
+                        notifEm.close();
+                    }
+                } catch (Exception e) {
+                    // Log error nhưng không throw để không ảnh hưởng đến order
+                    System.err.println("Failed to send notification to seller " + sellerId + ": " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+            
+            return orderId.toString();
             
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -170,10 +214,26 @@ public class OrderService {
                 throw new Exception("Order not found: " + orderId);
             }
             
+            OrderStatus oldStatus = order.getStatus();
             order.setStatus(newStatus);
             em.merge(order);
             
             em.getTransaction().commit();
+            
+            // Gửi thông báo cho buyer khi trạng thái thay đổi
+            String buyerId = order.getBuyer().getUserId();
+            String statusMessage = getStatusMessage(newStatus);
+            NotificationType notificationType = getNotificationTypeForStatus(newStatus);
+            
+            if (notificationType != null) {
+                notificationService.createNotification(
+                    buyerId,
+                    notificationType,
+                    "Cập nhật đơn hàng #" + orderId,
+                    statusMessage,
+                    orderId
+                );
+            }
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
@@ -182,6 +242,28 @@ public class OrderService {
         } finally {
             em.close();
         }
+    }
+    
+    // Helper method để lấy message theo status
+    private String getStatusMessage(OrderStatus status) {
+        return switch (status) {
+            case CONFIRMED -> "Đơn hàng của bạn đã được xác nhận";
+            case SHIPPING -> "Đơn hàng của bạn đang được giao";
+            case DELIVERED -> "Đơn hàng của bạn đã được giao thành công";
+            case CANCELLED -> "Đơn hàng của bạn đã bị hủy";
+            default -> "Trạng thái đơn hàng đã được cập nhật";
+        };
+    }
+    
+    // Helper method để lấy notification type theo status
+    private NotificationType getNotificationTypeForStatus(OrderStatus status) {
+        return switch (status) {
+            case CONFIRMED -> NotificationType.ORDER_CONFIRMED;
+            case SHIPPING -> NotificationType.ORDER_SHIPPING;
+            case DELIVERED -> NotificationType.ORDER_DELIVERED;
+            case CANCELLED -> NotificationType.ORDER_CANCELLED;
+            default -> null;
+        };
     }
 
     // Gán shipper cho đơn hàng
@@ -204,6 +286,15 @@ public class OrderService {
             em.merge(order);
             
             em.getTransaction().commit();
+            
+            // Gửi thông báo cho shipper
+            notificationService.createNotification(
+                shipper.getUserId(),
+                NotificationType.NEW_DELIVERY,
+                "Đơn hàng mới cần giao #" + orderId,
+                "Bạn được giao nhiệm vụ giao đơn hàng mới",
+                orderId
+            );
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();

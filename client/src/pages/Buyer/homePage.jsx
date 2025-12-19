@@ -120,7 +120,7 @@ function HomePage() {
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50">
 
             {/* Hero Banner */}
-            <div className="relative bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] py-12 overflow-hidden">
+            <div className="relative bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] py-12 overflow-visible">
                 {/* Decorative Elements */}
                 <div className="absolute inset-0 opacity-10">
                     <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl"></div>
@@ -202,27 +202,6 @@ function HomePage() {
                 </div>
             </div>
 
-            {/* Category Quick Filters */}
-            <div className="bg-white border-b border-gray-100 sticky top-16 z-30 shadow-sm">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-                    <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-2">
-                        <span className="text-sm font-semibold text-[#334155] whitespace-nowrap">Danh mục:</span>
-                        {CATEGORY_FILTERS.map((cat) => (
-                            <button
-                                key={cat.id}
-                                onClick={() => handleQuickFilter('category', cat.value)}
-                                className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
-                                    filters.category === cat.value
-                                        ? 'bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] text-white shadow-md scale-105'
-                                        : 'bg-gray-100 text-[#334155] hover:bg-gray-200 hover:scale-102'
-                                }`}
-                            >
-                                {cat.label}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
 
             {/* Main Content */}
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

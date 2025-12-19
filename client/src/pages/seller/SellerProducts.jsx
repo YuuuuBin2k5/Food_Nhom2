@@ -8,6 +8,7 @@ const SellerProducts = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isProductModalOpen, setIsProductModalOpen] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
     const [productForm, setProductForm] = useState({
         name: "",
@@ -16,8 +17,21 @@ const SellerProducts = () => {
         salePrice: 0,
         quantity: 1,
         expirationDate: "",
+        category: "",
+        imageUrl: "",
         status: "PENDING_APPROVAL",
     });
+
+    const CATEGORIES = [
+        "Cơm",
+        "Bánh mì",
+        "Đồ uống",
+        "Trái cây",
+        "Rau củ",
+        "Thịt",
+        "Tráng miệng",
+        "Khác"
+    ];
 
     useEffect(() => {
         loadProducts();
@@ -64,6 +78,8 @@ const SellerProducts = () => {
             salePrice: 0,
             quantity: 1,
             expirationDate: "",
+            category: "",
+            imageUrl: "",
             status: "PENDING_APPROVAL",
         });
         setIsProductModalOpen(true);
@@ -78,6 +94,8 @@ const SellerProducts = () => {
             salePrice: product.salePrice,
             quantity: product.quantity,
             expirationDate: product.expirationDate,
+            category: product.category || "",
+            imageUrl: product.imageUrl || "",
             status: product.status,
         });
         setIsProductModalOpen(true);
@@ -134,6 +152,47 @@ const SellerProducts = () => {
             loadProducts();
         } catch (error) {
             showToast.error("Không thể thay đổi trạng thái");
+        }
+    };
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Validate file size (max 10MB)
+        if (file.size > 10 * 1024 * 1024) {
+            showToast.error("Kích thước ảnh không được vượt quá 10MB");
+            return;
+        }
+
+        // Validate file type
+        if (!file.type.startsWith('image/')) {
+            showToast.error("Vui lòng chọn file ảnh");
+            return;
+        }
+
+        setUploadingImage(true);
+        try {
+            const formData = new FormData();
+            formData.append('image', file);
+
+            const response = await api.post('/upload/image', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            if (response.data.success) {
+                setProductForm({ ...productForm, imageUrl: response.data.imageUrl });
+                showToast.success("Tải ảnh lên thành công!");
+            } else {
+                showToast.error(response.data.error || "Tải ảnh lên thất bại");
+            }
+        } catch (error) {
+            console.error("Upload error:", error);
+            showToast.error("Không thể tải ảnh lên");
+        } finally {
+            setUploadingImage(false);
         }
     };
 
@@ -295,6 +354,63 @@ const SellerProducts = () => {
                                     onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
                                 />
                             </div>
+
+                            {/* Category Selector */}
+                            <div>
+                                <label className="block text-sm font-semibold text-[#0f172a] mb-2">
+                                    Danh mục *
+                                </label>
+                                <select
+                                    required
+                                    className="w-full border-2 border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-[#FF6B6B] focus:border-[#FF6B6B] outline-none text-[#0f172a]"
+                                    value={productForm.category}
+                                    onChange={(e) => setProductForm({ ...productForm, category: e.target.value })}
+                                >
+                                    <option value="">-- Chọn danh mục --</option>
+                                    {CATEGORIES.map((cat) => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Image Upload */}
+                            <div>
+                                <label className="block text-sm font-semibold text-[#0f172a] mb-2">
+                                    Hình ảnh sản phẩm
+                                </label>
+                                <div className="space-y-3">
+                                    <input
+                                        type="file"
+                                        accept="image/*"
+                                        onChange={handleImageUpload}
+                                        className="w-full border-2 border-gray-200 p-3 rounded-xl focus:ring-2 focus:ring-[#FF6B6B] focus:border-[#FF6B6B] outline-none text-[#0f172a] file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-[#FF6B6B] hover:file:bg-orange-100"
+                                    />
+                                    {uploadingImage && (
+                                        <div className="flex items-center gap-2 text-sm text-[#FF6B6B]">
+                                            <div className="animate-spin rounded-full h-4 w-4 border-2 border-[#FF6B6B] border-t-transparent"></div>
+                                            Đang tải ảnh lên...
+                                        </div>
+                                    )}
+                                    {productForm.imageUrl && (
+                                        <div className="relative inline-block">
+                                            <img 
+                                                src={productForm.imageUrl} 
+                                                alt="Preview" 
+                                                className="w-32 h-32 object-cover rounded-lg border-2 border-gray-200"
+                                                onError={(e) => e.target.src = 'https://via.placeholder.com/128?text=No+Image'}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setProductForm({ ...productForm, imageUrl: "" })}
+                                                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full hover:bg-red-600 transition flex items-center justify-center text-xs"
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
                             <div className="grid grid-cols-2 gap-5">
                                 <div>
                                     <label className="block text-sm font-semibold text-[#0f172a] mb-2">

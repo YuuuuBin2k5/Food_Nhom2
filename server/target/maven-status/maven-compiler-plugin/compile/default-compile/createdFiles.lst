@@ -2,13 +2,16 @@ com\ecommerce\entity\Review.class
 com\ecommerce\servlet\SellerProductServlet.class
 com\ecommerce\service\RegisterService.class
 com\ecommerce\entity\ProductStatus.class
+com\ecommerce\entity\NotificationType.class
 com\ecommerce\service\AdminService.class
 com\ecommerce\service\AuthService.class
 com\ecommerce\util\MailUtil$1.class
 com\ecommerce\service\SellerService.class
+com\ecommerce\service\OrderService$1.class
 com\ecommerce\servlet\ShipperOrderServlet.class
 com\ecommerce\entity\PaymentMethod.class
 com\ecommerce\servlet\RegisterServlet.class
+com\ecommerce\websocket\NotificationWebSocket$1.class
 com\ecommerce\service\LoginService.class
 com\ecommerce\servlet\ProductServlet.class
 com\ecommerce\util\JwtUtil.class
@@ -16,9 +19,14 @@ com\ecommerce\entity\Payment.class
 com\ecommerce\filter\CorsFilter.class
 com\ecommerce\dto\CheckoutRequest.class
 com\ecommerce\servlet\ApiForgotPasswordServlet.class
+com\ecommerce\servlet\NotificationServlet.class
+com\ecommerce\service\NotificationService.class
 com\ecommerce\util\DBUtil.class
+com\ecommerce\dto\NotificationDTO.class
 com\ecommerce\dto\ProductDTO.class
 com\ecommerce\dto\ProductFilter.class
+com\ecommerce\entity\Notification.class
+com\ecommerce\websocket\NotificationWebSocket.class
 com\ecommerce\entity\Order.class
 com\ecommerce\dto\SellerUpdateDTO.class
 com\ecommerce\dto\CartItemDTO.class
@@ -32,6 +40,7 @@ com\ecommerce\dto\SellerDTO.class
 com\ecommerce\entity\PasswordResetToken.class
 com\ecommerce\entity\Buyer.class
 com\ecommerce\service\ProductService.class
+com\ecommerce\servlet\ImageUploadServlet.class
 com\ecommerce\servlet\LoginServlet.class
 com\ecommerce\entity\Seller.class
 com\ecommerce\servlet\SellerProfileServlet.class
@@ -48,6 +57,7 @@ com\ecommerce\servlet\AdminProductServlet.class
 com\ecommerce\servlet\AdminUserServlet.class
 com\ecommerce\servlet\ApiResetPasswordServlet.class
 com\ecommerce\entity\Shipper.class
+com\ecommerce\servlet\NotificationServlet$1.class
 com\ecommerce\util\MailUtil.class
 com\ecommerce\filter\JwtAuthFilter.class
 com\ecommerce\servlet\AdminStatsServlet.class

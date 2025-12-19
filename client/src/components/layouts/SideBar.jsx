@@ -1,6 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { useTheme } from "../../context/ThemeContext";
+import NotificationBell from "../NotificationBell";
 
 // --- ICONS (SVG) ---
 const Icons = {
@@ -48,6 +50,7 @@ const Icons = {
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = window.location;
 
@@ -73,7 +76,8 @@ export default function Sidebar() {
   }, []);
 
   // Check if on products page
-  const isProductsPage = location.pathname === '/products' || location.pathname === '/';
+  const isProductsPage =
+    location.pathname === "/products" || location.pathname === "/";
 
   // --- MENU CONFIG ---
   const menuConfig = {
@@ -101,12 +105,12 @@ export default function Sidebar() {
   const getMenuItems = () => {
     const role = user?.role || "BUYER";
     const roleItems = menuConfig[role] || menuConfig.BUYER;
-    
+
     // Admin không cần common menu (trang chủ buyer)
     if (role === "ADMIN") {
       return roleItems;
     }
-    
+
     return [...menuConfig.common, ...roleItems];
   };
 
@@ -161,10 +165,22 @@ export default function Sidebar() {
                   onClick={() => setIsFilterOpen(!isFilterOpen)}
                   className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl transition-all"
                 >
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  <svg
+                    className="w-5 h-5 text-white"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                    />
                   </svg>
-                  <span className="hidden sm:inline text-white font-semibold text-sm">Bộ lọc</span>
+                  <span className="hidden sm:inline text-white font-semibold text-sm">
+                    Bộ lọc
+                  </span>
                 </button>
 
                 {/* Filter Dropdown */}
@@ -173,8 +189,18 @@ export default function Sidebar() {
                     {/* Filter Header */}
                     <div className="bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] px-5 py-4 sticky top-0 z-10">
                       <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                        <svg
+                          className="w-5 h-5"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                          />
                         </svg>
                         Bộ lọc sản phẩm
                       </h3>
@@ -189,14 +215,29 @@ export default function Sidebar() {
                         </h4>
                         <div className="space-y-2">
                           {[
-                            { label: 'Dưới 50.000đ', value: '0-50000' },
-                            { label: '50.000đ - 100.000đ', value: '50000-100000' },
-                            { label: '100.000đ - 200.000đ', value: '100000-200000' },
-                            { label: 'Trên 200.000đ', value: '200000-1000000' },
+                            { label: "Dưới 50.000đ", value: "0-50000" },
+                            {
+                              label: "50.000đ - 100.000đ",
+                              value: "50000-100000",
+                            },
+                            {
+                              label: "100.000đ - 200.000đ",
+                              value: "100000-200000",
+                            },
+                            { label: "Trên 200.000đ", value: "200000-1000000" },
                           ].map((range) => (
-                            <label key={range.value} className="flex items-center gap-3 p-2 rounded-lg hover:bg-orange-50 cursor-pointer transition-colors">
-                              <input type="radio" name="priceRange" className="w-4 h-4 text-[#FF6B6B]" />
-                              <span className="text-sm text-gray-700">{range.label}</span>
+                            <label
+                              key={range.value}
+                              className="flex items-center gap-3 p-2 rounded-lg hover:bg-orange-50 cursor-pointer transition-colors"
+                            >
+                              <input
+                                type="radio"
+                                name="priceRange"
+                                className="w-4 h-4 text-[#FF6B6B]"
+                              />
+                              <span className="text-sm text-gray-700">
+                                {range.label}
+                              </span>
                             </label>
                           ))}
                         </div>
@@ -210,7 +251,14 @@ export default function Sidebar() {
                           🍽️ Danh mục
                         </h4>
                         <div className="flex flex-wrap gap-2">
-                          {['Tất cả', 'Cơm', 'Bánh mì', 'Đồ uống', 'Trái cây', 'Rau củ'].map((cat) => (
+                          {[
+                            "Tất cả",
+                            "Cơm",
+                            "Bánh mì",
+                            "Đồ uống",
+                            "Trái cây",
+                            "Rau củ",
+                          ].map((cat) => (
                             <button
                               key={cat}
                               className="px-3 py-1.5 text-sm rounded-full border border-gray-200 hover:border-[#FF6B6B] hover:bg-orange-50 hover:text-[#FF6B6B] transition-all"
@@ -225,20 +273,36 @@ export default function Sidebar() {
 
                       {/* Quick Filters */}
                       <div>
-                        <h4 className="font-semibold text-gray-800 mb-3">⚡ Lọc nhanh</h4>
+                        <h4 className="font-semibold text-gray-800 mb-3">
+                          ⚡ Lọc nhanh
+                        </h4>
                         <div className="space-y-2">
                           <label className="flex items-center gap-3 p-3 rounded-lg bg-orange-50 border border-orange-100 cursor-pointer hover:bg-orange-100 transition-colors">
-                            <input type="checkbox" className="w-4 h-4 text-orange-500 rounded" />
+                            <input
+                              type="checkbox"
+                              className="w-4 h-4 text-orange-500 rounded"
+                            />
                             <div>
-                              <span className="text-sm font-medium text-gray-800 block">🔥 Đang giảm giá</span>
-                              <span className="text-xs text-gray-500">Sản phẩm có khuyến mãi</span>
+                              <span className="text-sm font-medium text-gray-800 block">
+                                🔥 Đang giảm giá
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Sản phẩm có khuyến mãi
+                              </span>
                             </div>
                           </label>
                           <label className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 border border-amber-100 cursor-pointer hover:bg-amber-100 transition-colors">
-                            <input type="checkbox" className="w-4 h-4 text-[#FFC75F] rounded" />
+                            <input
+                              type="checkbox"
+                              className="w-4 h-4 text-[#FFC75F] rounded"
+                            />
                             <div>
-                              <span className="text-sm font-medium text-gray-800 block">✅ Còn hàng</span>
-                              <span className="text-xs text-gray-500">Ẩn sản phẩm hết hàng</span>
+                              <span className="text-sm font-medium text-gray-800 block">
+                                ✅ Còn hàng
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                Ẩn sản phẩm hết hàng
+                              </span>
                             </div>
                           </label>
                         </div>
@@ -246,8 +310,18 @@ export default function Sidebar() {
 
                       {/* Clear Button */}
                       <button className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
                         </svg>
                         Xóa bộ lọc
                       </button>
@@ -256,6 +330,26 @@ export default function Sidebar() {
                 )}
               </div>
             )}
+
+            {/* Notification Bell - Show for logged in users */}
+            {user && <NotificationBell />}
+
+            {/* Theme Toggle Button */}
+            <button
+              onClick={toggleTheme}
+              className="w-10 h-10 flex items-center justify-center bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-xl transition-all"
+              title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {isDark ? (
+                <svg className="w-5 h-5 text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clipRule="evenodd" />
+                </svg>
+              ) : (
+                <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+                </svg>
+              )}
+            </button>
 
             {/* Profile Dropdown */}
             {user ? (
@@ -275,8 +369,18 @@ export default function Sidebar() {
                       {user.role}
                     </span>
                   </div>
-                  <svg className="w-4 h-4 text-white hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-4 h-4 text-white hidden sm:block"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
 
@@ -301,7 +405,12 @@ export default function Sidebar() {
                         className="flex items-center gap-3 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-[#FF6B6B] transition-colors"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <svg
+                          className="w-5 h-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
                           <Icons.User />
                         </svg>
                         Tài khoản của tôi
@@ -315,7 +424,12 @@ export default function Sidebar() {
                         }}
                         className="w-full flex items-center gap-3 px-5 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                       >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <svg
+                          className="w-5 h-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
                           <Icons.Logout />
                         </svg>
                         Đăng xuất
@@ -346,7 +460,12 @@ export default function Sidebar() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 {isMobileMenuOpen ? <Icons.Close /> : <Icons.Menu />}
               </svg>
             </button>

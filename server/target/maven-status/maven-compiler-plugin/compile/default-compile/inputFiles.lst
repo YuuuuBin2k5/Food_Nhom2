@@ -1,54 +1,61 @@
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\dto\CartItemDTO.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\dto\CheckoutRequest.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\dto\CheckoutResponse.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\dto\LoginDTO.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\dto\ProductDTO.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\dto\ProductFilter.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\dto\ProductPageResponse.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\dto\RegisterDTO.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\dto\SellerDTO.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\dto\SellerUpdateDTO.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Admin.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Buyer.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Order.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\OrderDetail.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\OrderStatus.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\PasswordResetToken.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Payment.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\PaymentMethod.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Product.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\ProductStatus.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Review.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Role.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Seller.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\SellerStatus.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Shipper.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\entity\User.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\filter\CorsFilter.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\filter\JwtAuthFilter.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\service\AdminService.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\service\AuthService.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\service\LoginService.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\service\OrderService.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\service\ProductService.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\service\RegisterService.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\service\SellerService.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\AdminProductServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\AdminSellerServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\AdminStatsServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\AdminUserServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ApiForgotPasswordServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ApiResetPasswordServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\BuyerOrderServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\CheckoutServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\LoginServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ProductServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\RegisterServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerOrderServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerProductServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerProfileServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ShipperOrderServlet.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\util\DBUtil.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\util\JwtUtil.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\util\MailUtil.java
-C:\Users\Admin\Desktop\LapTrinhWeb-Java\Food_Nhom2\server\src\main\java\com\ecommerce\util\PasswordUtil.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\dto\CartItemDTO.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\dto\CheckoutRequest.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\dto\CheckoutResponse.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\dto\LoginDTO.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\dto\NotificationDTO.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\dto\ProductDTO.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\dto\ProductFilter.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\dto\ProductPageResponse.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\dto\RegisterDTO.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\dto\SellerDTO.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\dto\SellerUpdateDTO.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Admin.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Buyer.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Notification.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\NotificationType.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Order.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\OrderDetail.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\OrderStatus.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\PasswordResetToken.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Payment.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\PaymentMethod.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Product.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\ProductStatus.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Review.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Role.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Seller.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\SellerStatus.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Shipper.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\entity\User.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\filter\CorsFilter.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\filter\JwtAuthFilter.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\service\AdminService.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\service\AuthService.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\service\LoginService.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\service\NotificationService.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\service\OrderService.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\service\ProductService.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\service\RegisterService.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\service\SellerService.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\AdminProductServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\AdminSellerServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\AdminStatsServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\AdminUserServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ApiForgotPasswordServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ApiResetPasswordServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\BuyerOrderServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\CheckoutServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ImageUploadServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\LoginServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\NotificationServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ProductServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\RegisterServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerOrderServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerProductServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerProfileServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ShipperOrderServlet.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\util\DBUtil.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\util\JwtUtil.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\util\MailUtil.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\util\PasswordUtil.java
+C:\Vo Tan Tai\Code cua Tai\LT_WEB_3\Food_Nhom2\server\src\main\java\com\ecommerce\websocket\NotificationWebSocket.java

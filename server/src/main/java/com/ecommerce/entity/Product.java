@@ -44,6 +44,9 @@ public class Product implements Serializable {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "category", length = 50)
+    private String category; // Danh mục: Cơm, Bánh mì, Đồ uống, etc.
+
     @Temporal(TemporalType.TIMESTAMP)
     @Column(name = "created_date")
     private Date createdDate;
@@ -189,6 +192,14 @@ public class Product implements Serializable {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     public Date getCreatedDate() {

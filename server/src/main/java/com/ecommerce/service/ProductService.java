@@ -282,6 +282,11 @@ public class ProductService {
             where.append(" AND p.seller.userId = :sellerId");
         }
         
+        // Category filter
+        if (filter.getCategory() != null && !filter.getCategory().isEmpty()) {
+            where.append(" AND p.category = :category");
+        }
+        
         // Always show only active and verified products
         where.append(" AND p.status = :status AND p.isVerified = :verified");
         
@@ -325,6 +330,11 @@ public class ProductService {
         }
         if (filter.getMaxPrice() != null) {
             query.setParameter("maxPrice", filter.getMaxPrice());
+        }
+        
+        // Category parameter
+        if (filter.getCategory() != null && !filter.getCategory().isEmpty()) {
+            query.setParameter("category", filter.getCategory());
         }
         
         // Seller parameter

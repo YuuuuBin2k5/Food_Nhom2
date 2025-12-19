@@ -66,6 +66,12 @@ public class JwtAuthFilter implements Filter {
             return;
         }
 
+        // Allow WebSocket connections
+        if (path.startsWith("/ws/")) {
+            chain.doFilter(req, res);
+            return;
+        }
+
         // ===============================
         // 3️⃣ Check Authorization header
         // ===============================

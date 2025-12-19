@@ -88,17 +88,19 @@ function SearchBar({ onSearch }) {
             </div>
 
             {/* Search Suggestions (optional) */}
-            {isFocused && !searchTerm && (
-                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg p-4 z-10">
+            {isFocused && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-lg p-4 z-50">
                     <p className="text-sm text-gray-500 mb-2">Gợi ý tìm kiếm:</p>
                     <div className="flex flex-wrap gap-2">
                         {['Rau xanh', 'Trái cây', 'Sữa', 'Bánh mì', 'Thịt tươi'].map(tag => (
                             <button
                                 key={tag}
                                 type="button"
-                                onClick={() => {
+                                onMouseDown={(e) => {
+                                    e.preventDefault();
                                     setSearchTerm(tag);
                                     onSearch(tag);
+                                    setIsFocused(false);
                                 }}
                                 className="px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-full text-sm hover:bg-emerald-100 transition-colors"
                             >

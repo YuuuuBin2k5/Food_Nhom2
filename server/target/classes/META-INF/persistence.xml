@@ -13,7 +13,11 @@
         <class>com.ecommerce.entity.Buyer</class>
         <class>com.ecommerce.entity.Seller</class>
         <class>com.ecommerce.entity.Shipper</class>
+        <class>com.ecommerce.entity.Product</class>
+        <class>com.ecommerce.entity.Order</class>
+        <class>com.ecommerce.entity.OrderDetail</class>
         <class>com.ecommerce.entity.PasswordResetToken</class>
+        <class>com.ecommerce.entity.Notification</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
