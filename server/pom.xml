@@ -157,6 +157,20 @@
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.4.0</version>
             </plugin>
+            
+            <!-- Tomcat Maven Plugin - Chạy server mà không cần cài Tomcat -->
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <port>8080</port>
+                    <path>/server</path>
+                    <contextReloadable>true</contextReloadable>
+                    <uriEncoding>UTF-8</uriEncoding>
+                </configuration>
+            </plugin>
+            
             <plugin>
                 <groupId>org.flywaydb</groupId>
                 <artifactId>flyway-maven-plugin</artifactId>
@@ -171,6 +185,8 @@
                     </locations>
                 </configuration>
             </plugin>
+
+            
         </plugins>
     </build>
 </project>

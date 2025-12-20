@@ -160,9 +160,9 @@ function ProductListPage() {
                 <div className="flex gap-6">
                     {/* Sidebar Filter */}
                     <aside className="hidden lg:block w-80 flex-shrink-0">
-                        <div className="sticky top-24 bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+                        <div className="sticky top-24 bg-white rounded shadow-lg border border-gray-100 overflow-hidden">
                             {/* Header */}
-                            <div className="bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] p-5">
+                            <div className="bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] p-3">
                                 <h2 className="text-white font-bold text-lg flex items-center gap-2">
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />

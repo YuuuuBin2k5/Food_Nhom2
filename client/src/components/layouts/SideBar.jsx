@@ -54,9 +54,36 @@ export default function Sidebar() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
+  const [isAtTop, setIsAtTop] = useState(true);
+  const lastScrollY = useRef(0);
 
   // Refs
   const profileRef = useRef(null);
+
+  // Auto-hide on scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Check if at top
+      setIsAtTop(currentScrollY < 10);
+      
+      // Hide/show based on scroll direction
+      if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
+        // Scrolling down & past threshold
+        setIsVisible(false);
+      } else {
+        // Scrolling up
+        setIsVisible(true);
+      }
+      
+      lastScrollY.current = currentScrollY;
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -106,20 +133,30 @@ export default function Sidebar() {
   const navLinks = getMenuItems();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-orange-50/90 via-amber-50/90 to-yellow-50/90 backdrop-blur-xl border-b border-orange-200/30 shadow-sm font-sans">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20">
+    <header 
+      className={`fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-orange-50/90 via-amber-50/90 to-yellow-50/90 backdrop-blur-xl border-b border-orange-200/30 shadow-sm font-sans transition-all duration-300 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      } ${
+        isAtTop ? 'h-24 shadow-md' : 'h-16 shadow-lg'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+        <div className="flex items-center justify-between h-full">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-12 h-12 bg-gradient-to-br from-orange-400 via-amber-500 to-yellow-500 flex items-center justify-center relative overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow rounded-xl">
+            <div className={`bg-gradient-to-br from-orange-400 via-amber-500 to-yellow-500 flex items-center justify-center relative overflow-hidden shadow-lg group-hover:shadow-xl transition-all rounded-xl ${
+              isAtTop ? 'w-14 h-14' : 'w-10 h-10'
+            }`}>
               <div className="absolute inset-0 bg-gradient-to-t from-orange-600/20 to-transparent" />
-              <span className="text-2xl relative z-10 drop-shadow-sm">🍊</span>
+              <span className={`relative z-10 drop-shadow-sm transition-all ${
+                isAtTop ? 'text-2xl' : 'text-xl'
+              }`}>🍊</span>
             </div>
-            <div>
-              <span className="block font-black text-2xl tracking-tight bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent drop-shadow-sm">
+            <div className={`transition-all ${isAtTop ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>
+              <span className="block font-black text-2xl tracking-tight bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent drop-shadow-sm whitespace-nowrap">
                 FreshSave
               </span>
-              <span className="block text-[10px] text-orange-600/70 -mt-1 tracking-widest uppercase font-semibold">
+              <span className="block text-[10px] text-orange-600/70 -mt-1 tracking-widest uppercase font-semibold whitespace-nowrap">
                 Smart Shopping
               </span>
             </div>

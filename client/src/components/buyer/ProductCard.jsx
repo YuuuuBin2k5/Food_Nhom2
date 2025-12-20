@@ -4,14 +4,17 @@ import { showToast } from '../../utils/toast';
 import { formatPrice, calculateDiscount, getExpiryStatus } from '../../utils/format';
 import { getImageUrl } from '../../utils/imageHelper';
 import { getCategoryName } from '../../utils/categoryHelper';
-import { addToCart } from '../../services/cartService';
 import { getOptimizedImageUrl } from '../../utils/imageOptimization';
+import { addToCart, getCart } from '../../services/cartService';
+import { CART_UPDATED_EVENT } from '../../utils/constants';
+import { Clock, Plus, Minus, ShoppingCart } from 'lucide-react';
 
 const ProductCard = memo(function ProductCard({ product }) {
     const navigate = useNavigate();
     const [isImageLoaded, setIsImageLoaded] = useState(false);
-    const [isAdding, setIsAdding] = useState(false);
     const [isVisible, setIsVisible] = useState(false);
+    const [cartQuantity, setCartQuantity] = useState(0);
+    const [isAdding, setIsAdding] = useState(false);
     const cardRef = useRef(null);
 
     // Lazy load image with Intersection Observer
@@ -28,7 +31,7 @@ const ProductCard = memo(function ProductCard({ product }) {
                 });
             },
             {
-                rootMargin: '100px' // Load 100px before entering viewport
+                rootMargin: '100px'
             }
         );
 
@@ -41,20 +44,67 @@ const ProductCard = memo(function ProductCard({ product }) {
         };
     }, []);
 
+    // Load cart quantity on mount and listen for updates
+    useEffect(() => {
+        const updateCartQuantity = () => {
+            const cart = getCart();
+            const cartItem = cart.find(item => item.product.productId === product.productId);
+            setCartQuantity(cartItem ? cartItem.quantity : 0);
+        };
+
+        // Initial load
+        updateCartQuantity();
+
+        // Listen for cart updates
+        window.addEventListener(CART_UPDATED_EVENT, updateCartQuantity);
+        return () => window.removeEventListener(CART_UPDATED_EVENT, updateCartQuantity);
+    }, [product.productId]);
+
     const handleClick = () => {
         navigate(`/products/${product.productId}`);
     };
 
-    const handleAddToCart = async (e) => {
+    const handleQuickAdd = (e) => {
         e.stopPropagation();
-        if (isAdding) return;
-
+        if (product.quantity === 0) return;
+        
         setIsAdding(true);
         try {
             addToCart(product, 1);
-            showToast.success('Đã thêm vào danh sách giải cứu!');
+            showToast.success('Đã thêm vào giỏ hàng');
         } catch (error) {
-            showToast.error(error.message || 'Không thể giải cứu món này');
+            showToast.error('Không thể thêm vào giỏ hàng');
+        } finally {
+            setIsAdding(false);
+        }
+    };
+
+    const handleIncrement = (e) => {
+        e.stopPropagation();
+        if (cartQuantity >= product.quantity) {
+            showToast.warning('Đã đạt số lượng tối đa');
+            return;
+        }
+        
+        setIsAdding(true);
+        try {
+            addToCart(product, 1);
+        } catch (error) {
+            showToast.error('Không thể thêm vào giỏ hàng');
+        } finally {
+            setIsAdding(false);
+        }
+    };
+
+    const handleDecrement = (e) => {
+        e.stopPropagation();
+        if (cartQuantity <= 0) return;
+        
+        setIsAdding(true);
+        try {
+            addToCart(product, -1);
+        } catch (error) {
+            showToast.error('Không thể cập nhật giỏ hàng');
         } finally {
             setIsAdding(false);
         }
@@ -65,21 +115,23 @@ const ProductCard = memo(function ProductCard({ product }) {
     const imageUrl = getImageUrl(product.imageUrl, product.productId, product.name);
     const optimizedImageUrl = getOptimizedImageUrl(imageUrl, 400, 80);
 
+    // Delivery info - có thể lấy từ seller settings hoặc config
+    const deliveryTime = '10-15 phút';
+
     return (
         <div
             ref={cardRef}
-            className="group bg-white rounded-xl overflow-hidden cursor-pointer 
-                       border border-gray-200/60 hover:border-orange-300
-                       shadow-sm hover:shadow-xl
+            className="group bg-white rounded overflow-hidden cursor-pointer 
+                       shadow-sm hover:shadow-2xl
                        transition-all duration-300 ease-out
-                       hover:-translate-y-1
-                       flex flex-col h-full"
+                       hover:-translate-y-2
+                       flex flex-col"
             onClick={handleClick}
         >
             {/* IMAGE SECTION */}
-            <div className="relative w-full aspect-square overflow-hidden bg-gradient-to-br from-orange-50 to-amber-50">
+            <div className="relative w-full p-2 aspect-[7/5] overflow-hidden bg-gray-100">
                 {!isImageLoaded && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-orange-100 via-amber-50 to-orange-100 animate-pulse" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-gray-200 via-gray-100 to-gray-200 animate-pulse " />
                 )}
 
                 {isVisible && (
@@ -87,7 +139,7 @@ const ProductCard = memo(function ProductCard({ product }) {
                         src={optimizedImageUrl}
                         alt={product.name}
                         loading="lazy"
-                        className={`w-full h-full object-cover transition-all duration-500 group-hover:scale-110 ${
+                        className={`w-full h-full object-cover transition-all duration-700 rounded group-hover:scale-90 ${
                             isImageLoaded ? 'opacity-100' : 'opacity-0'
                         }`}
                         onLoad={() => setIsImageLoaded(true)}
@@ -99,129 +151,123 @@ const ProductCard = memo(function ProductCard({ product }) {
                     />
                 )}
 
-                {/* Category Badge - Top Left */}
-                {product.category && (
-                    <div className="absolute top-2 left-2 z-10">
-                        <div className="bg-white/95 backdrop-blur-sm text-gray-700 px-2 py-0.5 text-[10px] font-semibold border border-gray-200/50 rounded">
-                            {getCategoryName(product.category)}
-                        </div>
-                    </div>
-                )}
-
-                {/* Discount Badge - Minimalist */}
+                {/* Discount Badge - Top Left */}
                 {discount > 0 && (
-                    <div className="absolute top-2 right-2 z-10">
-                        <div className="bg-red-600 text-white px-2.5 py-1 rounded-md text-xs font-bold shadow-lg">
+                    <div className="absolute top-3 left-3 z-10">
+                        <div className="bg-white text-orange-600 px-3 py-1.5 rounded text-sm font-bold shadow-lg">
                             -{discount}%
-                        </div>
-                    </div>
-                )}
-
-                {/* Expiry Badge - Below Category */}
-                {expiryStatus && (
-                    <div className={`absolute ${product.category ? 'top-9' : 'top-2'} left-2 z-10`}>
-                        <div className={`px-2.5 py-1 rounded-md text-xs font-semibold backdrop-blur-sm ${expiryStatus.color}`}>
-                            {expiryStatus.text}
                         </div>
                     </div>
                 )}
 
                 {/* Out of Stock Overlay */}
                 {product.quantity === 0 && (
-                    <div className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm flex items-center justify-center z-20">
-                        <span className="bg-white text-gray-900 px-4 py-2 rounded-lg font-bold text-sm shadow-xl">
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-20">
+                        <span className="bg-white text-gray-900 px-6 py-3 rounded-full font-bold text-sm shadow-xl">
                             Hết hàng
                         </span>
                     </div>
                 )}
-
-                {/* Quick Add Button - Cleaner */}
-                {product.quantity > 0 && (
-                    <div className="absolute bottom-3 left-3 right-3 
-                                    opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 
-                                    transition-all duration-300 z-10">
-                        <button
-                            onClick={handleAddToCart}
-                            disabled={isAdding}
-                            className={`w-full py-2.5 ${
-                                isAdding 
-                                    ? 'bg-gray-400' 
-                                    : 'bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600'
-                            } text-white font-bold rounded-lg shadow-lg
-                               transition-all duration-200 flex items-center justify-center gap-2
-                               active:scale-95 text-sm`}
-                        >
-                            {isAdding ? (
-                                <>
-                                    <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full"></span>
-                                    Đang xử lý
-                                </>
-                            ) : (
-                                <>
-                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                    </svg>
-                                    Thêm vào giỏ
-                                </>
-                            )}
-                        </button>
-                    </div>
-                )}
             </div>
 
-            {/* CONTENT SECTION - Cleaner Layout */}
-            <div className="p-4 flex flex-col gap-2.5 flex-1">
-                {/* Product Name */}
-                <h3 className="text-gray-900 font-bold text-sm leading-snug
-                               line-clamp-2 min-h-[2.5rem]
-                               group-hover:text-orange-600 transition-colors duration-200">
-                    {product.name}
-                </h3>
-
-                {/* Shop Name - Subtle */}
-                <p className="text-xs text-gray-500 flex items-center gap-1.5 truncate">
-                    <svg className="w-3.5 h-3.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" />
-                    </svg>
-                    <span className="truncate">{product.seller?.shopName || 'Cửa hàng'}</span>
-                </p>
-
-                {/* PRICE SECTION - Prominent */}
-                <div className="mt-auto pt-2.5 border-t border-gray-100">
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-baseline gap-2">
-                            <span className="text-lg font-black text-orange-600">
-                                {formatPrice(product.salePrice)}
-                            </span>
-                            {product.originalPrice > product.salePrice && (
-                                <span className="text-xs text-gray-400 line-through">
-                                    {formatPrice(product.originalPrice)}
-                                </span>
-                            )}
-                        </div>
-                        {product.quantity > 0 && product.quantity < 10 && (
-                            <span className="text-[10px] text-red-600 font-bold bg-red-50 px-2 py-0.5 rounded-full">
-                                Sắp hết
-                            </span>
+            {/* CONTENT SECTION */}
+            <div className="p-4 flex flex-col gap-3">
+                {/* Product Name & Price */}
+                <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-gray-900 font-bold text-base leading-tight flex-1 line-clamp-1">
+                        {product.name}
+                    </h3>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                        {expiryStatus && (
+                            <span className="w-2 h-2 rounded-full bg-green-500"></span>
                         )}
-                    </div>
-
-                    {/* Stock Bar - Visual Indicator */}
-                    <div className="flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                            <div 
-                                className={`h-full rounded-full transition-all ${
-                                    product.quantity < 10 ? 'bg-red-500' : 
-                                    product.quantity < 30 ? 'bg-amber-500' : 
-                                    'bg-emerald-500'
-                                }`}
-                                style={{ width: `${Math.min((product.quantity / 50) * 100, 100)}%` }}
-                            />
-                        </div>
-                        <span className="text-[10px] text-gray-500 font-medium whitespace-nowrap">
-                            Còn {product.quantity}
+                        <span className="text-lg font-black text-gray-900">
+                            {formatPrice(product.salePrice)}
                         </span>
                     </div>
+                </div>
+
+                {/* Delivery Info */}
+                <div className="flex items-center gap-2 text-xs text-gray-500">
+                    <Clock className="w-3.5 h-3.5 text-orange-500" />
+                    <span className="font-medium">{deliveryTime}</span>
+                </div>
+
+                {/* Category Tags */}
+                <div className="flex flex-wrap gap-2">
+                    {product.category && (
+                        <span className="px-3 py-1 bg-gray-100 text-gray-600 text-xs font-medium rounded-full">
+                            {getCategoryName(product.category)}
+                        </span>
+                    )}
+                    {expiryStatus && (
+                        <span className={`px-3 py-1 text-xs font-medium rounded-full ${
+                            expiryStatus.color.includes('red') 
+                                ? 'bg-red-50 text-red-600' 
+                                : expiryStatus.color.includes('orange')
+                                ? 'bg-orange-50 text-orange-600'
+                                : 'bg-green-50 text-green-600'
+                        }`}>
+                            {expiryStatus.text}
+                        </span>
+                    )}
+                    {product.quantity > 0 && product.quantity < 10 && (
+                        <span className="px-3 py-1 bg-red-50 text-red-600 text-xs font-medium rounded-full">
+                            Sắp hết
+                        </span>
+                    )}
+                </div>
+
+                {/* QUICK ADD BUTTON */}
+                <div className="mt-2">
+                    {cartQuantity === 0 ? (
+                        <button
+                            onClick={handleQuickAdd}
+                            disabled={product.quantity === 0 || isAdding}
+                            className={`w-full py-3 rounded font-bold text-sm
+                                       transition-all duration-300 transform
+                                       flex items-center justify-center gap-2
+                                       ${product.quantity === 0 
+                                           ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                                           : 'bg-gradient-to-r from-orange-500 to-orange-600 text-white hover:from-orange-600 hover:to-orange-700 hover:shadow-lg hover:scale-[1.02] active:scale-95'
+                                       }
+                                       ${isAdding ? 'opacity-50 cursor-wait' : ''}`}
+                        >
+                            <ShoppingCart className="w-4 h-4" />
+                            <span>{isAdding ? 'Đang thêm...' : 'Thêm vào giỏ'}</span>
+                        </button>
+                    ) : (
+                        <div className="flex items-center gap-2">
+                            <button
+                                onClick={handleDecrement}
+                                disabled={isAdding}
+                                className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 
+                                         hover:bg-orange-200 active:scale-95
+                                         transition-all duration-200 flex items-center justify-center
+                                         disabled:opacity-50 disabled:cursor-wait"
+                            >
+                                <Minus className="w-4 h-4" />
+                            </button>
+                            
+                            <div className="flex-1 h-10 rounded-xl bg-gradient-to-r from-orange-500 to-orange-600 
+                                          text-white font-bold flex items-center justify-center gap-2
+                                          shadow-md">
+                                <ShoppingCart className="w-4 h-4" />
+                                <span>{cartQuantity}</span>
+                            </div>
+                            
+                            <button
+                                onClick={handleIncrement}
+                                disabled={isAdding || cartQuantity >= product.quantity}
+                                className="w-10 h-10 rounded-xl bg-orange-100 text-orange-600 
+                                         hover:bg-orange-200 active:scale-95
+                                         transition-all duration-200 flex items-center justify-center
+                                         disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                                <Plus className="w-4 h-4" />
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

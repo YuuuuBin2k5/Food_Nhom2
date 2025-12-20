@@ -33,7 +33,7 @@ export const saveCart = (cart) => {
 /**
  * Add product to cart
  * @param {Object} product - Product to add
- * @param {number} quantity - Quantity to add
+ * @param {number} quantity - Quantity to add (can be negative to decrease)
  * @returns {Array} Updated cart
  */
 export const addToCart = (product, quantity = 1) => {
@@ -43,8 +43,15 @@ export const addToCart = (product, quantity = 1) => {
     );
 
     if (existingIndex >= 0) {
+        // Update existing item
         cart[existingIndex].quantity += quantity;
-    } else {
+        
+        // Remove item if quantity becomes 0 or negative
+        if (cart[existingIndex].quantity <= 0) {
+            cart.splice(existingIndex, 1);
+        }
+    } else if (quantity > 0) {
+        // Only add new item if quantity is positive
         cart.push({
             product,
             quantity,

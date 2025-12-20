@@ -381,11 +381,11 @@ function HomePage() {
             </section>
 
             {/* Product Showcase Section */}
-            <section className="py-10 bg-gradient-to-b from-orange-50/30 to-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <section className="py-14 bg-gradient-to-b from-orange-50/30 to-white">
+                <div className="max-w-7xl mx-auto px-3 sm:px-5 lg:px-7">
                     {/* Header */}
                     <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-3 mb-6">
-                        <div className="space-y-1.5">
+                        <div className="space-y-2.5">
                             <div className="inline-block px-2.5 py-1 bg-red-100 border-l-4 border-red-600">
                                 <span className="text-[10px] font-bold text-red-800 uppercase tracking-wider">
                                     Deal hot
@@ -422,7 +422,7 @@ function HomePage() {
                             <p className="text-gray-600 text-sm">Chưa có sản phẩm nào</p>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                             {products.slice(0, 10).map(product => (
                                 <ProductCard key={product.productId} product={product} />
                             ))}

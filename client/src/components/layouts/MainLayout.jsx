@@ -7,8 +7,8 @@ const MainLayout = () => {
   return (
     <div className="app-container min-h-screen relative flex flex-col">
       <Sidebar />
-      {/* Main: add top padding matching header height (h-20) */}
-      <main className="flex-1 pt-20 transition-colors duration-700 w-full">
+      {/* Main: add top padding matching header height */}
+      <main className="flex-1 pt-24 transition-all duration-300 w-full">
         {/* Component AppRoutes quản lý tất cả các Routes */}
         <Outlet />
       </main>
