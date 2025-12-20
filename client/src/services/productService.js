@@ -1,7 +1,8 @@
 import api from './api';
+import { apiCache } from '../utils/apiCache';
 
 /**
- * Get all products with filters
+ * Get all products with filters (with caching)
  * @param {Object} params - Query parameters
  * @returns {Promise} API response
  */
@@ -20,17 +21,47 @@ export const getProducts = async (params = {}) => {
     queryParams.append('page', params.page || 0);
     queryParams.append('size', params.size || 12);
 
-    const response = await api.get(`/products?${queryParams}`);
+    const url = `/products?${queryParams}`;
+    
+    // Check cache first
+    const cached = apiCache.get(url, params);
+    if (cached) {
+        console.log('[ProductService] Using cached data');
+        return cached;
+    }
+    
+    console.log('[ProductService] Fetching products:', url);
+    console.log('[ProductService] Category param:', params.category);
+    
+    const response = await api.get(url);
+    console.log('[ProductService] Response:', response.data);
+    
+    // Cache the response (5 minutes for product list)
+    apiCache.set(url, params, response.data, 5 * 60 * 1000);
+    
     return response.data;
 };
 
 /**
- * Get product by ID
+ * Get product by ID (with caching)
  * @param {number} productId - Product ID
  * @returns {Promise} Product data
  */
 export const getProductById = async (productId) => {
-    const response = await api.get(`/products/${productId}`);
+    const url = `/products/${productId}`;
+    
+    // Check cache first
+    const cached = apiCache.get(url);
+    if (cached) {
+        console.log('[ProductService] Using cached product detail');
+        return cached;
+    }
+    
+    const response = await api.get(url);
+    
+    // Cache product detail for 10 minutes
+    apiCache.set(url, {}, response.data, 10 * 60 * 1000);
+    
     return response.data;
 };
 

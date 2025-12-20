@@ -10,9 +10,11 @@ const SellerProducts = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingProduct, setEditingProduct] = useState(null);
 
+    // Load products once on mount
     useEffect(() => {
         fetchProducts();
-    }, [fetchProducts]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleOpenAddModal = () => {
         setEditingProduct(null);

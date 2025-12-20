@@ -13,9 +13,11 @@ const ShipperOrders = () => {
     const [filterStatus, setFilterStatus] = useState("AVAILABLE");
     const [selectedOrder, setSelectedOrder] = useState(null);
 
+    // Load orders once on mount
     useEffect(() => {
         fetchOrders();
-    }, [fetchOrders]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     // Calculate stats
     const stats = useMemo(() => {

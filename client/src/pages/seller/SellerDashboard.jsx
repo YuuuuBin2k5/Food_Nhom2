@@ -22,15 +22,28 @@ const SellerDashboard = () => {
 
     useEffect(() => {
         loadDashboardData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const loadDashboardData = async () => {
         setLoading(true);
         try {
+            const startTime = performance.now();
+            
+            // Load products and orders in parallel
             const [productsRes, ordersRes] = await Promise.all([
-                api.get("/seller/products"),
-                api.get("/seller/orders").catch(() => ({ data: [] }))
+                api.get("/seller/products").catch(err => {
+                    console.error('[Dashboard] Products error:', err.message);
+                    return { data: [] };
+                }),
+                api.get("/seller/orders").catch(err => {
+                    console.error('[Dashboard] Orders error:', err.message);
+                    return { data: [] };
+                })
             ]);
+
+            const loadTime = performance.now() - startTime;
+            console.log(`[Dashboard] ✅ Loaded in ${loadTime.toFixed(0)}ms`);
 
             const products = productsRes.data || [];
             const orders = ordersRes.data || [];

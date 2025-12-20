@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import * as productService from '../services/productService';
 
 export const useProduct = (initialFilters = {}) => {
@@ -24,10 +24,18 @@ export const useProduct = (initialFilters = {}) => {
         totalElements: 0
     });
 
-    useEffect(() => {
-        loadProducts();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [
+    // Memoize filter dependencies to prevent unnecessary re-renders
+    const filterDeps = useMemo(() => [
+        filters.search,
+        filters.category,
+        filters.minPrice,
+        filters.maxPrice,
+        filters.sortBy,
+        filters.sellerId,
+        filters.hasDiscount,
+        filters.inStock,
+        filters.page
+    ], [
         filters.search,
         filters.category,
         filters.minPrice,
@@ -39,7 +47,7 @@ export const useProduct = (initialFilters = {}) => {
         filters.page
     ]);
 
-    const loadProducts = async () => {
+    const loadProducts = useCallback(async () => {
         setLoading(true);
         setError(null);
 
@@ -58,17 +66,21 @@ export const useProduct = (initialFilters = {}) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [filters]);
 
-    const updateFilters = (newFilters) => {
+    useEffect(() => {
+        loadProducts();
+    }, filterDeps);
+
+    const updateFilters = useCallback((newFilters) => {
         setFilters(prev => ({ ...prev, ...newFilters, page: 0 }));
-    };
+    }, []);
 
-    const setPage = (page) => {
+    const setPage = useCallback((page) => {
         setFilters(prev => ({ ...prev, page }));
-    };
+    }, []);
 
-    const resetFilters = () => {
+    const resetFilters = useCallback(() => {
         setFilters({
             search: '',
             category: '',
@@ -81,7 +93,7 @@ export const useProduct = (initialFilters = {}) => {
             page: 0,
             size: 12
         });
-    };
+    }, []);
 
     return {
         products,

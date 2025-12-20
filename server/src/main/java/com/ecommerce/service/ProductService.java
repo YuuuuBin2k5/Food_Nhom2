@@ -9,6 +9,7 @@ import com.ecommerce.dto.ProductPageResponse;
 import com.ecommerce.dto.SellerDTO;
 import com.ecommerce.entity.Product;
 import com.ecommerce.entity.ProductStatus;
+import com.ecommerce.entity.ProductCategory;
 import com.ecommerce.entity.Seller;
 import com.ecommerce.util.DBUtil;
 
@@ -258,7 +259,14 @@ public class ProductService {
         }
         
         if (filter.getCategory() != null && !filter.getCategory().isEmpty()) {
-            where.append(" AND p.category = :category");
+            try {
+                // Validate category exists before adding to query
+                ProductCategory.valueOf(filter.getCategory().toUpperCase());
+                where.append(" AND p.category = :category");
+            } catch (IllegalArgumentException e) {
+                // Invalid category, ignore filter
+                System.out.println("[ProductService] Invalid category: " + filter.getCategory());
+            }
         }
         
         where.append(" AND p.status = :status AND p.isVerified = :verified");
@@ -298,7 +306,14 @@ public class ProductService {
         }
         
         if (filter.getCategory() != null && !filter.getCategory().isEmpty()) {
-            query.setParameter("category", filter.getCategory());
+            try {
+                ProductCategory category = ProductCategory.valueOf(filter.getCategory().toUpperCase());
+                query.setParameter("category", category);
+                System.out.println("[ProductService] Filtering by category: " + category);
+            } catch (IllegalArgumentException e) {
+                // Invalid category value, skip parameter
+                System.out.println("[ProductService] Invalid category value: " + filter.getCategory());
+            }
         }
         
         if (filter.getSellerId() != null && !filter.getSellerId().isEmpty()) {
@@ -332,6 +347,7 @@ public class ProductService {
         dto.setExpirationDate(product.getExpirationDate());
         dto.setManufactureDate(product.getManufactureDate());
         dto.setStatus(product.getStatus());
+        dto.setCategory(product.getCategory());
         
         if (product.getSeller() != null) {
             SellerDTO sellerDTO = new SellerDTO();

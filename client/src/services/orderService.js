@@ -30,10 +30,13 @@ const orderService = {
     },
 
     /**
-     * @returns {Promise<Array>}
+     * @returns {Promise<Array>} Orders array
      */
-    getSellerOrders: async () => {
-        const response = await api.get('/seller/orders');
+    getSellerOrders: async (signal) => {
+        const response = await api.get('/seller/orders', {
+            headers: { 'Accept': 'application/json' },
+            signal
+        });
         return response.data || [];
     },
 
@@ -54,8 +57,10 @@ const orderService = {
      * Get shipper orders
      * @returns {Promise<Array>} Orders array
      */
-    getShipperOrders: async () => {
-        const response = await api.get('/shipper/orders');
+    getShipperOrders: async (signal) => {
+        const response = await api.get('/shipper/orders', {
+            signal
+        });
         return response.data || [];
     },
 

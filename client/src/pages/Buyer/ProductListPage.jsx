@@ -1,11 +1,18 @@
+import { useState, useEffect, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import ProductCard from '../../components/buyer/ProductCard';
 import SearchBar from '../../components/common/SearchBar';
 import LoadingSpinner from '../../components/common/LoadingSpinner';
 import Pagination from '../../components/common/Pagination';
 import { useProduct } from '../../hooks/useProduct';
-import { PRODUCT_CATEGORIES, SORT_OPTIONS } from '../../utils/constants';
+import { prefetchNextPage } from '../../hooks/usePrefetch';
+import { getCategories } from '../../services/categoryService';
+import { SORT_OPTIONS } from '../../utils/constants';
 
 function ProductListPage() {
+    const [searchParams] = useSearchParams();
+    const [categories, setCategories] = useState([]);
+    
     const {
         products,
         loading,
@@ -15,6 +22,47 @@ function ProductListPage() {
         setPage,
         resetFilters
     } = useProduct();
+
+    // Prefetch next page when user is viewing current page
+    useEffect(() => {
+        if (!loading && pagination.currentPage < pagination.totalPages - 1) {
+            // Prefetch next page after 1 second
+            const timer = setTimeout(() => {
+                prefetchNextPage(filters, pagination.currentPage);
+            }, 1000);
+            
+            return () => clearTimeout(timer);
+        }
+    }, [loading, pagination.currentPage, pagination.totalPages, filters]);
+
+    // Memoize category list to prevent re-renders
+    const categoryList = useMemo(() => categories, [categories]);
+
+    // Load categories from API
+    useEffect(() => {
+        const loadCategories = async () => {
+            try {
+                const data = await getCategories();
+                setCategories(data);
+            } catch (error) {
+                console.error('Error loading categories:', error);
+            }
+        };
+        loadCategories();
+    }, []);
+
+    // Handle URL params (e.g., from HomePage category click)
+    useEffect(() => {
+        const categoryFromUrl = searchParams.get('category');
+        console.log('[ProductListPage] URL category:', categoryFromUrl);
+        console.log('[ProductListPage] Current filter category:', filters.category);
+        
+        if (categoryFromUrl && categoryFromUrl !== filters.category) {
+            console.log('[ProductListPage] Updating filter to:', categoryFromUrl);
+            updateFilters({ category: categoryFromUrl });
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     const handleSearch = (searchTerm) => {
         updateFilters({ search: searchTerm });
@@ -161,9 +209,19 @@ function ProductListPage() {
                                         🏷️ Danh mục
                                     </h3>
                                     <div className="flex flex-wrap gap-2">
-                                        {PRODUCT_CATEGORIES.map((cat) => (
+                                        <button
+                                            onClick={() => handleCategoryFilter('')}
+                                            className={`px-3 py-1.5 rounded text-sm font-medium transition-all ${
+                                                !filters.category
+                                                    ? 'bg-gradient-to-r from-[#FF6B6B] to-[#FF8E53] text-white shadow-md'
+                                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                            }`}
+                                        >
+                                            Tất cả
+                                        </button>
+                                        {categoryList.map((cat) => (
                                             <button
-                                                key={cat.id}
+                                                key={cat.value}
                                                 onClick={() => handleCategoryFilter(cat.value)}
                                                 className={`px-3 py-1.5 rounded text-sm font-medium transition-all ${
                                                     filters.category === cat.value
@@ -171,7 +229,7 @@ function ProductListPage() {
                                                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                                                 }`}
                                             >
-                                                {cat.label}
+                                                {cat.emoji} {cat.name}
                                             </button>
                                         ))}
                                     </div>
@@ -304,43 +362,6 @@ function ProductListPage() {
                     </div>
                 </div>
             </main>
-
-            {/* Footer */}
-            <footer className="bg-gray-900 text-gray-300 mt-16">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-                        <div className="col-span-1 md:col-span-2">
-                            <div className="flex items-center gap-3 mb-4">
-                                <span className="text-3xl">🥬</span>
-                                <span className="text-xl font-bold text-white">Food Rescue</span>
-                            </div>
-                            <p className="text-gray-400 mb-4">
-                                Nền tảng kết nối người mua với thực phẩm sắp hết hạn từ các cửa hàng.
-                                Tiết kiệm tiền, giảm lãng phí thực phẩm.
-                            </p>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-semibold mb-4">Liên kết</h4>
-                            <ul className="space-y-2 text-gray-400">
-                                <li><a href="/" className="hover:text-[#FF8E53] transition-colors">Trang chủ</a></li>
-                                <li><a href="/products" className="hover:text-[#FF8E53] transition-colors">Sản phẩm</a></li>
-                                <li><a href="#" className="hover:text-[#FF8E53] transition-colors">Về chúng tôi</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h4 className="text-white font-semibold mb-4">Hỗ trợ</h4>
-                            <ul className="space-y-2 text-gray-400">
-                                <li><a href="#" className="hover:text-[#FF8E53] transition-colors">Liên hệ</a></li>
-                                <li><a href="#" className="hover:text-[#FF8E53] transition-colors">FAQ</a></li>
-                                <li><a href="#" className="hover:text-[#FF8E53] transition-colors">Điều khoản</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-500">
-                        © 2024 Food Rescue. Made with 💚 for the planet.
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 }

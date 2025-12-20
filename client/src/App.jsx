@@ -14,7 +14,7 @@ import ShipperOrders from "./pages/shipper/ShipperOrders";
 import NotFound from "./pages/NotFound";
 import CheckoutPage from "./pages/CheckoutPage";
 import { CartProvider } from "./context/CartContext";
-import HomePage from "./pages/HomePage";
+import HomePage from "./pages/Buyer/HomePage";
 import ProductListPage from "./pages/Buyer/ProductListPage";
 import ProductDetailPage from "./pages/Buyer/ProductDetailPage";
 import ShoppingCartPage from "./pages/Buyer/ShoppingCartPage";

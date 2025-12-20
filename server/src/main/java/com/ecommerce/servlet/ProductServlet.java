@@ -46,6 +46,7 @@ public class ProductServlet extends HttpServlet {
         
         try (PrintWriter out = response.getWriter()) {
             String search = request.getParameter("search");
+            String category = request.getParameter("category");
             String minPriceStr = request.getParameter("minPrice");
             String maxPriceStr = request.getParameter("maxPrice");
             String sortBy = request.getParameter("sortBy");
@@ -54,6 +55,8 @@ public class ProductServlet extends HttpServlet {
             String sellerId = request.getParameter("sellerId");
             String hasDiscountStr = request.getParameter("hasDiscount");
             String inStockStr = request.getParameter("inStock");
+            
+            System.out.println("[ProductServlet] Received category parameter: " + category);
             
             Double minPrice = minPriceStr != null ? Double.parseDouble(minPriceStr) : null;
             Double maxPrice = maxPriceStr != null ? Double.parseDouble(maxPriceStr) : null;
@@ -64,6 +67,7 @@ public class ProductServlet extends HttpServlet {
             
             ProductFilter filter = new ProductFilter();
             filter.setSearch(search);
+            filter.setCategory(category);
             filter.setMinPrice(minPrice);
             filter.setMaxPrice(maxPrice);
             filter.setSortBy(sortBy);

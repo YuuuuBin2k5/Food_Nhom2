@@ -54,27 +54,19 @@ export default function Sidebar() {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   // Refs
   const profileRef = useRef(null);
-  const filterRef = useRef(null);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (profileRef.current && !profileRef.current.contains(event.target)) {
         setIsProfileOpen(false);
       }
-      if (filterRef.current && !filterRef.current.contains(event.target)) {
-        setIsFilterOpen(false);
-      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  // Check if on products page
-  const isProductsPage = location.pathname === '/products' || location.pathname === '/';
 
   // --- MENU CONFIG ---
   const menuConfig = {
@@ -114,186 +106,94 @@ export default function Sidebar() {
   const navLinks = getMenuItems();
 
   return (
-    <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] shadow-lg font-sans">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-orange-50/90 via-amber-50/90 to-yellow-50/90 backdrop-blur-xl border-b border-orange-200/30 shadow-sm font-sans">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* 1. LOGO & DESKTOP NAV */}
-          <div className="flex items-center gap-8">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-3 group">
-              <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg group-hover:bg-white/30 transition-all">
-                <span className="text-2xl">🍲</span>
-              </div>
-              <div className="hidden sm:block">
-                <span className="text-xl font-bold text-white tracking-tight block leading-tight">
-                  Food Rescue
-                </span>
-                <span className="text-xs text-white/80">Nhóm 2</span>
-              </div>
-            </Link>
+        <div className="flex items-center justify-between h-20">
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-3 group">
+            <div className="w-12 h-12 bg-gradient-to-br from-orange-400 via-amber-500 to-yellow-500 flex items-center justify-center relative overflow-hidden shadow-lg group-hover:shadow-xl transition-shadow rounded-xl">
+              <div className="absolute inset-0 bg-gradient-to-t from-orange-600/20 to-transparent" />
+              <span className="text-2xl relative z-10 drop-shadow-sm">🍊</span>
+            </div>
+            <div>
+              <span className="block font-black text-2xl tracking-tight bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent drop-shadow-sm">
+                FreshSave
+              </span>
+              <span className="block text-[10px] text-orange-600/70 -mt-1 tracking-widest uppercase font-semibold">
+                Smart Shopping
+              </span>
+            </div>
+          </Link>
 
-            {/* Desktop Navigation Links */}
-            <nav className="hidden md:flex items-center gap-2">
-              {navLinks.map((link) => (
-                <NavLink
-                  key={link.to}
-                  to={link.to}
-                  className={({ isActive }) =>
-                    `px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 ${
-                      isActive
-                        ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
-                        : "text-white/80 hover:text-white hover:bg-white/10"
-                    }`
-                  }
-                >
-                  <span>{link.icon}</span>
+          {/* Desktop Menu */}
+          <nav className="hidden md:flex items-center gap-1">
+            {navLinks.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                className={({ isActive }) =>
+                  `px-4 py-2 text-gray-700 hover:text-orange-600 hover:bg-orange-100/50 rounded-lg transition-all relative group ${
+                    isActive ? "text-orange-600 bg-orange-100/50" : ""
+                  }`
+                }
+              >
+                <span className="flex items-center gap-2 font-medium">
+                  <span className="text-base">{link.icon}</span>
                   {link.label}
-                </NavLink>
-              ))}
-            </nav>
-          </div>
+                </span>
+                <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 group-hover:w-full transition-all duration-300" />
+              </NavLink>
+            ))}
+          </nav>
 
-          {/* 2. RIGHT ACTIONS (Notification, Filter, Profile, Mobile Toggle) */}
-          <div className="flex items-center gap-3">
+          {/* Right Actions */}
+          <div className="flex items-center gap-2">
             {/* Notification Bell */}
             {user && <NotificationBell userId={user.userId} />}
 
-            {/* Filter Button - Only show on products page and mobile/tablet */}
-            {isProductsPage && (
-              <div className="relative lg:hidden" ref={filterRef}>
-                <button
-                  onClick={() => setIsFilterOpen(!isFilterOpen)}
-                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl transition-all"
-                >
-                  <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                  </svg>
-                  <span className="hidden sm:inline text-white font-semibold text-sm">Bộ lọc</span>
-                </button>
-
-                {/* Filter Dropdown */}
-                {isFilterOpen && (
-                  <div className="absolute right-0 mt-3 w-80 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 max-h-[80vh] overflow-y-auto">
-                    {/* Filter Header */}
-                    <div className="bg-gradient-to-r from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F] px-5 py-4 sticky top-0 z-10">
-                      <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                        </svg>
-                        Bộ lọc sản phẩm
-                      </h3>
-                    </div>
-
-                    {/* Filter Content */}
-                    <div className="p-5 space-y-5">
-                      {/* Price Range */}
-                      <div>
-                        <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                          💰 Khoảng giá
-                        </h4>
-                        <div className="space-y-2">
-                          {[
-                            { label: 'Dưới 50.000đ', value: '0-50000' },
-                            { label: '50.000đ - 100.000đ', value: '50000-100000' },
-                            { label: '100.000đ - 200.000đ', value: '100000-200000' },
-                            { label: 'Trên 200.000đ', value: '200000-1000000' },
-                          ].map((range) => (
-                            <label key={range.value} className="flex items-center gap-3 p-2 rounded-lg hover:bg-orange-50 cursor-pointer transition-colors">
-                              <input type="radio" name="priceRange" className="w-4 h-4 text-[#FF6B6B]" />
-                              <span className="text-sm text-gray-700">{range.label}</span>
-                            </label>
-                          ))}
-                        </div>
-                      </div>
-
-                      <hr className="border-gray-200" />
-
-                      {/* Categories */}
-                      <div>
-                        <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                          🍽️ Danh mục
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {['Tất cả', 'Cơm', 'Bánh mì', 'Đồ uống', 'Trái cây', 'Rau củ'].map((cat) => (
-                            <button
-                              key={cat}
-                              className="px-3 py-1.5 text-sm rounded-full border border-gray-200 hover:border-[#FF6B6B] hover:bg-orange-50 hover:text-[#FF6B6B] transition-all"
-                            >
-                              {cat}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-
-                      <hr className="border-gray-200" />
-
-                      {/* Quick Filters */}
-                      <div>
-                        <h4 className="font-semibold text-gray-800 mb-3">⚡ Lọc nhanh</h4>
-                        <div className="space-y-2">
-                          <label className="flex items-center gap-3 p-3 rounded-lg bg-orange-50 border border-orange-100 cursor-pointer hover:bg-orange-100 transition-colors">
-                            <input type="checkbox" className="w-4 h-4 text-orange-500 rounded" />
-                            <div>
-                              <span className="text-sm font-medium text-gray-800 block">🔥 Đang giảm giá</span>
-                              <span className="text-xs text-gray-500">Sản phẩm có khuyến mãi</span>
-                            </div>
-                          </label>
-                          <label className="flex items-center gap-3 p-3 rounded-lg bg-amber-50 border border-amber-100 cursor-pointer hover:bg-amber-100 transition-colors">
-                            <input type="checkbox" className="w-4 h-4 text-[#FFC75F] rounded" />
-                            <div>
-                              <span className="text-sm font-medium text-gray-800 block">✅ Còn hàng</span>
-                              <span className="text-xs text-gray-500">Ẩn sản phẩm hết hàng</span>
-                            </div>
-                          </label>
-                        </div>
-                      </div>
-
-                      {/* Clear Button */}
-                      <button className="w-full py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-xl transition-colors flex items-center justify-center gap-2">
-                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        Xóa bộ lọc
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+            {/* Cart Button */}
+            <Link to="/cart" className="relative p-3 hover:bg-orange-100/50 transition-colors rounded-lg">
+              <svg className="w-5 h-5 text-orange-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <Icons.Cart />
+              </svg>
+              <span className="absolute top-1 right-1 w-5 h-5 bg-gradient-to-br from-orange-500 to-amber-600 text-white text-[10px] flex items-center justify-center font-bold rounded-full shadow-md">
+                3
+              </span>
+            </Link>
 
             {/* Profile Dropdown */}
             {user ? (
               <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setIsProfileOpen(!isProfileOpen)}
-                  className="flex items-center gap-3 bg-white/10 hover:bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl transition-all focus:outline-none"
+                  className="flex items-center gap-2 px-3 py-2 hover:bg-orange-100/50 transition-colors rounded-lg focus:outline-none"
                 >
-                  <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#FF6B6B] font-bold shadow-lg">
+                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-400 via-amber-500 to-yellow-500 flex items-center justify-center text-white font-bold shadow-lg">
                     {user.fullName?.charAt(0).toUpperCase()}
                   </div>
                   <div className="hidden sm:flex flex-col items-start">
-                    <span className="text-sm font-bold text-white leading-none">
+                    <span className="text-sm font-bold text-gray-900 leading-none">
                       {user.fullName}
                     </span>
-                    <span className="text-xs text-white/80 font-medium uppercase mt-0.5">
+                    <span className="text-xs text-orange-600 font-semibold uppercase mt-0.5">
                       {user.role}
                     </span>
                   </div>
-                  <svg className="w-4 h-4 text-white hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-4 h-4 text-orange-700 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
 
                 {/* Dropdown Menu */}
                 {isProfileOpen && (
-                  <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="absolute right-0 mt-3 w-64 bg-white rounded-2xl shadow-2xl border border-orange-100 overflow-hidden">
                     {/* User Info Header */}
-                    <div className="px-5 py-4 bg-gradient-to-r from-orange-50 to-amber-50 border-b border-gray-100">
+                    <div className="px-5 py-4 bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 border-b border-orange-100">
                       <p className="text-base font-bold text-gray-900">
                         {user.fullName}
                       </p>
                       <p className="text-sm text-gray-600">{user.email}</p>
-                      <span className="inline-block mt-2 px-3 py-1 bg-orange-100 text-[#FF6B6B] text-xs font-bold rounded-full uppercase">
+                      <span className="inline-block mt-2 px-3 py-1 bg-gradient-to-r from-orange-100 to-amber-100 text-orange-700 text-xs font-bold rounded-full uppercase">
                         {user.role}
                       </span>
                     </div>
@@ -302,7 +202,7 @@ export default function Sidebar() {
                     <div className="py-2">
                       <Link
                         to="/settings"
-                        className="flex items-center gap-3 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-[#FF6B6B] transition-colors"
+                        className="flex items-center gap-3 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
@@ -332,13 +232,13 @@ export default function Sidebar() {
               <div className="hidden sm:flex items-center gap-3">
                 <Link
                   to="/login"
-                  className="px-5 py-2 text-sm font-semibold text-white hover:bg-white/10 rounded-xl transition-all"
+                  className="px-5 py-2.5 text-sm font-semibold text-orange-700 hover:text-orange-600 transition-all"
                 >
                   Đăng nhập
                 </Link>
                 <Link
                   to="/register"
-                  className="px-5 py-2 text-sm font-semibold bg-white text-[#FF6B6B] rounded-xl hover:bg-orange-50 shadow-lg transition-all"
+                  className="px-5 py-2.5 text-sm font-bold bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 text-white rounded-lg hover:shadow-lg hover:scale-105 transition-all"
                 >
                   Đăng ký
                 </Link>
@@ -358,44 +258,40 @@ export default function Sidebar() {
         </div>
       </div>
 
-      {/* 3. MOBILE MENU (Collapsible) */}
+      {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="md:hidden border-t border-white/20 bg-gradient-to-b from-[#FF6B6B] via-[#FF8E53] to-[#FFC75F]">
-          <div className="px-4 pt-3 pb-4 space-y-2">
-            {navLinks.map((link) => (
-              <NavLink
-                key={link.to}
-                to={link.to}
-                onClick={() => setIsMobileMenuOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl text-base font-semibold transition-all ${
-                    isActive
-                      ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
-                      : "text-white/80 hover:bg-white/10 hover:text-white"
-                  }`
-                }
+        <div className="md:hidden py-4 space-y-1 border-t border-orange-200/50 bg-gradient-to-b from-orange-50/50 to-amber-50/50">
+          {navLinks.map((link) => (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-3 text-gray-700 hover:text-orange-600 hover:bg-orange-100/50 rounded-lg mx-2 transition-all font-medium ${
+                  isActive ? "text-orange-600 bg-orange-100/50" : ""
+                }`
+              }
+            >
+              <span className="text-lg">{link.icon}</span>
+              {link.label}
+            </NavLink>
+          ))}
+          {!user && (
+            <div className="mt-4 pt-4 border-t border-orange-200/50 grid grid-cols-2 gap-3 px-4">
+              <Link
+                to="/login"
+                className="flex justify-center py-3 border-2 border-orange-300 text-orange-700 rounded-lg font-semibold hover:bg-orange-50 transition-all"
               >
-                <span className="text-xl">{link.icon}</span>
-                {link.label}
-              </NavLink>
-            ))}
-            {!user && (
-              <div className="mt-4 pt-4 border-t border-white/20 grid grid-cols-2 gap-3">
-                <Link
-                  to="/login"
-                  className="flex justify-center py-3 border-2 border-white/30 text-white rounded-xl font-semibold hover:bg-white/10 transition-all"
-                >
-                  Đăng nhập
-                </Link>
-                <Link
-                  to="/register"
-                  className="flex justify-center py-3 bg-white text-[#FF6B6B] rounded-xl font-semibold hover:bg-orange-50 shadow-lg transition-all"
-                >
-                  Đăng ký
-                </Link>
-              </div>
-            )}
-          </div>
+                Đăng nhập
+              </Link>
+              <Link
+                to="/register"
+                className="flex justify-center py-3 bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 text-white rounded-lg font-bold hover:shadow-lg transition-all"
+              >
+                Đăng ký
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </header>

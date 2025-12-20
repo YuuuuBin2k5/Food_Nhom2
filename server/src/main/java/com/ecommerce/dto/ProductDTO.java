@@ -2,6 +2,7 @@ package com.ecommerce.dto;
 
 import com.ecommerce.entity.Product;
 import com.ecommerce.entity.ProductStatus;
+import com.ecommerce.entity.ProductCategory;
 import java.util.Date;
 
 /**
@@ -20,6 +21,7 @@ public class ProductDTO {
     private Date createdDate;
     private ProductStatus status;
     private boolean isVerified;
+    private ProductCategory category;
     
     // Seller info
     private String sellerId;
@@ -42,6 +44,7 @@ public class ProductDTO {
         this.quantity = product.getQuantity();
         this.status = product.getStatus();
         this.isVerified = product.isVerified();
+        this.category = product.getCategory();
         
         // Get seller info without triggering lazy load issues
         try {
@@ -186,5 +189,13 @@ public class ProductDTO {
 
     public void setSeller(SellerDTO seller) {
         this.seller = seller;
+    }
+
+    public ProductCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(ProductCategory category) {
+        this.category = category;
     }
 }

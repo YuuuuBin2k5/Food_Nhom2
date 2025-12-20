@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import api from '../services/api';
 import { showToast } from '../utils/toast';
 
@@ -6,24 +6,87 @@ export const useProducts = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const abortControllerRef = useRef(null);
+    const cacheRef = useRef({ data: null, timestamp: 0 });
+    const fetchingRef = useRef(false); // Prevent duplicate calls
+    const CACHE_DURATION = 5 * 60 * 1000; // 5 phút cache
 
-    const fetchProducts = useCallback(async () => {
+    const fetchProducts = useCallback(async (forceRefresh = false) => {
+        // Prevent duplicate calls (React StrictMode issue)
+        if (fetchingRef.current && !forceRefresh) {
+            console.log('[useProducts] Already fetching, skipping...');
+            return products;
+        }
+
+        // Kiểm tra cache
+        const now = Date.now();
+        if (!forceRefresh && cacheRef.current.data && (now - cacheRef.current.timestamp) < CACHE_DURATION) {
+            console.log('[useProducts] Using cached data');
+            setProducts(cacheRef.current.data);
+            setLoading(false);
+            return cacheRef.current.data;
+        }
+
+        // Hủy request cũ nếu đang pending
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+
+        abortControllerRef.current = new AbortController();
+        fetchingRef.current = true;
         setLoading(true);
         setError(null);
         
         try {
-            const res = await api.get('/seller/products');
+            console.log('[useProducts] Fetching...');
+            const startTime = performance.now();
+            
+            const res = await api.get('/seller/products', {
+                signal: abortControllerRef.current.signal
+            });
             const productsData = res.data || [];
+            
+            // Cập nhật cache
+            cacheRef.current = {
+                data: productsData,
+                timestamp: Date.now()
+            };
+            
             setProducts(productsData);
+            setLoading(false);
+            fetchingRef.current = false;
+            
+            const loadTime = performance.now() - startTime;
+            console.log(`[useProducts] ✅ ${productsData.length} products in ${loadTime.toFixed(0)}ms`);
+            
             return productsData;
         } catch (err) {
+            fetchingRef.current = false; // Reset flag on error!
+            setLoading(false);
+            
+            if (err.name === 'AbortError' || err.code === 'ERR_CANCELED') {
+                console.log('[useProducts] Aborted');
+                return products;
+            }
+            
             const errorMessage = err.response?.data?.message || 'Không thể tải danh sách sản phẩm';
             setError(errorMessage);
+            console.error('[useProducts] ❌', errorMessage);
             showToast.error(errorMessage);
             return [];
-        } finally {
-            setLoading(false);
         }
+    }, []);
+
+    /**
+     * Sanitize product data before sending to API
+     */
+    const sanitizeProductData = useCallback((data) => {
+        return {
+            ...data,
+            originalPrice: data.originalPrice === '' ? 0 : Number(data.originalPrice),
+            salePrice: data.salePrice === '' ? 0 : Number(data.salePrice),
+            quantity: data.quantity === '' ? 0 : parseInt(data.quantity, 10)
+        };
     }, []);
 
     /**
@@ -36,7 +99,9 @@ export const useProducts = () => {
             
             if (res.status === 200 || res.status === 201) {
                 showToast.success('Thêm sản phẩm thành công!');
-                await fetchProducts();
+                // Clear cache và reload
+                cacheRef.current = { data: null, timestamp: 0 };
+                await fetchProducts(true);
                 return true;
             }
             return false;
@@ -45,7 +110,7 @@ export const useProducts = () => {
             showToast.error(errorMessage);
             return false;
         }
-    }, [fetchProducts]);
+    }, [sanitizeProductData, fetchProducts]);
 
     /**
      * Update product
@@ -58,7 +123,9 @@ export const useProducts = () => {
             
             if (res.status === 200) {
                 showToast.success('Cập nhật sản phẩm thành công!');
-                await fetchProducts();
+                // Clear cache và reload
+                cacheRef.current = { data: null, timestamp: 0 };
+                await fetchProducts(true);
                 return true;
             }
             return false;
@@ -67,7 +134,7 @@ export const useProducts = () => {
             showToast.error(errorMessage);
             return false;
         }
-    }, [fetchProducts]);
+    }, [sanitizeProductData, fetchProducts]);
 
     /**
      * Delete product
@@ -78,7 +145,9 @@ export const useProducts = () => {
         try {
             await api.delete(`/seller/products/${productId}`);
             showToast.success('Đã xóa sản phẩm');
-            await fetchProducts();
+            // Clear cache và reload
+            cacheRef.current = { data: null, timestamp: 0 };
+            await fetchProducts(true);
             return true;
         } catch (err) {
             showToast.error('Không thể xóa sản phẩm');
@@ -101,25 +170,15 @@ export const useProducts = () => {
             const payload = { ...product, status: newStatus };
             await api.put('/seller/products', payload);
             showToast.success(`Đã ${newStatus === 'HIDDEN' ? 'ẩn' : 'hiện'} sản phẩm`);
-            await fetchProducts();
+            // Clear cache và reload
+            cacheRef.current = { data: null, timestamp: 0 };
+            await fetchProducts(true);
             return true;
         } catch (err) {
             showToast.error('Không thể thay đổi trạng thái');
             return false;
         }
     }, [fetchProducts]);
-
-    /**
-     * Sanitize product data before sending to API
-     */
-    const sanitizeProductData = (data) => {
-        return {
-            ...data,
-            originalPrice: data.originalPrice === '' ? 0 : Number(data.originalPrice),
-            salePrice: data.salePrice === '' ? 0 : Number(data.salePrice),
-            quantity: data.quantity === '' ? 0 : parseInt(data.quantity, 10)
-        };
-    };
 
     return {
         products,

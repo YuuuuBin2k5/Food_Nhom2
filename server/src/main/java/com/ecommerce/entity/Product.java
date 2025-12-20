@@ -55,6 +55,10 @@ public class Product implements Serializable {
     @Column(name = "is_verified")
     private boolean isVerified;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "category")
+    private ProductCategory category;
+
     // --- QUAN HỆ (RELATIONSHIP) ---
     // Nhiều sản phẩm thuộc về 1 Seller
     @ManyToOne(fetch = FetchType.LAZY)
@@ -93,6 +97,7 @@ public class Product implements Serializable {
         this.createdDate = new Date();
         this.status = ProductStatus.PENDING_APPROVAL;
         this.isVerified = false;
+        this.category = ProductCategory.OTHER;
     }
     
     public Long getProductId() {
@@ -197,6 +202,14 @@ public class Product implements Serializable {
 
     public void setCreatedDate(Date createdDate) {
         this.createdDate = createdDate;
+    }
+
+    public ProductCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(ProductCategory category) {
+        this.category = category;
     }
 
 }

@@ -11,9 +11,11 @@ const OrderHistoryPage = () => {
     const { orders, loading, fetchOrders, cancelOrder } = useOrders('buyer');
     const [selectedOrder, setSelectedOrder] = useState(null);
 
+    // Load orders once on mount
     useEffect(() => {
         fetchOrders();
-    }, [fetchOrders]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleCancelOrder = async (orderId) => {
         const success = await cancelOrder(orderId);

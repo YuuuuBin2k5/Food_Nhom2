@@ -24,6 +24,7 @@ com\ecommerce\service\NotificationService.class
 com\ecommerce\util\DBUtil.class
 com\ecommerce\dto\NotificationDTO.class
 com\ecommerce\dto\ProductDTO.class
+com\ecommerce\servlet\CategoryServlet.class
 com\ecommerce\dto\ProductFilter.class
 com\ecommerce\entity\Notification.class
 com\ecommerce\websocket\NotificationWebSocket.class
@@ -48,7 +49,6 @@ com\ecommerce\dto\LoginDTO.class
 com\ecommerce\servlet\CheckoutServlet.class
 com\ecommerce\dto\ProductPageResponse.class
 com\ecommerce\service\OrderService.class
-com\ecommerce\servlet\TestNotificationServlet.class
 com\ecommerce\dto\RegisterDTO.class
 com\ecommerce\util\PasswordUtil.class
 com\ecommerce\servlet\AdminSellerServlet.class
@@ -59,6 +59,7 @@ com\ecommerce\servlet\ApiResetPasswordServlet.class
 com\ecommerce\entity\Shipper.class
 com\ecommerce\servlet\NotificationServlet$1.class
 com\ecommerce\util\MailUtil.class
+com\ecommerce\entity\ProductCategory.class
 com\ecommerce\filter\JwtAuthFilter.class
 com\ecommerce\servlet\AdminStatsServlet.class
 com\ecommerce\entity\OrderStatus.class

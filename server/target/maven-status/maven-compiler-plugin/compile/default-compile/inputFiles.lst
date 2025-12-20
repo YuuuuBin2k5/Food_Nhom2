@@ -20,6 +20,7 @@ C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Pass
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Payment.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\PaymentMethod.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Product.java
+C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\ProductCategory.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\ProductStatus.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Review.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Role.java
@@ -44,6 +45,7 @@ C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\Adm
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ApiForgotPasswordServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ApiResetPasswordServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\BuyerOrderServlet.java
+C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\CategoryServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\CheckoutServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\LoginServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\NotificationServlet.java
@@ -53,7 +55,6 @@ C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\Sel
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerProductServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerProfileServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ShipperOrderServlet.java
-C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\TestNotificationServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\util\DBUtil.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\util\JwtUtil.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\util\MailUtil.java

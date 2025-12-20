@@ -13,9 +13,11 @@ const SellerOrders = () => {
     const [filterStatus, setFilterStatus] = useState("ALL");
     const [selectedOrder, setSelectedOrder] = useState(null);
 
+    // Load orders once on mount
     useEffect(() => {
         fetchOrders();
-    }, [fetchOrders]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     const handleUpdateStatus = async (orderId, newStatus) => {
         const actionText = newStatus === "CONFIRMED" ? "duyệt" : "hủy";

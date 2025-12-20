@@ -36,10 +36,15 @@ public class SellerOrderServlet extends HttpServlet {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try (PrintWriter out = resp.getWriter()) {
 
-            // Logic phức tạp: Order -> OrderDetail -> Product -> Seller
-            // Chúng ta cần lấy tất cả Order mà có chứa sản phẩm của Seller này.
-            String jpql = "SELECT DISTINCT o FROM Order o JOIN o.orderDetails od JOIN od.product p " +
-                    "WHERE p.seller.userId = :sellerId ORDER BY o.orderDate DESC";
+            // ✅ FIX: Sử dụng JOIN FETCH để load tất cả data trong 1 query
+            // Tránh N+1 query problem
+            String jpql = "SELECT DISTINCT o FROM Order o " +
+                    "JOIN FETCH o.orderDetails od " +
+                    "JOIN FETCH od.product p " +
+                    "JOIN FETCH p.seller s " +
+                    "JOIN FETCH o.buyer " +
+                    "WHERE s.userId = :sellerId " +
+                    "ORDER BY o.orderDate DESC";
 
             List<Order> orders = em.createQuery(jpql, Order.class)
                     .setParameter("sellerId", sellerId)
