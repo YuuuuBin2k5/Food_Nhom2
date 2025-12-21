@@ -3,6 +3,10 @@ import { formatPrice } from '../../utils/format';
 
 const CheckoutSuccess = ({ orderId, total, paymentMethod }) => {
     const navigate = useNavigate();
+    
+    // Parse orderIds if it's a comma-separated string
+    const orderIds = orderId ? orderId.split(',').map(id => id.trim()) : [];
+    const isMultipleOrders = orderIds.length > 1;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-amber-50 to-yellow-50 flex items-center justify-center p-4">
@@ -17,13 +21,24 @@ const CheckoutSuccess = ({ orderId, total, paymentMethod }) => {
                     Đặt hàng thành công! 🎉
                 </h2>
                 <p className="text-[#334155] mb-8">
-                    Cảm ơn bạn đã mua sắm tại FoodNhom2
+                    {isMultipleOrders 
+                        ? `Đơn hàng của bạn đã được tách thành ${orderIds.length} đơn riêng biệt theo từng cửa hàng`
+                        : 'Cảm ơn bạn đã mua sắm tại FreshSave'
+                    }
                 </p>
 
                 <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-2xl p-6 mb-8 border border-orange-100">
                     <div className="flex justify-between mb-3 text-sm">
-                        <span className="text-[#334155]">Mã đơn hàng:</span>
-                        <span className="font-bold text-[#0f172a]">#{orderId}</span>
+                        <span className="text-[#334155]">
+                            {isMultipleOrders ? 'Mã đơn hàng:' : 'Mã đơn hàng:'}
+                        </span>
+                        <div className="font-bold text-[#0f172a] text-right">
+                            {orderIds.map((id, index) => (
+                                <div key={id}>
+                                    #{id}
+                                </div>
+                            ))}
+                        </div>
                     </div>
                     <div className="flex justify-between mb-3 text-sm">
                         <span className="text-[#334155]">Phương thức:</span>
@@ -37,6 +52,16 @@ const CheckoutSuccess = ({ orderId, total, paymentMethod }) => {
                         <span>{formatPrice(total)}</span>
                     </div>
                 </div>
+
+                {isMultipleOrders && (
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 text-sm text-blue-800">
+                        <p className="font-medium">ℹ️ Lưu ý:</p>
+                        <p className="mt-1">
+                            Sản phẩm từ các cửa hàng khác nhau sẽ được giao riêng. 
+                            Bạn có thể theo dõi từng đơn hàng trong mục "Đơn mua".
+                        </p>
+                    </div>
+                )}
 
                 <div className="space-y-3">
                     <button

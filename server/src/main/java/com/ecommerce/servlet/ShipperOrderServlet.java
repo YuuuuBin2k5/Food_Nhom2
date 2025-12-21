@@ -34,10 +34,15 @@ public class ShipperOrderServlet extends HttpServlet {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try (PrintWriter out = resp.getWriter()) {
 
-            // Lấy đơn hàng:
-            // 1. CONFIRMED (chưa có shipper) - Đơn có sẵn để nhận
-            // 2. SHIPPING/DELIVERED (của shipper này) - Đơn đang giao/đã giao
-            String jpql = "SELECT o FROM Order o WHERE " +
+            // ✅ FIX: Sử dụng JOIN FETCH để load tất cả data trong 1 query
+            // Tránh N+1 query problem
+            String jpql = "SELECT DISTINCT o FROM Order o " +
+                    "LEFT JOIN FETCH o.payment " +
+                    "LEFT JOIN FETCH o.orderDetails od " +
+                    "LEFT JOIN FETCH od.product p " +
+                    "LEFT JOIN FETCH p.seller " +
+                    "LEFT JOIN FETCH o.buyer " +
+                    "WHERE " +
                     "(o.status = com.ecommerce.entity.OrderStatus.CONFIRMED AND o.shipper IS NULL) " +
                     "OR (o.shipper.userId = :shipperId AND o.status IN " +
                     "(com.ecommerce.entity.OrderStatus.SHIPPING, " +

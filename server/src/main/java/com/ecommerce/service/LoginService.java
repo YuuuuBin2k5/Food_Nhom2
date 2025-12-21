@@ -16,42 +16,49 @@ public class LoginService {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
 
         try {
-            User user = null;  
-
-            // Kiểm tra Admin
-            try {
-                user = em.createQuery("SELECT a FROM Admin a WHERE a.email = :email", Admin.class)
-                         .setParameter("email", email)
-                         .getSingleResult();
-            } catch (NoResultException ignored) {}
-
-            // Kiểm tra Seller
-            if (user == null) {
-                try {
-                    user = em.createQuery("SELECT s FROM Seller s WHERE s.email = :email", Seller.class)
-                             .setParameter("email", email)
-                             .getSingleResult();
-                } catch (NoResultException ignored) {}
+            User user = null;
+            
+            // Tối ưu: Dùng native query với UNION để query 1 lần
+            String sql = 
+                "SELECT user_id, full_name, email, password, phone_number, address, role, is_banned, created_date, 'ADMIN' as user_type " +
+                "FROM admins WHERE email = ? " +
+                "UNION ALL " +
+                "SELECT user_id, full_name, email, password, phone_number, address, role, is_banned, created_date, 'SELLER' as user_type " +
+                "FROM sellers WHERE email = ? " +
+                "UNION ALL " +
+                "SELECT user_id, full_name, email, password, phone_number, address, role, is_banned, created_date, 'BUYER' as user_type " +
+                "FROM buyers WHERE email = ? " +
+                "UNION ALL " +
+                "SELECT user_id, full_name, email, password, phone_number, address, role, is_banned, created_date, 'SHIPPER' as user_type " +
+                "FROM shippers WHERE email = ? " +
+                "LIMIT 1";
+            
+            Object[] result = (Object[]) em.createNativeQuery(sql)
+                .setParameter(1, email)
+                .setParameter(2, email)
+                .setParameter(3, email)
+                .setParameter(4, email)
+                .getSingleResult();
+            
+            String userType = (String) result[9];
+            String userId = (String) result[0];
+            
+            // Load entity đúng type
+            switch (userType) {
+                case "ADMIN":
+                    user = em.find(Admin.class, userId);
+                    break;
+                case "SELLER":
+                    user = em.find(Seller.class, userId);
+                    break;
+                case "BUYER":
+                    user = em.find(Buyer.class, userId);
+                    break;
+                case "SHIPPER":
+                    user = em.find(Shipper.class, userId);
+                    break;
             }
-
-            // Kiểm tra Buyer
-            if (user == null) {
-                try {
-                    user = em.createQuery("SELECT b FROM Buyer b WHERE b.email = :email", Buyer.class)
-                             .setParameter("email", email)
-                             .getSingleResult();
-                } catch (NoResultException ignored) {}
-            }
-
-            // Kiểm tra Shipper
-            if (user == null) {
-                try {
-                    user = em.createQuery("SELECT sh FROM Shipper sh WHERE sh.email = :email", Shipper.class)
-                             .setParameter("email", email)
-                             .getSingleResult();
-                } catch (NoResultException ignored) {}
-            }
-
+            
             if (user == null) {
                 throw new Exception("Email không tồn tại");
             }
@@ -68,6 +75,8 @@ public class LoginService {
 
             return user;
 
+        } catch (jakarta.persistence.NoResultException e) {
+            throw new Exception("Email không tồn tại");
         } finally {
             em.close();
         }

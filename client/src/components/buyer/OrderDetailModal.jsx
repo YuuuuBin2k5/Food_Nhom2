@@ -23,6 +23,9 @@ const OrderDetailModal = ({ order, onClose, onCancel }) => {
         }
     };
 
+    // Get shop name from first item (all items in one order are from same seller)
+    const shopName = order.items?.[0]?.shopName || 'Cửa hàng';
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             {/* Backdrop */}
@@ -34,14 +37,18 @@ const OrderDetailModal = ({ order, onClose, onCancel }) => {
             {/* Modal Content */}
             <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col animate-in zoom-in-95 duration-200">
                 {/* Header */}
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gradient-to-r from-orange-50 to-amber-50 rounded-t-2xl">
-                    <div>
+                <div className="p-6 border-b border-gray-100 flex justify-between items-start bg-gradient-to-r from-orange-50 to-amber-50 rounded-t-2xl">
+                    <div className="flex-1">
                         <h3 className="text-2xl font-bold text-[#0f172a]">
                             Chi tiết đơn hàng #{order.orderId}
                         </h3>
                         <p className="text-sm text-[#334155] mt-1">
                             📅 {formatDate(order.orderDate)}
                         </p>
+                        <div className="mt-3 inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm border border-orange-200">
+                            <span className="text-lg">🏪</span>
+                            <span className="font-semibold text-[#FF6B6B]">{shopName}</span>
+                        </div>
                     </div>
                     <button
                         onClick={onClose}
@@ -88,7 +95,7 @@ const OrderDetailModal = ({ order, onClose, onCancel }) => {
                     {/* Items List */}
                     <h4 className="text-sm font-bold text-[#0f172a] mb-4 flex items-center gap-2">
                         <span className="text-lg">🛍️</span>
-                        Danh sách sản phẩm
+                        Danh sách sản phẩm từ {shopName}
                     </h4>
                     <div className="space-y-3 mb-6">
                         {order.items?.map((item, idx) => (
@@ -103,14 +110,9 @@ const OrderDetailModal = ({ order, onClose, onCancel }) => {
                                 />
                                 <div className="flex-1">
                                     <div className="flex justify-between items-start mb-2">
-                                        <div>
-                                            <h5 className="font-bold text-[#0f172a] text-base">
-                                                {item.name}
-                                            </h5>
-                                            <p className="text-xs text-[#334155] mt-1">
-                                                🏪 {item.shopName}
-                                            </p>
-                                        </div>
+                                        <h5 className="font-bold text-[#0f172a] text-base">
+                                            {item.name}
+                                        </h5>
                                         <span className="font-bold text-[#FF6B6B] text-lg">
                                             {formatPrice(item.price * item.quantity)}
                                         </span>

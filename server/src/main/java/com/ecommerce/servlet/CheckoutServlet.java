@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.List;
 
 @WebServlet("/api/checkout")
 public class CheckoutServlet extends HttpServlet {
@@ -56,10 +57,14 @@ public class CheckoutServlet extends HttpServlet {
                 throw new IllegalArgumentException("Payment method is required");
             }
 
-            String orderId = orderService.placeOrder(request);
+            // Gọi service (đã sửa để trả về List ID)
+            List<String> orderIds = orderService.placeOrder(request);
+
+            // Gộp các ID lại thành chuỗi để trả về frontend (VD: "101, 102")
+            String combinedOrderIds = String.join(", ", orderIds);
 
             resp.setStatus(HttpServletResponse.SC_OK);
-            out.print(gson.toJson(CheckoutResponse.success(orderId)));
+            out.print(gson.toJson(CheckoutResponse.success(combinedOrderIds)));
 
         } catch (IllegalArgumentException e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -67,6 +72,7 @@ public class CheckoutServlet extends HttpServlet {
         } catch (Exception e) {
             resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             out.print(gson.toJson(CheckoutResponse.error("Internal server error")));
+            out.print(gson.toJson(CheckoutResponse.error("Lỗi đặt hàng: " + e.getMessage())));
         } finally {
             out.close();
         }

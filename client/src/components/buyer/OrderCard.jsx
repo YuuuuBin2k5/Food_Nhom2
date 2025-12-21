@@ -12,6 +12,9 @@ const OrderCard = ({ order, onClick }) => {
         });
     };
 
+    // Get shop name from first item (all items in one order are from same seller)
+    const shopName = order.items?.[0]?.shopName || 'Cửa hàng';
+
     return (
         <div
             className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
@@ -20,15 +23,20 @@ const OrderCard = ({ order, onClick }) => {
             {/* Order Header */}
             <div className="p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-orange-50 to-amber-50 border-b border-gray-100">
                 <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-wrap">
                         <span className="font-bold text-[#0f172a] text-xl">
                             #{order.orderId}
                         </span>
                         <OrderStatusBadge status={order.status} />
                     </div>
-                    <span className="text-sm text-[#334155]">
-                        📅 {formatDate(order.orderDate)}
-                    </span>
+                    <div className="flex items-center gap-2 text-sm">
+                        <span className="text-[#334155]">📅 {formatDate(order.orderDate)}</span>
+                    </div>
+                    <div className="flex items-center gap-2 mt-1">
+                        <span className="px-3 py-1 bg-white rounded-full text-sm font-semibold text-[#FF6B6B] border border-orange-200 shadow-sm">
+                            🏪 {shopName}
+                        </span>
+                    </div>
                 </div>
                 <div className="flex flex-col items-end gap-1">
                     <span className="text-sm text-[#334155]">Tổng tiền</span>
@@ -68,7 +76,7 @@ const OrderCard = ({ order, onClick }) => {
                 </div>
                 {order.items && order.items.length > 2 && (
                     <p className="text-sm text-[#334155] mt-3 text-center italic">
-                        ...và {order.items.length - 2} sản phẩm khác
+                        ...và {order.items.length - 2} sản phẩm khác từ {shopName}
                     </p>
                 )}
             </div>

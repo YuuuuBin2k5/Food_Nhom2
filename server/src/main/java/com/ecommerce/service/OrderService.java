@@ -9,101 +9,127 @@ import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
+
 
 public class OrderService {
     
     private final NotificationService notificationService = new NotificationService();
     
     // Tạo đơn hàng mới (Checkout)
-    public String placeOrder(CheckoutRequest request) throws Exception {
+    public List<String> placeOrder(CheckoutRequest request) throws Exception {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        List<String> createdOrderIds = new ArrayList<>();
         
         try {
             em.getTransaction().begin();
-            
-            // 1. Tìm Buyer
+
+            // Tìm Buyer
             Buyer buyer = em.find(Buyer.class, request.getUserId());
+            
             if (buyer == null) {
                 throw new Exception("Buyer not found: " + request.getUserId());
             }
             
-            // 2. Tạo Order mới
-            Order order = new Order();
-            // orderDate và status đã được set trong constructor
-            order.setShippingAddress(request.getShippingAddress());
-            order.setBuyer(buyer);
-            order.setOrderDetails(new ArrayList<>());
+            // Load tất cả products một lần để tránh N+1 query
+            List<Long> productIds = request.getItems().stream()
+                .map(item -> Long.parseLong(item.getProductId()))
+                .toList();
             
-            double totalAmount = 0.0;
+            TypedQuery<Product> productQuery = em.createQuery(
+                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.productId IN :ids",
+                Product.class
+            );
+            productQuery.setParameter("ids", productIds);
+            List<Product> products = productQuery.getResultList();
             
-            // 3. Xử lý từng item trong giỏ hàng
-            for (CartItemDTO item : request.getItems()) {
-                // Convert String productId to Long
-                Long productId = Long.parseLong(item.getProductId());
-                Product product = em.find(Product.class, productId);
-                if (product == null) {
-                    throw new Exception("Product not found: " + item.getProductId());
-                }
-                
-                // Kiểm tra tồn kho
-                if (product.getQuantity() < item.getQuantity()) {
-                    throw new Exception("Not enough stock for product: " + product.getName());
-                }
-                
-                // Trừ tồn kho
-                product.setQuantity(product.getQuantity() - item.getQuantity());
-                em.merge(product);
-                
-                // Tạo OrderDetail
-                OrderDetail detail = new OrderDetail();
-                detail.setProduct(product);
-                detail.setQuantity(item.getQuantity());
-                detail.setPriceAtPurchase(product.getSalePrice());
-                detail.setOrder(order);
-                
-                order.getOrderDetails().add(detail);
-                
-                totalAmount += product.getSalePrice() * item.getQuantity();
+            // Map products by ID for quick lookup
+            Map<Long, Product> productMap = new HashMap<>();
+            for (Product p : products) {
+                productMap.put(p.getProductId(), p);
             }
             
-            // 4. Tạo Payment
-            Payment payment = new Payment();
-            payment.setAmount(totalAmount);
-            payment.setMethod(PaymentMethod.valueOf(request.getPaymentMethod().toUpperCase()));
-            payment.setPaymentDate(new Date());
-            
-            order.setPayment(payment);
-            
-            // 5. Lưu Order (cascade sẽ tự động lưu OrderDetail và Payment)
-            em.persist(order);
-            
-            // Flush để lấy orderId
-            em.flush();
-            
-            // 6. Tạo notifications cho sellers
-            Set<String> notifiedSellers = new HashSet<>();
-            for (OrderDetail detail : order.getOrderDetails()) {
-                String sellerId = detail.getProduct().getSeller().getUserId();
+            // TÁCH GIỎ HÀNG THEO SELLER
+            Map<String, List<CartItemDTO>> itemsBySeller = new HashMap<>();
                 
-                // Chỉ gửi 1 notification cho mỗi seller (tránh duplicate nếu seller có nhiều sản phẩm trong đơn)
-                if (!notifiedSellers.contains(sellerId)) {
+            // Validate và group items
+            for (CartItemDTO itemDTO : request.getItems()) {
+                Long productId = Long.parseLong(itemDTO.getProductId());
+                Product product = productMap.get(productId);
+                
+                if (product == null) throw new Exception("Product not found: " + productId);
+                if (product.getQuantity() < itemDTO.getQuantity()) {
+                    throw new Exception("Sản phẩm '" + product.getName() + "' không đủ hàng!");
+                }
+                
+                String sellerId = product.getSeller().getUserId();
+                itemsBySeller.computeIfAbsent(sellerId, k -> new ArrayList<>()).add(itemDTO);
+            }
+            
+            // TẠO ĐƠN HÀNG RIÊNG CHO TỪNG SELLER
+            for (Map.Entry<String, List<CartItemDTO>> entry : itemsBySeller.entrySet()) {
+                String sellerId = entry.getKey();
+                List<CartItemDTO> sellerItems = entry.getValue();
+
+                Order order = new Order();
+                order.setBuyer(buyer);
+                order.setShippingAddress(request.getShippingAddress());
+                order.setOrderDetails(new ArrayList<>());
+
+                double subTotal = 0.0;
+
+                for (CartItemDTO itemDTO : sellerItems) {
+                    Long productId = Long.valueOf(itemDTO.getProductId());
+                    Product product = productMap.get(productId);
+
+                    // Trừ tồn kho
+                    product.setQuantity(product.getQuantity() - itemDTO.getQuantity());
+
+                    // Tạo OrderDetail
+                    OrderDetail detail = new OrderDetail();
+                    detail.setProduct(product);
+                    detail.setQuantity(itemDTO.getQuantity());
+                    detail.setPriceAtPurchase(product.getSalePrice());
+                    detail.setOrder(order);
+
+                    order.getOrderDetails().add(detail);
+                    subTotal += product.getSalePrice() * itemDTO.getQuantity();
+                }
+
+                // Tính Payment
+                double shippingFee = 30000;
+                double finalAmount = subTotal + shippingFee;
+
+                Payment payment = new Payment();
+                payment.setAmount(finalAmount);
+                payment.setMethod(PaymentMethod.valueOf(request.getPaymentMethod().toUpperCase()));
+                payment.setPaymentDate(new Date());
+                payment.setOrder(order);
+                order.setPayment(payment);
+
+                // Lưu đơn hàng
+                em.persist(order);
+                em.flush();
+
+                createdOrderIds.add(String.valueOf(order.getOrderId()));
+
+                // Gửi thông báo (async để không block)
+                try {
                     notificationService.createNotification(
                         em,
                         sellerId,
                         NotificationType.NEW_ORDER,
                         "Đơn hàng mới #" + order.getOrderId(),
-                        "Bạn có đơn hàng mới từ " + buyer.getFullName() + ". Vui lòng xác nhận đơn hàng.",
+                        "Bạn có đơn hàng mới trị giá " + finalAmount,
                         order.getOrderId()
                     );
-                    notifiedSellers.add(sellerId);
+                } catch (Exception ex) {
+                    System.err.println("Lỗi gửi thông báo: " + ex.getMessage());
                 }
             }
             
             em.getTransaction().commit();
-            
-            return order.getOrderId().toString();
+            return createdOrderIds;
             
         } catch (Exception e) {
             if (em.getTransaction().isActive()) {
@@ -139,13 +165,11 @@ public class OrderService {
                 "LEFT JOIN FETCH od.product p " +
                 "LEFT JOIN FETCH p.seller " +
                 "WHERE o.buyer.userId = :buyerId " +
-                "ORDER BY o.orderDate DESC", 
+                "ORDER BY o.orderDate DESC",
                 Order.class
             );
             query.setParameter("buyerId", buyerId);
-            List<Order> results = query.getResultList();
-            System.out.println("=== [OrderService] Query returned " + results.size() + " orders");
-            return results;
+            return query.getResultList();
         } finally {
             em.close();
         }
@@ -155,8 +179,16 @@ public class OrderService {
     public List<Order> getOrdersByShipper(String shipperId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
+            // Use JOIN FETCH to eagerly load payment and orderDetails
             TypedQuery<Order> query = em.createQuery(
-                "SELECT o FROM Order o WHERE o.shipper.userId = :shipperId ORDER BY o.orderDate DESC", 
+                "SELECT DISTINCT o FROM Order o " +
+                "LEFT JOIN FETCH o.payment " +
+                "LEFT JOIN FETCH o.orderDetails od " +
+                "LEFT JOIN FETCH od.product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "LEFT JOIN FETCH o.buyer " +
+                "WHERE o.shipper.userId = :shipperId " +
+                "ORDER BY o.orderDate DESC",
                 Order.class
             );
             query.setParameter("shipperId", shipperId);
@@ -202,8 +234,15 @@ public class OrderService {
             em.getTransaction().begin();
             
             Order order = em.find(Order.class, orderId);
-            if (order == null) {
-                throw new Exception("Order not found: " + orderId);
+            if (order == null) throw new Exception("Order not found: " + orderId);
+
+            // Logic hoàn kho nếu HỦY đơn
+            if (newStatus == OrderStatus.CANCELLED && order.getStatus() != OrderStatus.CANCELLED) {
+                for (OrderDetail detail : order.getOrderDetails()) {
+                    Product p = detail.getProduct();
+                    p.setQuantity(p.getQuantity() + detail.getQuantity());
+                    em.merge(p);
+                }
             }
             
             OrderStatus oldStatus = order.getStatus();
@@ -268,9 +307,8 @@ public class OrderService {
             
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
+            if (em.getTransaction().isActive()) 
                 em.getTransaction().rollback();
-            }
             throw e;
         } finally {
             em.close();
@@ -320,9 +358,8 @@ public class OrderService {
             
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
+            if (em.getTransaction().isActive()) 
                 em.getTransaction().rollback();
-            }
             throw e;
         } finally {
             em.close();

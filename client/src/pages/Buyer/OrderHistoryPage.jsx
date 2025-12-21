@@ -57,15 +57,30 @@ const OrderHistoryPage = () => {
                         onAction={() => navigate("/products")}
                     />
                 ) : (
-                    <div className="space-y-6">
-                        {orders.map((order) => (
-                            <OrderCard
-                                key={order.orderId}
-                                order={order}
-                                onClick={() => setSelectedOrder(order)}
-                            />
-                        ))}
-                    </div>
+                    <>
+                        {/* Info Notice */}
+                        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-3">
+                            <span className="text-2xl">ℹ️</span>
+                            <div className="flex-1">
+                                <p className="text-sm text-blue-900 font-medium">
+                                    Mỗi đơn hàng chỉ chứa sản phẩm từ một cửa hàng
+                                </p>
+                                <p className="text-xs text-blue-700 mt-1">
+                                    Nếu bạn mua sản phẩm từ nhiều cửa hàng khác nhau, chúng sẽ được tách thành các đơn hàng riêng biệt để giao hàng nhanh hơn.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6">
+                            {orders.map((order) => (
+                                <OrderCard
+                                    key={order.orderId}
+                                    order={order}
+                                    onClick={() => setSelectedOrder(order)}
+                                />
+                            ))}
+                        </div>
+                    </>
                 )}
             </div>
 
