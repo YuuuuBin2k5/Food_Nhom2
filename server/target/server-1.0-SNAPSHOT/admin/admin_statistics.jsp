@@ -10,7 +10,10 @@
 </head>
 <body>
 
-<jsp:include page="admin_header.jsp"/>
+<!-- Include Sidebar -->
+    <jsp:include page="../common/sidebar.jsp">
+        <jsp:param name="currentPath" value="/admin/statistics" />
+    </jsp:include>
 
 <div class="main-content">
     <div class="content-box">

@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import com.ecommerce.service.AdminUserService;
 import com.ecommerce.service.UserLogService;
+import com.ecommerce.util.MenuHelper;
 import com.ecommerce.entity.Admin;
 import com.ecommerce.entity.Seller;
 import com.ecommerce.entity.Buyer;
@@ -74,6 +75,9 @@ public class AdminUserServlet extends HttpServlet {
 
     private void loadUsers(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        // Set menu items
+        MenuHelper.setMenuItems(request, "ADMIN", "/admin/manageUser");
+        
         String keyword = request.getParameter("keyword");
         String filter = request.getParameter("filter");
         if (filter == null) filter = "all";
@@ -136,6 +140,9 @@ public class AdminUserServlet extends HttpServlet {
 
     private void viewUserLog(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        // Set menu items
+        MenuHelper.setMenuItems(request, "ADMIN", "/admin/manageUser");
+        
         String userId = request.getParameter("userId");
         String userName = request.getParameter("userName");
         String userType = request.getParameter("userType");

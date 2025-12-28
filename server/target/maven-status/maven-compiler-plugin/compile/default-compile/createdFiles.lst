@@ -1,7 +1,6 @@
 com\ecommerce\entity\Review.class
 com\ecommerce\servlet\AdminStatisticsServlet.class
 com\ecommerce\entity\ProductStatus.class
-com\ecommerce\util\MenuHelper$MenuItem.class
 com\ecommerce\util\MenuHelper.class
 com\ecommerce\servlet\CheckoutPageServlet.class
 com\ecommerce\entity\NotificationType.class

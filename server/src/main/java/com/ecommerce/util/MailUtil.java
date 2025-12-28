@@ -16,7 +16,6 @@ public class MailUtil {
     private static final String FROM_EMAIL = System.getenv("FROM_EMAIL");
     private static final String FROM_NAME = "Food Rescue";
     
-
     public static void send(String to, String subject, String content) {
 
         Properties props = new Properties();

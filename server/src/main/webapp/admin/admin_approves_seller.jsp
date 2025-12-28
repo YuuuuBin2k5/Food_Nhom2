@@ -12,7 +12,10 @@
 </head>
 <body>
 
-<jsp:include page="admin_header.jsp"/>
+<!-- Include Sidebar -->
+    <jsp:include page="../common/sidebar.jsp">
+        <jsp:param name="currentPath" value="/admin/approveSeller" />
+    </jsp:include>
 
 <div class="main-content">
 

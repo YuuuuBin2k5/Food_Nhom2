@@ -11,6 +11,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import com.ecommerce.service.AdminSellerService;
 import com.ecommerce.service.UserLogService;
+import com.ecommerce.util.MenuHelper;
 import com.ecommerce.entity.Admin;
 import com.ecommerce.entity.Seller;
 import com.ecommerce.entity.SellerStatus;
@@ -70,6 +71,9 @@ public class AdminSellerServlet extends HttpServlet {
 
     private void loadSellers(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        // Set menu items
+        MenuHelper.setMenuItems(request, "ADMIN", "/admin/approveSeller");
+        
         String tab = request.getParameter("tab");
         if (tab == null) tab = "pending";
         
@@ -126,6 +130,9 @@ public class AdminSellerServlet extends HttpServlet {
 
     private void viewSellerDetail(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        // Set menu items
+        MenuHelper.setMenuItems(request, "ADMIN", "/admin/approveSeller");
+        
         String sellerId = request.getParameter("sellerId");
         String tab = request.getParameter("tab");
         String pageStr = request.getParameter("page");
