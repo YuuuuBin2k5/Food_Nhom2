@@ -1,5 +1,6 @@
 package com.ecommerce.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -121,7 +122,7 @@ public class ProductService {
         } catch (Exception e) {
             System.err.println("Error in getProductsBySeller: " + e.getMessage());
             e.printStackTrace();
-            return List.of(); // Return empty list on error
+            return new ArrayList<>(); // Return empty list on error
         } finally {
             em.close();
         }
@@ -411,7 +412,7 @@ public class ProductService {
             return query.getResultList();
         } catch (IllegalArgumentException e) {
             // Invalid category, return empty list
-            return List.of();
+            return new ArrayList<>();
         } finally {
             em.close();
         }

@@ -166,8 +166,6 @@ body {
 .password-wrapper input.form-input {
     padding-right: 50px !important;
 }
-    background: #f8fafc;
-}
 
 .form-input:focus {
     outline: none;

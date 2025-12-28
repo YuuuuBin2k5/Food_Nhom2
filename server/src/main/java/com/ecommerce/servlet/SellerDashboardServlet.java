@@ -3,11 +3,13 @@ package com.ecommerce.servlet;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import com.ecommerce.entity.Order;
+import com.ecommerce.entity.OrderDetail;
 import com.ecommerce.entity.OrderStatus;
 import com.ecommerce.entity.Product;
 import com.ecommerce.entity.ProductStatus;
@@ -33,19 +35,28 @@ public class SellerDashboardServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
+        System.out.println("=== SellerDashboardServlet.doGet() called ===");
+        
         HttpSession session = request.getSession(false);
+        System.out.println("Session: " + session);
+        
         if (session == null || session.getAttribute("user") == null) {
+            System.out.println("No session or user, redirecting to login");
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
         
         String role = (String) session.getAttribute("role");
+        System.out.println("User role: " + role);
+        
         if (!"SELLER".equals(role)) {
+            System.out.println("Not a seller, redirecting to home");
             response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
         
         User user = (User) session.getAttribute("user");
+        System.out.println("User: " + (user != null ? user.getUserId() : "null"));
         
         // Set menu items
         MenuHelper.setMenuItems(request, "SELLER", "/seller/dashboard");
@@ -53,25 +64,39 @@ public class SellerDashboardServlet extends HttpServlet {
         try {
             String sellerId = user.getUserId();
             
+            if (sellerId == null) {
+                System.err.println("Dashboard error: sellerId is null");
+                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi: Không tìm thấy thông tin seller");
+                return;
+            }
+            
+            System.out.println("Loading dashboard for seller: " + sellerId);
+            
             // Load products and orders
             List<Product> products = null;
             List<Order> orders = null;
             
             try {
                 products = productService.getProductsBySeller(sellerId);
+                System.out.println("Loaded " + (products != null ? products.size() : 0) + " products");
             } catch (Exception e) {
                 System.err.println("Error loading products: " + e.getMessage());
                 e.printStackTrace();
-                products = List.of(); // Empty list
+                products = new ArrayList<>(); // Empty list
             }
             
             try {
                 orders = orderService.getOrdersBySellerProducts(sellerId);
+                System.out.println("Loaded " + (orders != null ? orders.size() : 0) + " orders");
             } catch (Exception e) {
                 System.err.println("Error loading orders: " + e.getMessage());
                 e.printStackTrace();
-                orders = List.of(); // Empty list
+                orders = new ArrayList<>(); // Empty list
             }
+            
+            // Ensure lists are not null
+            if (products == null) products = new ArrayList<>();
+            if (orders == null) orders = new ArrayList<>();
             
             // Calculate stats
             long totalProducts = products.size();
@@ -91,11 +116,24 @@ public class SellerDashboardServlet extends HttpServlet {
                 .filter(o -> isToday(o.getOrderDate()))
                 .count();
             
-            double totalRevenue = orders.stream()
-                .filter(o -> o.getStatus() == OrderStatus.DELIVERED)
-                .flatMap(o -> o.getOrderDetails().stream())
-                .mapToDouble(od -> od.getPriceAtPurchase() * od.getQuantity())
-                .sum();
+            // Calculate revenue without stream to avoid UnsupportedOperationException
+            double totalRevenue = 0.0;
+            try {
+                for (Order order : orders) {
+                    if (order.getStatus() == OrderStatus.DELIVERED) {
+                        List<OrderDetail> details = order.getOrderDetails();
+                        if (details != null) {
+                            for (OrderDetail od : details) {
+                                totalRevenue += od.getPriceAtPurchase() * od.getQuantity();
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("Error calculating revenue: " + e.getMessage());
+                e.printStackTrace();
+                totalRevenue = 0.0;
+            }
             
             // Get recent items
             List<Product> recentProducts = products.stream()
@@ -119,9 +157,12 @@ public class SellerDashboardServlet extends HttpServlet {
             request.getRequestDispatcher("/seller/dashboard.jsp").forward(request, response);
             
         } catch (Exception e) {
-            System.err.println("Dashboard error: " + e.getMessage());
+            System.err.println("Dashboard error: " + e.getClass().getName());
+            System.err.println("Error message: " + e.getMessage());
             e.printStackTrace();
-            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi tải dữ liệu dashboard: " + e.getMessage());
+            
+            String errorMsg = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi tải dữ liệu dashboard: " + errorMsg);
         }
     }
     

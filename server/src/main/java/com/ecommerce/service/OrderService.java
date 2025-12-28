@@ -189,7 +189,7 @@ public class OrderService {
             
             // If no products, return empty list
             if (productCount == 0) {
-                return List.of();
+                return new ArrayList<>();
             }
             
             TypedQuery<Order> query = em.createQuery(
@@ -208,7 +208,7 @@ public class OrderService {
         } catch (Exception e) {
             System.err.println("Error in getOrdersBySellerProducts: " + e.getMessage());
             e.printStackTrace();
-            return List.of(); // Return empty list on error
+            return new ArrayList<>(); // Return empty list on error
         } finally {
             em.close();
         }
