@@ -19,7 +19,7 @@
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?sslmode=require"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://aws-1-ap-northeast-1.pooler.supabase.com:6543/postgres?sslmode=require&amp;prepareThreshold=0"/>
             <property name="jakarta.persistence.jdbc.user" value="postgres.temjcgfdfgzldxpdfxzn"/>
             <property name="jakarta.persistence.jdbc.password" value="0786759178aE"/>
 

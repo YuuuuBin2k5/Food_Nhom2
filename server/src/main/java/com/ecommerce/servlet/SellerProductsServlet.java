@@ -46,6 +46,7 @@ public class SellerProductsServlet extends HttpServlet {
             List<Product> products = productService.getProductsBySeller(sellerId);
             
             request.setAttribute("products", products);
+            request.setAttribute("categories", com.ecommerce.entity.ProductCategory.values());
             request.getRequestDispatcher("/seller/products.jsp").forward(request, response);
             
         } catch (Exception e) {

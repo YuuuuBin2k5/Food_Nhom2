@@ -1,10 +1,12 @@
 com\ecommerce\entity\Review.class
 com\ecommerce\servlet\AdminStatisticsServlet.class
 com\ecommerce\entity\ProductStatus.class
+com\ecommerce\servlet\HomePageServlet$FilterParams.class
 com\ecommerce\util\MenuHelper.class
 com\ecommerce\entity\NotificationType.class
 com\ecommerce\service\AdminService.class
 com\ecommerce\servlet\CartServlet.class
+com\ecommerce\servlet\MyOrdersServlet.class
 com\ecommerce\servlet\SellerOrdersServlet.class
 com\ecommerce\service\AuthService.class
 com\ecommerce\util\MailUtil$1.class
@@ -15,6 +17,7 @@ com\ecommerce\servlet\ShipperOrderServlet.class
 com\ecommerce\entity\PaymentMethod.class
 com\ecommerce\service\UserLogService.class
 com\ecommerce\service\AdminUserService.class
+com\ecommerce\servlet\CartServlet$CartSummary.class
 com\ecommerce\entity\Payment.class
 com\ecommerce\servlet\ProductListServlet.class
 com\ecommerce\dto\CheckoutRequest.class
@@ -32,7 +35,6 @@ com\ecommerce\servlet\HomePageServlet.class
 com\ecommerce\dto\ProductFilter.class
 com\ecommerce\servlet\ProductDetailServlet.class
 com\ecommerce\entity\Notification.class
-com\ecommerce\servlet\buyer\MyOrdersServlet.class
 com\ecommerce\servlet\LoginPageServlet.class
 com\ecommerce\servlet\OrderHistoryServlet.class
 com\ecommerce\entity\Order.class
@@ -41,9 +43,11 @@ com\ecommerce\dto\SellerUpdateDTO.class
 com\ecommerce\dto\CartItemDTO.class
 com\ecommerce\entity\Admin.class
 com\ecommerce\dto\CheckoutResponse.class
+com\ecommerce\servlet\ProductListServlet$FilterParams.class
 com\ecommerce\entity\SellerStatus.class
 com\ecommerce\servlet\ResetPasswordPageServlet.class
 com\ecommerce\servlet\AddToCartServlet.class
+com\ecommerce\servlet\SellerProductAPIServlet.class
 com\ecommerce\entity\Product.class
 com\ecommerce\dto\SellerDTO.class
 com\ecommerce\entity\PasswordResetToken.class
@@ -71,6 +75,7 @@ com\ecommerce\servlet\AdminUserServlet.class
 com\ecommerce\entity\Shipper.class
 com\ecommerce\util\MailUtil.class
 com\ecommerce\entity\ProductCategory.class
+com\ecommerce\util\CategoryUpdater.class
 com\ecommerce\entity\UserLog.class
 com\ecommerce\servlet\ShipperOrdersServlet.class
 com\ecommerce\entity\OrderStatus.class

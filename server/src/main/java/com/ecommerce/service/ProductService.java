@@ -40,6 +40,11 @@ public class ProductService {
             product.setExpirationDate(dto.getExpirationDate());
             product.setManufactureDate(dto.getManufactureDate());
             product.setStatus(ProductStatus.PENDING_APPROVAL);
+            if (dto.getCategory() != null) {
+                product.setCategory(dto.getCategory());
+            } else {
+                product.setCategory(ProductCategory.OTHER);
+            }
             product.setSeller(seller);
 
             em.persist(product);
@@ -72,6 +77,10 @@ public class ProductService {
             product.setSalePrice(dto.getSalePrice());
             product.setQuantity(dto.getQuantity());
             product.setExpirationDate(dto.getExpirationDate());
+            
+            if (dto.getCategory() != null) {
+                product.setCategory(dto.getCategory());
+            }
             
             if (dto.getStatus() != null) {
                 product.setStatus(dto.getStatus());
@@ -155,7 +164,20 @@ public class ProductService {
             TypedQuery<Product> query = em.createQuery(
                 "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :st", Product.class);
             query.setParameter("st", ProductStatus.ACTIVE);
-            return query.getResultList();
+            
+            List<Product> results = query.getResultList();
+            
+            // DIAGNOSTIC LOGGING
+            System.out.println("[ProductService] getActiveProducts found " + results.size() + " items.");
+            if (!results.isEmpty()) {
+                System.out.println("[ProductService] Sample Categories from DB:");
+                for (int i = 0; i < Math.min(5, results.size()); i++) {
+                     Product p = results.get(i);
+                     System.out.println(" - ID=" + p.getProductId() + ", Name=" + p.getName() + ", Category=" + p.getCategory());
+                }
+            }
+            
+            return results;
         } finally {
             em.close();
         }
@@ -401,16 +423,47 @@ public class ProductService {
     public List<Product> getProductsByCategory(String categoryStr) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
-            ProductCategory category = ProductCategory.valueOf(categoryStr.toUpperCase());
+            System.out.println("[ProductService] Filtering by: " + categoryStr);
+
+            // Try to match by enum name first (e.g., "VEGETABLES")
+            ProductCategory category = null;
+            try {
+                category = ProductCategory.valueOf(categoryStr.trim().toUpperCase());
+                System.out.println("[ProductService] Matched by enum name: " + category);
+            } catch (Exception e) {
+                // If enum match fails, try matching by display name (e.g., "Rau củ quả")
+                System.out.println("[ProductService] Enum match failed, trying display name match for: " + categoryStr);
+                for (ProductCategory c : ProductCategory.values()) {
+                    if (c.getDisplayName().equalsIgnoreCase(categoryStr.trim())) {
+                        category = c;
+                        System.out.println("[ProductService] Matched by display name: " + category);
+                        break;
+                    }
+                }
+                
+                if (category == null) {
+                    System.out.println("[ProductService] No category match found. Available categories:");
+                    for (ProductCategory c : ProductCategory.values()) {
+                        System.out.println(" - Enum: " + c.name() + ", Display: " + c.getDisplayName());
+                    }
+                    return List.of();
+                }
+            }
+
             TypedQuery<Product> query = em.createQuery(
                 "SELECT p FROM Product p LEFT JOIN FETCH p.seller " +
                 "WHERE p.category = :cat AND p.status = :st", 
                 Product.class);
             query.setParameter("cat", category);
             query.setParameter("st", ProductStatus.ACTIVE);
-            return query.getResultList();
+            
+            List<Product> results = query.getResultList();
+            System.out.println("[ProductService] Found " + results.size() + " products for " + category);
+            return results;
+            
         } catch (IllegalArgumentException e) {
             // Invalid category, return empty list
+            System.err.println("[ProductService] Error: " + e.getMessage());
             return List.of();
         } finally {
             em.close();

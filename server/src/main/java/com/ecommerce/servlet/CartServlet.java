@@ -15,7 +15,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
 
-@WebServlet(name = "CartServlet", urlPatterns = {"/cart"})
+/**
+ * Handles shopping cart page display and form-based cart operations
+ * Session-based cart management (no database persistence until checkout)
+ */
+@WebServlet(name = "CartServlet", urlPatterns = {"/view-cart"})
 public class CartServlet extends HttpServlet {
 
     private final ProductService productService = new ProductService();
@@ -23,8 +27,29 @@ public class CartServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Set menu items for buyer
-        MenuHelper.setMenuItems(request, "BUYER", "/cart");
+        
+        // Authentication check
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        
+        // Initialize cart if not exists
+        List<CartItemDTO> cart = getOrCreateCart(session);
+        
+        // Calculate cart summary for display
+        CartSummary summary = calculateCartSummary(cart);
+        
+        // Set attributes for JSP
+        request.setAttribute("cartItems", cart);
+        request.setAttribute("subtotal", summary.subtotal);
+        request.setAttribute("totalSavings", summary.savings);
+        request.setAttribute("total", summary.total);
+        request.setAttribute("itemCount", summary.itemCount);
+        
+        // Set menu items
+        MenuHelper.setMenuItems(request, "BUYER", "/view-cart");
         
         // Forward to cart.jsp
         request.getRequestDispatcher("/buyer/cart.jsp").forward(request, response);
@@ -33,57 +58,79 @@ public class CartServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        
+        // Authentication check
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        
         String action = request.getParameter("action");
         if (action == null) action = "";
         
-        HttpSession session = request.getSession();
-        List<CartItemDTO> cart = (List<CartItemDTO>) session.getAttribute("cart");
-        if (cart == null) {
-            cart = new ArrayList<>();
-            session.setAttribute("cart", cart);
-        }
+        List<CartItemDTO> cart = getOrCreateCart(session);
 
         try {
             switch (action) {
                 case "add":
-                    addToCart(request, cart);
+                    handleAdd(request, cart);
+                    session.setAttribute("successMessage", "Đã thêm sản phẩm vào giỏ hàng!");
                     break;
+                    
                 case "update":
-                    updateCart(request, cart);
+                    handleUpdate(request, cart);
+                    session.setAttribute("successMessage", "Đã cập nhật giỏ hàng!");
                     break;
+                    
                 case "remove":
-                    removeFromCart(request, cart);
+                    handleRemove(request, cart);
+                    session.setAttribute("successMessage", "Đã xóa sản phẩm khỏi giỏ hàng!");
                     break;
+                    
                 case "clear":
                     cart.clear();
+                    session.setAttribute("successMessage", "Đã xóa toàn bộ giỏ hàng!");
                     break;
+                    
+                default:
+                    session.setAttribute("errorMessage", "Hành động không hợp lệ!");
             }
+            
+            // Update cart in session
+            session.setAttribute("cart", cart);
+            updateCartSize(session, cart);
+            
+        } catch (NumberFormatException e) {
+            session.setAttribute("errorMessage", "Dữ liệu không hợp lệ!");
         } catch (Exception e) {
             e.printStackTrace();
+            session.setAttribute("errorMessage", "Có lỗi xảy ra: " + e.getMessage());
         }
-        
-        // Update cart size in session for header
-        int totalItems = 0;
-        for (CartItemDTO item : cart) {
-            totalItems += item.getQuantity();
-        }
-        session.setAttribute("cartSize", totalItems);
 
-        // Redirect back to cart or referer
+        // Redirect based on action
         String referer = request.getHeader("Referer");
-        if (action.equals("add") && referer != null && referer.contains("product")) {
-             // If added from product page, stay there with message
-             response.sendRedirect(referer + "&message=Added to cart");
+        if ("add".equals(action) && referer != null && !referer.contains("cart")) {
+            // If added from product page, stay there
+            response.sendRedirect(referer);
         } else {
-             response.sendRedirect(request.getContextPath() + "/cart");
+            // Otherwise go to cart page
+            response.sendRedirect(request.getContextPath() + "/view-cart");
         }
     }
 
-    private void addToCart(HttpServletRequest request, List<CartItemDTO> cart) throws Exception {
+    /**
+     * Add product to cart (or increment quantity if exists)
+     */
+    private void handleAdd(HttpServletRequest request, List<CartItemDTO> cart) throws Exception {
         Long productId = Long.parseLong(request.getParameter("productId"));
         int quantity = Integer.parseInt(request.getParameter("quantity"));
         
-        // Check if item exists
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Số lượng phải lớn hơn 0");
+        }
+        
+        // Check if item already in cart
         boolean found = false;
         for (CartItemDTO item : cart) {
             if (item.getProduct().getProductId().equals(productId)) {
@@ -93,32 +140,50 @@ public class CartServlet extends HttpServlet {
             }
         }
         
+        // If not found, add new item
         if (!found) {
             ProductDTO product = productService.getProductById(productId);
-            if (product != null) {
-                cart.add(new CartItemDTO(product, quantity));
+            if (product == null) {
+                throw new IllegalArgumentException("Sản phẩm không tồn tại");
             }
+            
+            // Check stock availability
+            if (product.getQuantity() < quantity) {
+                throw new IllegalArgumentException("Không đủ hàng trong kho (Còn: " + product.getQuantity() + ")");
+            }
+            
+            cart.add(new CartItemDTO(product, quantity));
         }
     }
 
-    private void updateCart(HttpServletRequest request, List<CartItemDTO> cart) {
+    /**
+     * Update cart item quantity
+     */
+    private void handleUpdate(HttpServletRequest request, List<CartItemDTO> cart) {
         Long productId = Long.parseLong(request.getParameter("productId"));
         int quantity = Integer.parseInt(request.getParameter("quantity"));
         
         if (quantity <= 0) {
-            removeFromCart(request, cart);
+            handleRemove(request, cart);
             return;
         }
 
         for (CartItemDTO item : cart) {
             if (item.getProduct().getProductId().equals(productId)) {
+                // Check stock availability
+                if (item.getProduct().getQuantity() < quantity) {
+                    throw new IllegalArgumentException("Không đủ hàng (Còn: " + item.getProduct().getQuantity() + ")");
+                }
                 item.setQuantity(quantity);
                 break;
             }
         }
     }
 
-    private void removeFromCart(HttpServletRequest request, List<CartItemDTO> cart) {
+    /**
+     * Remove item from cart
+     */
+    private void handleRemove(HttpServletRequest request, List<CartItemDTO> cart) {
         Long productId = Long.parseLong(request.getParameter("productId"));
         
         Iterator<CartItemDTO> iterator = cart.iterator();
@@ -129,5 +194,55 @@ public class CartServlet extends HttpServlet {
                 break;
             }
         }
+    }
+
+    /**
+     * Get cart from session or create new one
+     */
+    @SuppressWarnings("unchecked")
+    private List<CartItemDTO> getOrCreateCart(HttpSession session) {
+        List<CartItemDTO> cart = (List<CartItemDTO>) session.getAttribute("cart");
+        if (cart == null) {
+            cart = new ArrayList<>();
+            session.setAttribute("cart", cart);
+        }
+        return cart;
+    }
+
+    /**
+     * Update cart size in session (for header display)
+     */
+    private void updateCartSize(HttpSession session, List<CartItemDTO> cart) {
+        int totalItems = cart.stream()
+            .mapToInt(CartItemDTO::getQuantity)
+            .sum();
+        session.setAttribute("cartSize", totalItems);
+    }
+
+    /**
+     * Calculate cart summary (subtotal, savings, total)
+     */
+    private CartSummary calculateCartSummary(List<CartItemDTO> cart) {
+        CartSummary summary = new CartSummary();
+        
+        for (CartItemDTO item : cart) {
+            summary.subtotal += item.getSubtotal();
+            summary.savings += item.getSavings();
+            summary.itemCount += item.getQuantity();
+        }
+        
+        summary.total = summary.subtotal;
+        
+        return summary;
+    }
+
+    /**
+     * Inner class for cart summary data
+     */
+    private static class CartSummary {
+        double subtotal = 0;
+        double savings = 0;
+        double total = 0;
+        int itemCount = 0;
     }
 }
