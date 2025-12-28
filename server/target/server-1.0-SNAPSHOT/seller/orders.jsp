@@ -1,326 +1,159 @@
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quản lý Đơn hàng - Seller</title>
+    <title>Quản lý đơn hàng - Seller Portal</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
+    <style>
+        body { margin: 0; padding-top: 96px; background: #f8fafc; min-height: 100vh; }
+        .main-content { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+        
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; }
+        .page-title { font-size: 1.875rem; font-weight: 700; color: #1e293b; }
+        
+        .order-card { background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 1.5rem; overflow: hidden; border: 1px solid #e2e8f0; }
+        .order-header { background: #f8fafc; padding: 1rem 1.5rem; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .order-id { font-weight: 700; color: #0f172a; }
+        .order-date { font-size: 0.875rem; color: #64748b; }
+        
+        .order-body { padding: 1.5rem; }
+        .item-row { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 0; border-bottom: 1px solid #f1f5f9; }
+        .item-row:last-child { border-bottom: none; }
+        .item-img { width: 50px; height: 50px; border-radius: 0.5rem; object-fit: cover; background: #eee; }
+        .item-info { flex: 1; }
+        .item-name { font-weight: 600; color: #334155; }
+        .item-meta { font-size: 0.875rem; color: #64748b; }
+        
+        .order-footer { padding: 1rem 1.5rem; background: #fff; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+        .total-price { font-size: 1.25rem; font-weight: 700; color: #ef4444; }
+        
+        .badge { padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600; }
+        .badge-pending { background: #fef3c7; color: #d97706; }
+        .badge-confirmed { background: #dbeafe; color: #2563eb; }
+        .badge-shipping { background: #f3e8ff; color: #9333ea; }
+        .badge-delivered { background: #dcfce7; color: #16a34a; }
+        .badge-cancelled { background: #fee2e2; color: #dc2626; }
+        
+        .btn-action { padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; }
+        .btn-approve { background: #10b981; color: white; }
+        .btn-approve:hover { background: #059669; }
+        .btn-reject { background: white; border: 1px solid #ef4444; color: #ef4444; }
+        .btn-reject:hover { background: #fee2e2; }
+        .btn-ship { background: #8b5cf6; color: white; }
+        .btn-ship:hover { background: #7c3aed; }
+        
+        .empty-state { text-align: center; padding: 4rem 0; color: #64748b; }
+    </style>
 </head>
 <body>
-    <jsp:include page="../common/sidebar.jsp" />
-    
+    <jsp:include page="../common/sidebar.jsp">
+        <jsp:param name="currentPath" value="/seller/orders" />
+    </jsp:include>
+
     <div class="main-content">
-        <!-- Header Banner -->
-        <div class="header-banner">
-            <div class="container">
-                <div>
-                    <h1 class="page-title">
-                        <span class="icon">🏪</span>
-                        Quản lý Đơn hàng
-                    </h1>
-                    <p class="page-subtitle">Theo dõi và xử lý các đơn hàng từ khách hàng</p>
+        <div class="page-header">
+            <h1 class="page-title">📋 Quản lý Đơn hàng</h1>
+        </div>
+
+        <c:choose>
+            <c:when test="${empty orders}">
+                <div class="empty-state">
+                    <div style="font-size: 4rem; margin-bottom: 1rem;">📭</div>
+                    <h3>Chưa có đơn hàng nào</h3>
+                    <p>Các đơn hàng mới sẽ xuất hiện tại đây</p>
                 </div>
-            </div>
-        </div>
-
-        <div class="container py-4">
-            <!-- Status Filter -->
-            <div class="status-filter mb-4">
-                <button class="filter-btn active" data-status="ALL" onclick="filterOrders('ALL')">
-                    Tất cả (${orders.size()})
-                </button>
-                <button class="filter-btn" data-status="PENDING" onclick="filterOrders('PENDING')">
-                    ⏳ Chờ xác nhận
-                </button>
-                <button class="filter-btn" data-status="CONFIRMED" onclick="filterOrders('CONFIRMED')">
-                    👨‍🍳 Đã xác nhận
-                </button>
-                <button class="filter-btn" data-status="SHIPPING" onclick="filterOrders('SHIPPING')">
-                    🚚 Đang giao
-                </button>
-                <button class="filter-btn" data-status="DELIVERED" onclick="filterOrders('DELIVERED')">
-                    ✅ Đã giao
-                </button>
-                <button class="filter-btn" data-status="CANCELLED" onclick="filterOrders('CANCELLED')">
-                    ❌ Đã hủy
-                </button>
-            </div>
-
-            <c:choose>
-                <c:when test="${empty orders}">
-                    <div class="empty-state">
-                        <span class="empty-icon">📭</span>
-                        <h3>Không có đơn hàng nào</h3>
-                        <p>Chưa có đơn hàng nào trong hệ thống</p>
-                    </div>
-                </c:when>
-                <c:otherwise>
-                    <!-- Orders List -->
-                    <div id="ordersList" class="space-y-4">
-                        <c:forEach var="order" items="${orders}">
-                            <div class="order-card" data-status="${order.status}">
-                                <div class="order-header">
-                                    <div class="flex-between">
-                                        <div>
-                                            <h3 class="order-id">Đơn hàng #${order.orderId}</h3>
-                                            <p class="order-date">
-                                                <fmt:formatDate value="${order.orderDate}" pattern="dd/MM/yyyy HH:mm" />
-                                            </p>
-                                        </div>
-                                        <c:choose>
-                                            <c:when test="${order.status == 'PENDING'}">
-                                                <span class="badge badge-warning">⏳ Chờ xác nhận</span>
-                                            </c:when>
-                                            <c:when test="${order.status == 'CONFIRMED'}">
-                                                <span class="badge badge-info">👨‍🍳 Đã xác nhận</span>
-                                            </c:when>
-                                            <c:when test="${order.status == 'SHIPPING'}">
-                                                <span class="badge badge-primary">🚚 Đang giao</span>
-                                            </c:when>
-                                            <c:when test="${order.status == 'DELIVERED'}">
-                                                <span class="badge badge-success">✅ Đã giao</span>
-                                            </c:when>
-                                            <c:when test="${order.status == 'CANCELLED'}">
-                                                <span class="badge badge-danger">❌ Đã hủy</span>
-                                            </c:when>
-                                        </c:choose>
-                                    </div>
-                                </div>
-                                
-                                <div class="order-body">
-                                    <div class="order-info">
-                                        <div class="info-item">
-                                            <span class="info-label">👤 Khách hàng:</span>
-                                            <span class="info-value">${order.buyer.fullName}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">📞 SĐT:</span>
-                                            <span class="info-value">${order.shippingPhone}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">📍 Địa chỉ:</span>
-                                            <span class="info-value">${order.shippingAddress}</span>
-                                        </div>
-                                        <div class="info-item">
-                                            <span class="info-label">💰 Tổng tiền:</span>
-                                            <span class="info-value text-primary fw-bold">
-                                                <fmt:formatNumber value="${order.totalAmount}" type="currency" currencySymbol="₫" />
-                                            </span>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Order Items -->
-                                    <div class="order-items mt-3">
-                                        <h4 class="text-sm fw-bold mb-2">Sản phẩm:</h4>
-                                        <c:forEach var="item" items="${order.orderItems}">
-                                            <div class="order-item">
-                                                <span>${item.product.name}</span>
-                                                <span class="text-muted">x${item.quantity}</span>
-                                                <span class="text-primary">
-                                                    <fmt:formatNumber value="${item.price}" type="currency" currencySymbol="₫" />
-                                                </span>
-                                            </div>
-                                        </c:forEach>
-                                    </div>
-                                </div>
-                                
-                                <div class="order-footer">
-                                    <button onclick="viewOrderDetail(${order.orderId})" class="btn btn-outline">
-                                        👁️ Xem chi tiết
-                                    </button>
-                                    
-                                    <c:if test="${order.status == 'PENDING'}">
-                                        <button onclick="updateOrderStatus(${order.orderId}, 'CONFIRMED')" 
-                                                class="btn btn-success">
-                                            ✅ Xác nhận đơn
-                                        </button>
-                                        <button onclick="updateOrderStatus(${order.orderId}, 'CANCELLED')" 
-                                                class="btn btn-danger">
-                                            ❌ Hủy đơn
-                                        </button>
-                                    </c:if>
-                                    
-                                    <c:if test="${order.status == 'CONFIRMED'}">
-                                        <button onclick="updateOrderStatus(${order.orderId}, 'SHIPPING')" 
-                                                class="btn btn-primary">
-                                            🚚 Bắt đầu giao
-                                        </button>
-                                    </c:if>
-                                </div>
+            </c:when>
+            <c:otherwise>
+                <c:forEach var="order" items="${orders}">
+                    <div class="order-card" id="order-${order.orderId}">
+                        <div class="order-header">
+                            <div>
+                                <span class="order-id">#${order.orderId}</span>
+                                <span class="order-date"> • <fmt:formatDate value="${order.orderDate}" pattern="dd/MM/yyyy HH:mm"/></span>
                             </div>
-                        </c:forEach>
+                            <span class="badge badge-${order.status.toString().toLowerCase()}">
+                                ${order.status}
+                            </span>
+                        </div>
+                        
+                        <div class="order-body">
+                            <div style="margin-bottom: 1rem; font-size: 0.9rem; color: #475569;">
+                                <strong>Khách hàng:</strong> ${order.buyer.fullName} <br>
+                                <strong>Địa chỉ:</strong> ${order.shippingAddress}
+                            </div>
+                            
+                            <c:forEach var="detail" items="${order.orderDetails}">
+                                <c:if test="${detail.product.seller.userId == sessionScope.user.userId}">
+                                    <div class="item-row">
+                                        <img src="${detail.product.imageUrl != null ? detail.product.imageUrl : 'https://placehold.co/50'}" class="item-img">
+                                        <div class="item-info">
+                                            <div class="item-name">${detail.product.name}</div>
+                                            <div class="item-meta">
+                                                <fmt:formatNumber value="${detail.priceAtPurchase}" type="currency" currencySymbol="₫" maxFractionDigits="0"/> 
+                                                x ${detail.quantity}
+                                            </div>
+                                        </div>
+                                        <div style="font-weight: 600;">
+                                            <fmt:formatNumber value="${detail.priceAtPurchase * detail.quantity}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
+                                        </div>
+                                    </div>
+                                </c:if>
+                            </c:forEach>
+                        </div>
+                        
+                        <div class="order-footer">
+                            <div class="total-price">
+                                Tổng: <fmt:formatNumber value="${order.payment.amount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
+                            </div>
+                            
+                            <div class="actions">
+                                <c:if test="${order.status == 'PENDING'}">
+                                    <button class="btn-action btn-reject" onclick="updateStatus(${order.orderId}, 'CANCELLED')">❌ Từ chối</button>
+                                    <button class="btn-action btn-approve" onclick="updateStatus(${order.orderId}, 'CONFIRMED')">✅ Duyệt đơn</button>
+                                </c:if>
+                                <c:if test="${order.status == 'CONFIRMED'}">
+                                    <button class="btn-action btn-ship" onclick="updateStatus(${order.orderId}, 'SHIPPING')">🚚 Giao hàng</button>
+                                </c:if>
+                            </div>
+                        </div>
                     </div>
-                </c:otherwise>
-            </c:choose>
-        </div>
-    </div>
-
-    <!-- Order Detail Modal -->
-    <div id="orderDetailModal" class="modal">
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h3>Chi tiết đơn hàng</h3>
-                <button onclick="closeModal('orderDetailModal')" class="btn-close">&times;</button>
-            </div>
-            <div class="modal-body" id="orderDetailContent">
-                <div class="loading-spinner">Đang tải...</div>
-            </div>
-        </div>
+                </c:forEach>
+            </c:otherwise>
+        </c:choose>
     </div>
 
     <script src="${pageContext.request.contextPath}/js/main.js"></script>
     <script>
-        const API_BASE = '${pageContext.request.contextPath}/api';
-        let currentFilter = 'ALL';
-        
-        function filterOrders(status) {
-            currentFilter = status;
+        async function updateStatus(orderId, status) {
+            if (!confirm('Bạn có chắc chắn muốn cập nhật trạng thái đơn hàng này?')) return;
             
-            // Update active button
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-                if (btn.dataset.status === status) {
-                    btn.classList.add('active');
-                }
-            });
-            
-            // Filter orders
-            const orders = document.querySelectorAll('.order-card');
-            let visibleCount = 0;
-            
-            orders.forEach(order => {
-                if (status === 'ALL' || order.dataset.status === status) {
-                    order.style.display = 'block';
-                    visibleCount++;
+            try {
+                // Gọi API PUT được định nghĩa trong SellerOrderServlet
+                const response = await fetch('${pageContext.request.contextPath}/api/seller/orders/' + orderId, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: status })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Reload lại trang để cập nhật giao diện
+                    window.location.reload();
                 } else {
-                    order.style.display = 'none';
+                    alert('Lỗi: ' + data.message);
                 }
-            });
-            
-            // Show empty state if no orders
-            const emptyState = document.querySelector('.empty-state');
-            if (visibleCount === 0 && !emptyState) {
-                const ordersList = document.getElementById('ordersList');
-                ordersList.innerHTML = '<div class="empty-state"><span class="empty-icon">📭</span><h3>Không có đơn hàng nào</h3></div>';
-            }
-        }
-        
-        async function viewOrderDetail(orderId) {
-            try {
-                openModal('orderDetailModal');
-                document.getElementById('orderDetailContent').innerHTML = '<div class="loading-spinner">Đang tải...</div>';
-                
-                const order = await apiRequest(API_BASE + '/orders/' + orderId);
-                
-                let itemsHtml = '';
-                order.orderItems.forEach(item => {
-                    itemsHtml += `
-                        <div class="order-item">
-                            <div>
-                                <div class="fw-bold">\${item.product.name}</div>
-                                <div class="text-muted text-sm">Số lượng: \${item.quantity}</div>
-                            </div>
-                            <div class="text-primary fw-bold">\${formatPrice(item.price)}</div>
-                        </div>
-                    `;
-                });
-                
-                const html = `
-                    <div class="order-detail">
-                        <div class="detail-section">
-                            <h4>Thông tin đơn hàng</h4>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <span class="info-label">Mã đơn:</span>
-                                    <span class="info-value">#\${order.orderId}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Ngày đặt:</span>
-                                    <span class="info-value">\${formatDateTime(order.orderDate)}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Trạng thái:</span>
-                                    <span class="info-value">\${getStatusBadge(order.status)}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="detail-section">
-                            <h4>Thông tin khách hàng</h4>
-                            <div class="info-grid">
-                                <div class="info-item">
-                                    <span class="info-label">Họ tên:</span>
-                                    <span class="info-value">\${order.buyer.fullName}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">SĐT:</span>
-                                    <span class="info-value">\${order.shippingPhone}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Địa chỉ:</span>
-                                    <span class="info-value">\${order.shippingAddress}</span>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="detail-section">
-                            <h4>Sản phẩm</h4>
-                            <div class="order-items">
-                                \${itemsHtml}
-                            </div>
-                        </div>
-                        
-                        <div class="detail-section">
-                            <div class="total-amount">
-                                <span>Tổng cộng:</span>
-                                <span class="text-primary fw-bold">\${formatPrice(order.totalAmount)}</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                document.getElementById('orderDetailContent').innerHTML = html;
-                
             } catch (error) {
-                document.getElementById('orderDetailContent').innerHTML = 
-                    '<div class="text-center text-danger">Lỗi tải chi tiết đơn hàng</div>';
+                console.error('Error:', error);
+                alert('Có lỗi xảy ra khi cập nhật đơn hàng');
             }
-        }
-        
-        async function updateOrderStatus(orderId, newStatus) {
-            const actionText = newStatus === 'CONFIRMED' ? 'xác nhận' : 
-                             newStatus === 'SHIPPING' ? 'bắt đầu giao' : 'hủy';
-            
-            if (!confirm(`Bạn có chắc muốn ${actionText} đơn hàng #${orderId}?`)) return;
-            
-            try {
-                showLoading();
-                await apiRequest(API_BASE + '/seller/orders/' + orderId + '/status', {
-                    method: 'PATCH',
-                    body: JSON.stringify({ status: newStatus })
-                });
-                showToast('Cập nhật trạng thái thành công!', 'success');
-                setTimeout(() => window.location.reload(), 1000);
-            } catch (error) {
-                showToast(error.message || 'Lỗi cập nhật trạng thái', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        function getStatusBadge(status) {
-            const badges = {
-                'PENDING': '<span class="badge badge-warning">⏳ Chờ xác nhận</span>',
-                'CONFIRMED': '<span class="badge badge-info">👨‍🍳 Đã xác nhận</span>',
-                'SHIPPING': '<span class="badge badge-primary">🚚 Đang giao</span>',
-                'DELIVERED': '<span class="badge badge-success">✅ Đã giao</span>',
-                'CANCELLED': '<span class="badge badge-danger">❌ Đã hủy</span>'
-            };
-            return badges[status] || status;
         }
     </script>
 </body>
