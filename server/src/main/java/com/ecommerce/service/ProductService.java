@@ -18,37 +18,62 @@ import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.TypedQuery;
 
 public class ProductService {
-    
+
     private static final String BASE_JPQL = "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE 1=1";
     private static final String BASE_COUNT_JPQL = "SELECT COUNT(p) FROM Product p WHERE 1=1";
 
     // 1. Thêm Product mới
     public void addProduct(String sellerId, ProductDTO dto) throws Exception {
+        System.out.println("[ProductService] Starting addProduct for seller: " + sellerId);
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         EntityTransaction trans = em.getTransaction();
         try {
             trans.begin();
-            Seller seller = em.find(Seller.class, sellerId);
-            if (seller == null) throw new Exception("Seller not found");
+            System.out.println("[ProductService] Transaction started");
 
+            // 1. Tìm người bán
+            Seller seller = em.find(Seller.class, sellerId);
+            if (seller == null) {
+                System.out.println("[ProductService] ERROR: Seller not found: " + sellerId);
+                throw new Exception("Không tìm thấy thông tin người bán");
+            }
+            System.out.println("[ProductService] Found seller: " + seller.getShopName());
+
+            // 2. Tạo đối tượng Product từ DTO
             Product product = new Product();
             product.setName(dto.getName());
             product.setDescription(dto.getDescription());
-            product.setOriginalPrice(dto.getOriginalPrice());
             product.setSalePrice(dto.getSalePrice());
             product.setQuantity(dto.getQuantity());
+            product.setImageUrl(dto.getImageUrl());
             product.setExpirationDate(dto.getExpirationDate());
-            product.setManufactureDate(dto.getManufactureDate());
-            product.setStatus(ProductStatus.PENDING_APPROVAL);
+
+            // 3. Gán Seller cho Product
             product.setSeller(seller);
 
+            // 4. QUAN TRỌNG: Mặc định là Chờ duyệt & Ngày tạo hiện tại
+            product.setStatus(ProductStatus.PENDING_APPROVAL);
+            product.setCreatedDate(new java.util.Date()); // Hoặc LocalDate.now() tùy entity của bạn
+
+            System.out.println("[ProductService] Product created with status: " + product.getStatus());
+
+            // 5. Lưu xuống DB
             em.persist(product);
-            trans.commit();
+            System.out.println("[ProductService] Product persisted");
+            trans.commit(); // <-- Nếu thiếu dòng này, dữ liệu sẽ không được lưu!
+            System.out.println("[ProductService] Transaction committed");
+
+            System.out.println(">>> Đã lưu sản phẩm thành công: " + product.getName());
+
         } catch (Exception e) {
-            if (trans.isActive()) trans.rollback();
+            if (trans.isActive())
+                trans.rollback();
+            System.out.println("[ProductService] ERROR: " + e.getMessage());
+            e.printStackTrace(); // In lỗi ra console để debug
             throw e;
         } finally {
             em.close();
+            System.out.println("[ProductService] EntityManager closed");
         }
     }
 
@@ -59,9 +84,10 @@ public class ProductService {
         try {
             trans.begin();
             Product product = em.find(Product.class, dto.getProductId());
-            
-            if (product == null) throw new Exception("Sản phẩm không tồn tại");
-            
+
+            if (product == null)
+                throw new Exception("Sản phẩm không tồn tại");
+
             if (!product.getSeller().getUserId().equals(sellerId)) {
                 throw new Exception("Bạn không có quyền sửa sản phẩm này");
             }
@@ -72,7 +98,7 @@ public class ProductService {
             product.setSalePrice(dto.getSalePrice());
             product.setQuantity(dto.getQuantity());
             product.setExpirationDate(dto.getExpirationDate());
-            
+
             if (dto.getStatus() != null) {
                 product.setStatus(dto.getStatus());
             }
@@ -80,7 +106,8 @@ public class ProductService {
             em.merge(product);
             trans.commit();
         } catch (Exception e) {
-            if (trans.isActive()) trans.rollback();
+            if (trans.isActive())
+                trans.rollback();
             throw e;
         } finally {
             em.close();
@@ -94,16 +121,17 @@ public class ProductService {
         try {
             trans.begin();
             Product product = em.find(Product.class, productId);
-            
+
             if (product != null) {
-                 if (!product.getSeller().getUserId().equals(sellerId)) {
+                if (!product.getSeller().getUserId().equals(sellerId)) {
                     throw new Exception("Bạn không có quyền xóa sản phẩm này");
                 }
-                em.remove(product); 
+                em.remove(product);
             }
             trans.commit();
         } catch (Exception e) {
-            if (trans.isActive()) trans.rollback();
+            if (trans.isActive())
+                trans.rollback();
             throw new Exception("Không thể xóa sản phẩm (có thể do đã có đơn hàng). Hãy thử ẩn sản phẩm.");
         } finally {
             em.close();
@@ -115,7 +143,7 @@ public class ProductService {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p JOIN FETCH p.seller WHERE p.seller.userId = :sid", Product.class);
+                    "SELECT p FROM Product p JOIN FETCH p.seller WHERE p.seller.userId = :sid", Product.class);
             query.setParameter("sid", sellerId);
             return query.getResultList();
         } catch (Exception e) {
@@ -126,7 +154,7 @@ public class ProductService {
             em.close();
         }
     }
-    
+
     // Hàm dành cho ADMIN duyệt hoặc từ chối sản phẩm
     public void reviewProduct(Long productId, boolean isApproved) throws Exception {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
@@ -134,7 +162,8 @@ public class ProductService {
         try {
             trans.begin();
             Product product = em.find(Product.class, productId);
-            if (product == null) throw new Exception("Product not found");
+            if (product == null)
+                throw new Exception("Product not found");
 
             if (isApproved) {
                 product.setStatus(ProductStatus.ACTIVE);
@@ -153,7 +182,8 @@ public class ProductService {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :st AND p.isVerified = true", Product.class);
+                    "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :st",
+                    Product.class);
             query.setParameter("st", ProductStatus.ACTIVE);
             return query.getResultList();
         } finally {
@@ -161,12 +191,13 @@ public class ProductService {
         }
     }
 
-    // 6. Lấy chi tiết 1 product nếu đang active và verified
+    // 6. Lấy chi tiết 1 product nếu đang active
     public Product getActiveProductById(Long productId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p WHERE p.productId = :id AND p.status = :st AND p.isVerified = true", Product.class);
+                    "SELECT p FROM Product p WHERE p.productId = :id AND p.status = :st",
+                    Product.class);
             query.setParameter("id", productId);
             query.setParameter("st", ProductStatus.ACTIVE);
             return query.getResultStream().findFirst().orElse(null);
@@ -180,32 +211,32 @@ public class ProductService {
      */
     public ProductPageResponse getProducts(ProductFilter filter) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
-        
+
         try {
             String whereClause = buildWhereClause(filter);
             String orderClause = buildOrderClause(filter);
-            
+
             String jpql = BASE_JPQL + whereClause + orderClause;
             TypedQuery<Product> query = em.createQuery(jpql, Product.class);
             setQueryParameters(query, filter);
-            
+
             String countJpql = BASE_COUNT_JPQL + whereClause;
             TypedQuery<Long> countQuery = em.createQuery(countJpql, Long.class);
             setQueryParameters(countQuery, filter);
-            
+
             Long totalElements = countQuery.getSingleResult();
-            
+
             query.setFirstResult(filter.getPage() * filter.getSize());
             query.setMaxResults(filter.getSize());
-            
+
             List<Product> products = query.getResultList();
-            
+
             List<ProductDTO> productDTOs = products.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
-            
+                    .map(this::convertToDTO)
+                    .collect(Collectors.toList());
+
             return buildPageResponse(productDTOs, filter, totalElements);
-            
+
         } finally {
             em.close();
         }
@@ -216,20 +247,20 @@ public class ProductService {
      */
     public ProductDTO getProductById(Long productId) throws Exception {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
-        
+
         try {
             Product product = em.find(Product.class, productId);
-            
+
             if (product == null) {
                 throw new Exception("Sản phẩm không tồn tại: " + productId);
             }
-            
+
             if (product.getSeller() != null) {
                 product.getSeller().getShopName();
             }
-            
+
             return convertToDTO(product);
-            
+
         } finally {
             em.close();
         }
@@ -237,29 +268,29 @@ public class ProductService {
 
     private String buildWhereClause(ProductFilter filter) {
         StringBuilder where = new StringBuilder();
-        
+
         if (filter.getSearch() != null && !filter.getSearch().isEmpty()) {
             where.append(" AND (LOWER(p.name) LIKE :search OR LOWER(p.description) LIKE :search)");
         }
-        
+
         if (filter.getMinPrice() != null) {
             where.append(" AND p.salePrice >= :minPrice");
         }
         if (filter.getMaxPrice() != null) {
             where.append(" AND p.salePrice <= :maxPrice");
         }
-        
+
         if (filter.getHasDiscount() != null && filter.getHasDiscount()) {
             where.append(" AND p.originalPrice > p.salePrice");
         }
         if (filter.getInStock() != null && filter.getInStock()) {
             where.append(" AND p.quantity > 0");
         }
-        
+
         if (filter.getSellerId() != null && !filter.getSellerId().isEmpty()) {
             where.append(" AND p.seller.userId = :sellerId");
         }
-        
+
         if (filter.getCategory() != null && !filter.getCategory().isEmpty()) {
             try {
                 // Validate category exists before adding to query
@@ -270,15 +301,15 @@ public class ProductService {
                 System.out.println("[ProductService] Invalid category: " + filter.getCategory());
             }
         }
-        
-        where.append(" AND p.status = :status AND p.isVerified = :verified");
-        
+
+        where.append(" AND p.status = :status");
+
         return where.toString();
     }
 
     private String buildOrderClause(ProductFilter filter) {
         String sortBy = filter.getSortBy() != null ? filter.getSortBy() : "newest";
-        
+
         switch (sortBy) {
             case "price_asc":
                 return " ORDER BY p.salePrice ASC";
@@ -299,14 +330,14 @@ public class ProductService {
         if (filter.getSearch() != null && !filter.getSearch().isEmpty()) {
             query.setParameter("search", "%" + filter.getSearch().toLowerCase() + "%");
         }
-        
+
         if (filter.getMinPrice() != null) {
             query.setParameter("minPrice", filter.getMinPrice());
         }
         if (filter.getMaxPrice() != null) {
             query.setParameter("maxPrice", filter.getMaxPrice());
         }
-        
+
         if (filter.getCategory() != null && !filter.getCategory().isEmpty()) {
             try {
                 ProductCategory category = ProductCategory.valueOf(filter.getCategory().toUpperCase());
@@ -317,18 +348,17 @@ public class ProductService {
                 System.out.println("[ProductService] Invalid category value: " + filter.getCategory());
             }
         }
-        
+
         if (filter.getSellerId() != null && !filter.getSellerId().isEmpty()) {
             query.setParameter("sellerId", filter.getSellerId());
         }
-        
+
         query.setParameter("status", ProductStatus.ACTIVE);
-        query.setParameter("verified", true);
     }
 
-    private ProductPageResponse buildPageResponse(List<ProductDTO> productDTOs, 
-                                                  ProductFilter filter, 
-                                                  Long totalElements) {
+    private ProductPageResponse buildPageResponse(List<ProductDTO> productDTOs,
+            ProductFilter filter,
+            Long totalElements) {
         ProductPageResponse response = new ProductPageResponse();
         response.setData(productDTOs);
         response.setCurrentPage(filter.getPage());
@@ -350,17 +380,17 @@ public class ProductService {
         dto.setManufactureDate(product.getManufactureDate());
         dto.setStatus(product.getStatus());
         dto.setCategory(product.getCategory());
-        
+
         if (product.getSeller() != null) {
             SellerDTO sellerDTO = new SellerDTO();
             sellerDTO.setShopName(product.getSeller().getShopName());
             sellerDTO.setRating(product.getSeller().getRating());
             dto.setSeller(sellerDTO);
         }
-        
+
         return dto;
     }
-    
+
     /**
      * Get pending products (waiting for approval)
      */
@@ -368,15 +398,15 @@ public class ProductService {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.productId ASC", 
-                Product.class);
+                    "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.productId ASC",
+                    Product.class);
             query.setParameter("status", ProductStatus.PENDING_APPROVAL);
             return query.getResultList();
         } finally {
             em.close();
         }
     }
-    
+
     /**
      * Search products by name or description
      */
@@ -384,10 +414,10 @@ public class ProductService {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p LEFT JOIN FETCH p.seller " +
-                "WHERE (LOWER(p.name) LIKE :search OR LOWER(p.description) LIKE :search) " +
-                "AND p.status = :st AND p.isVerified = true", 
-                Product.class);
+                    "SELECT p FROM Product p LEFT JOIN FETCH p.seller " +
+                            "WHERE (LOWER(p.name) LIKE :search OR LOWER(p.description) LIKE :search) " +
+                            "AND p.status = :st",
+                    Product.class);
             query.setParameter("search", "%" + searchTerm.toLowerCase() + "%");
             query.setParameter("st", ProductStatus.ACTIVE);
             return query.getResultList();
@@ -395,7 +425,7 @@ public class ProductService {
             em.close();
         }
     }
-    
+
     /**
      * Get products by category
      */
@@ -404,15 +434,47 @@ public class ProductService {
         try {
             ProductCategory category = ProductCategory.valueOf(categoryStr.toUpperCase());
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p LEFT JOIN FETCH p.seller " +
-                "WHERE p.category = :cat AND p.status = :st AND p.isVerified = true", 
-                Product.class);
+                    "SELECT p FROM Product p LEFT JOIN FETCH p.seller " +
+                            "WHERE p.category = :cat AND p.status = :st",
+                    Product.class);
             query.setParameter("cat", category);
             query.setParameter("st", ProductStatus.ACTIVE);
             return query.getResultList();
         } catch (IllegalArgumentException e) {
             // Invalid category, return empty list
             return List.of();
+        } finally {
+            em.close();
+        }
+    }
+
+    // Khi "Hiện lại" sản phẩm đang ẩn $\rightarrow$ chuyển về PENDING_APPROVAL
+    public void toggleProductStatus(String sellerId, Long productId, String action) throws Exception {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction trans = em.getTransaction();
+        try {
+            trans.begin();
+            Product product = em.find(Product.class, productId);
+
+            // Check quyền sở hữu
+            if (product == null || !product.getSeller().getUserId().equals(sellerId)) {
+                throw new Exception("Sản phẩm không tồn tại hoặc không thuộc quyền quản lý");
+            }
+
+            if ("HIDE".equals(action) && product.getStatus() == ProductStatus.ACTIVE) {
+                // Đang hiện -> Ẩn (Bình thường)
+                product.setStatus(ProductStatus.HIDDEN);
+            } else if ("SHOW".equals(action) && product.getStatus() == ProductStatus.HIDDEN) {
+                // Đang ẩn -> Hiện lại (Phải chờ Admin duyệt lại)
+                product.setStatus(ProductStatus.PENDING_APPROVAL);
+            }
+
+            em.merge(product);
+            trans.commit();
+        } catch (Exception e) {
+            if (trans.isActive())
+                trans.rollback();
+            throw e;
         } finally {
             em.close();
         }

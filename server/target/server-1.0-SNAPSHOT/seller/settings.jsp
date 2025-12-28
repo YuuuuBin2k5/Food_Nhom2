@@ -1,7 +1,6 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -9,239 +8,88 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cài đặt Shop - Seller</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/seller_style.css">
 </head>
-<body>
-    <jsp:include page="../common/sidebar.jsp" />
-    
-    <div class="main-content">
-        <!-- Header Banner -->
-        <div class="header-banner">
-            <div class="container">
-                <div>
-                    <h1 class="page-title">
-                        <span class="icon">⚙️</span>
-                        Cài đặt Shop
-                    </h1>
-                    <p class="page-subtitle">Quản lý thông tin cửa hàng của bạn</p>
-                </div>
-            </div>
-        </div>
+<body class="bg-white">
 
-        <div class="container py-4">
-            <div class="row">
-                <div class="col-md-8 mx-auto">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Thông tin cửa hàng</h3>
-                        </div>
-                        <div class="card-body">
-                            <form id="settingsForm" onsubmit="handleSubmitSettings(event)">
-                                <div class="form-group">
-                                    <label for="shopName">Tên cửa hàng *</label>
-                                    <input type="text" id="shopName" name="shopName" 
-                                           class="form-control" 
-                                           value="${sessionScope.user.fullName}" required>
-                                    <small class="form-text">Tên hiển thị của cửa hàng trên hệ thống</small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="email">Email liên hệ *</label>
-                                    <input type="email" id="email" name="email" 
-                                           class="form-control" 
-                                           value="${sessionScope.user.email}" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="phone">Số điện thoại *</label>
-                                    <input type="tel" id="phone" name="phone" 
-                                           class="form-control" 
-                                           value="${sessionScope.user.phone}" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="address">Địa chỉ cửa hàng</label>
-                                    <textarea id="address" name="address" 
-                                              class="form-control" rows="3"></textarea>
-                                    <small class="form-text">Địa chỉ kho hàng hoặc cửa hàng</small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="description">Mô tả cửa hàng</label>
-                                    <textarea id="description" name="description" 
-                                              class="form-control" rows="4"></textarea>
-                                    <small class="form-text">Giới thiệu về cửa hàng của bạn</small>
-                                </div>
-                                
-                                <hr class="my-4">
-                                
-                                <h4 class="mb-3">Thông tin tài khoản</h4>
-                                
-                                <div class="form-group">
-                                    <label>Tên đăng nhập</label>
-                                    <input type="text" class="form-control" 
-                                           value="${sessionScope.user.userId}" disabled>
-                                    <small class="form-text">Không thể thay đổi tên đăng nhập</small>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label>Vai trò</label>
-                                    <input type="text" class="form-control" 
-                                           value="Người bán (Seller)" disabled>
-                                </div>
-                                
-                                <div class="alert alert-info mt-4">
-                                    <strong>💡 Lưu ý:</strong> Để thay đổi mật khẩu hoặc thông tin bảo mật, 
-                                    vui lòng liên hệ quản trị viên hệ thống.
-                                </div>
-                                
-                                <div class="form-actions mt-4">
-                                    <button type="submit" class="btn btn-primary">
-                                        💾 Lưu thay đổi
-                                    </button>
-                                    <button type="button" onclick="window.history.back()" 
-                                            class="btn btn-secondary">
-                                        ← Quay lại
-                                    </button>
-                                </div>
-                            </form>
+    <jsp:include page="../common/sidebar.jsp">
+        <jsp:param name="currentPath" value="/seller/settings" />
+    </jsp:include>
+
+    <main style="margin-top: 96px; min-height: 80vh; padding: 2rem; max-width: 800px; margin-left: auto; margin-right: auto;">
+        
+        <div style="background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; border: 1px solid #e2e8f0;">
+            <div style="background: #f7fafc; padding: 1.5rem; border-bottom: 1px solid #e2e8f0;">
+                <h2 style="margin: 0; color: #2d3748; font-size: 1.5rem;">⚙️ Thông tin cửa hàng</h2>
+            </div>
+            
+            <div style="padding: 2rem;">
+                <c:if test="${not empty message}"><div class="alert alert-success" style="background: #c6f6d5; color: #22543d; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">${message}</div></c:if>
+                <c:if test="${not empty error}"><div class="alert alert-error" style="background: #fed7d7; color: #822727; padding: 1rem; border-radius: 4px; margin-bottom: 1.5rem;">${error}</div></c:if>
+
+                <form action="${pageContext.request.contextPath}/seller/settings" method="post" style="display: grid; gap: 1.5rem;">
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Tên chủ Shop</label>
+                        <input type="text" name="fullName" value="${user.fullName}" required class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 0.375rem;">
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Tên Cửa Hàng (Shop Name)</label>
+                        <input type="text" name="shopName" value="${user.shopName}" required class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 0.375rem;">
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Số điện thoại</label>
+                        <input type="text" name="phoneNumber" value="${user.phoneNumber}" required class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 0.375rem;">
+                    </div>
+
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Địa chỉ lấy hàng</label>
+                        <input type="text" name="address" value="${user.address}" required class="form-control" style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 0.375rem;">
+                    </div>
+                    
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 500; color: #4a5568;">Giấy phép kinh doanh (Link ảnh)</label>
+                        <input type="url" name="businessLicenseUrl" id="licenseUrl" value="${user.businessLicenseUrl}" class="form-control" 
+                               placeholder="https://..." onchange="previewImage(this.value)"
+                               style="width: 100%; padding: 0.75rem; border: 1px solid #cbd5e0; border-radius: 0.375rem;">
+                        <small style="color: #718096; display: block; margin-top: 0.5rem;">* Lưu ý: Việc thay đổi giấy phép có thể khiến tài khoản phải chờ Admin duyệt lại.</small>
+                        
+                        <div style="margin-top: 1rem; max-width: 200px; border: 1px solid #e2e8f0; padding: 4px; border-radius: 4px;">
+                            <img id="licensePreview" src="${user.businessLicenseUrl}" 
+                                 onerror="this.style.display='none'" 
+                                 style="width: 100%; border-radius: 4px; ${empty user.businessLicenseUrl ? 'display:none' : ''}">
                         </div>
                     </div>
                     
-                    <!-- Shop Statistics -->
-                    <div class="card mt-4">
-                        <div class="card-header">
-                            <h3>Thống kê cửa hàng</h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="stats-grid">
-                                <div class="stat-item">
-                                    <span class="stat-icon">📦</span>
-                                    <div>
-                                        <div class="stat-label">Tổng sản phẩm</div>
-                                        <div class="stat-value" id="totalProducts">-</div>
-                                    </div>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-icon">📋</span>
-                                    <div>
-                                        <div class="stat-label">Tổng đơn hàng</div>
-                                        <div class="stat-value" id="totalOrders">-</div>
-                                    </div>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-icon">⭐</span>
-                                    <div>
-                                        <div class="stat-label">Đánh giá</div>
-                                        <div class="stat-value">5.0</div>
-                                    </div>
-                                </div>
-                                <div class="stat-item">
-                                    <span class="stat-icon">📅</span>
-                                    <div>
-                                        <div class="stat-label">Tham gia từ</div>
-                                        <div class="stat-value text-sm">2024</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div style="border-top: 1px solid #e2e8f0; padding-top: 1.5rem; margin-top: 0.5rem;">
+                        <button type="submit" style="background: #3182ce; color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.375rem; font-weight: 600; cursor: pointer; width: 100%;">Lưu thay đổi</button>
                     </div>
-                </div>
+                </form>
+            </div>
+            
+            <div style="background: #f7fafc; padding: 1.5rem; border-top: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: #4a5568;">Trạng thái tài khoản:</span>
+                <span class="status-badge status-${user.verificationStatus.toString().toLowerCase()}" style="font-weight: bold; padding: 0.25rem 0.75rem; border-radius: 9999px;">
+                    ${user.verificationStatus}
+                </span>
             </div>
         </div>
-    </div>
+    </main>
 
+    <jsp:include page="../common/footer.jsp" />
     <script src="${pageContext.request.contextPath}/js/main.js"></script>
     <script>
-        const API_BASE = '${pageContext.request.contextPath}/api';
-        
-        // Load shop statistics
-        async function loadStats() {
-            try {
-                const [products, orders] = await Promise.all([
-                    apiRequest(API_BASE + '/seller/products').catch(() => []),
-                    apiRequest(API_BASE + '/seller/orders').catch(() => [])
-                ]);
-                
-                document.getElementById('totalProducts').textContent = products.length || 0;
-                document.getElementById('totalOrders').textContent = orders.length || 0;
-            } catch (error) {
-                console.error('Error loading stats:', error);
+        function previewImage(url) {
+            const img = document.getElementById('licensePreview');
+            if(url) {
+                img.src = url;
+                img.style.display = 'block';
+            } else {
+                img.style.display = 'none';
             }
         }
-        
-        async function handleSubmitSettings(event) {
-            event.preventDefault();
-            
-            const formData = new FormData(event.target);
-            const data = {
-                shopName: formData.get('shopName'),
-                email: formData.get('email'),
-                phone: formData.get('phone'),
-                address: formData.get('address'),
-                description: formData.get('description')
-            };
-            
-            try {
-                showLoading();
-                
-                // In a real app, this would call an API endpoint
-                // await apiRequest(API_BASE + '/seller/settings', {
-                //     method: 'PUT',
-                //     body: JSON.stringify(data)
-                // });
-                
-                showToast('Cập nhật thông tin thành công!', 'success');
-                
-                // Simulate API delay
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-            } catch (error) {
-                showToast(error.message || 'Có lỗi xảy ra', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        // Load stats on page load
-        loadStats();
     </script>
-    
-    <style>
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-        }
-        
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            padding: 1rem;
-            background: #f8fafc;
-            border-radius: 0.75rem;
-        }
-        
-        .stat-icon {
-            font-size: 2rem;
-        }
-        
-        .stat-label {
-            font-size: 0.875rem;
-            color: #64748b;
-            margin-bottom: 0.25rem;
-        }
-        
-        .stat-value {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #0f172a;
-        }
-        
-        .form-actions {
-            display: flex;
-            gap: 1rem;
-        }
-    </style>
 </body>
 </html>

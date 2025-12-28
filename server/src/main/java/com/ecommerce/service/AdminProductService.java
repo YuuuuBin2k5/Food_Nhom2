@@ -19,8 +19,8 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.createdDate ASC", 
-                Product.class);
+                    "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.createdDate ASC",
+                    Product.class);
             query.setParameter("status", ProductStatus.PENDING_APPROVAL);
             query.setMaxResults(1);
             List<Product> result = query.getResultList();
@@ -40,7 +40,7 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Long> query = em.createQuery(
-                "SELECT COUNT(p) FROM Product p WHERE p.status = :status", Long.class);
+                    "SELECT COUNT(p) FROM Product p WHERE p.status = :status", Long.class);
             query.setParameter("status", ProductStatus.PENDING_APPROVAL);
             return query.getSingleResult();
         } catch (Exception e) {
@@ -58,8 +58,8 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.productId = :id", 
-                Product.class);
+                    "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.productId = :id",
+                    Product.class);
             query.setParameter("id", productId);
             List<Product> result = query.getResultList();
             return result.isEmpty() ? null : result.get(0);
@@ -70,7 +70,9 @@ public class AdminProductService {
 
     /**
      * Duyệt Product - Chuyển status sang ACTIVE (chỉ khi đang PENDING_APPROVAL)
-     * @return 0: thành công, 1: product không tồn tại, 2: đã được xử lý bởi admin khác
+     * 
+     * @return 0: thành công, 1: product không tồn tại, 2: đã được xử lý bởi admin
+     *         khác
      */
     public int approveProduct(Long productId) {
         return updateProductStatus(productId, ProductStatus.ACTIVE);
@@ -78,119 +80,22 @@ public class AdminProductService {
 
     /**
      * Từ chối Product - Chuyển status sang REJECTED (chỉ khi đang PENDING_APPROVAL)
-     * @return 0: thành công, 1: product không tồn tại, 2: đã được xử lý bởi admin khác
+     * 
+     * @return 0: thành công, 1: product không tồn tại, 2: đã được xử lý bởi admin
+     *         khác
      */
     public int rejectProduct(Long productId) {
         return updateProductStatus(productId, ProductStatus.REJECTED);
     }
 
     /**
-     * Cập nhật trạng thái Product với đồng bộ hóa (pessimistic lock)
-     * Chỉ cho phép cập nhật nếu product đang ở trạng thái PENDING_APPROVAL
-     * @return 0: thành công, 1: product không tồn tại, 2: đã được xử lý bởi admin khác
-     */
-    private int updateProductStatus(Long productId, ProductStatus newStatus) {
-        EntityManager em = getEntityManager();
-        EntityTransaction tx = em.getTransaction();
-        try {
-            tx.begin();
-            // Sử dụng pessimistic lock để tránh race condition
-            Product product = em.find(Product.class, productId, LockModeType.PESSIMISTIC_WRITE);
-            
-            if (product == null) {
-                tx.rollback();
-                return 1; // Product không tồn tại
-            }
-            
-            // Kiểm tra trạng thái hiện tại - chỉ cho phép duyệt/từ chối nếu đang PENDING_APPROVAL
-            if (product.getStatus() != ProductStatus.PENDING_APPROVAL) {
-                tx.rollback();
-                return 2; // Đã được xử lý bởi admin khác
-            }
-            
-            product.setStatus(newStatus);
-            if (newStatus == ProductStatus.ACTIVE) {
-                product.setApprovedDate(new java.util.Date());
-            } else {
-                product.setApprovedDate(null);
-            }
-            em.merge(product);
-            tx.commit();
-            return 0; // Thành công
-        } catch (Exception e) {
-            if (tx.isActive()) tx.rollback();
-            e.printStackTrace();
-            return 1;
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy tất cả Product (sắp xếp mới nhất trước)
-     */
-    public List<Product> getAllProducts() {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.createdDate DESC", 
-                Product.class);
-            return query.getResultList();
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy danh sách Product theo trạng thái (sắp xếp cũ nhất trước - ai đăng trước duyệt trước)
-     */
-    public List<Product> getProductsByStatus(ProductStatus status) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.createdDate ASC", 
-                Product.class);
-            query.setParameter("status", status);
-            return query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new java.util.ArrayList<>();
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy product đang chờ duyệt
-     */
-    public List<Product> getPendingProducts() {
-        return getProductsByStatus(ProductStatus.PENDING_APPROVAL);
-    }
-
-    /**
-     * Lấy product bị từ chối
-     */
-    public List<Product> getRejectedProducts() {
-        return getProductsByStatus(ProductStatus.REJECTED);
-    }
-
-    /**
-     * Lấy product đã duyệt (ACTIVE)
-     */
-    public List<Product> getActiveProducts() {
-        return getProductsByStatus(ProductStatus.ACTIVE);
-    }
-
-    // ==================== PHÂN TRANG ====================
-
-    /**
-     * Đếm tổng số product theo trạng thái
+     * Đếm số lượng Product theo status
      */
     public long countByStatus(ProductStatus status) {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Long> query = em.createQuery(
-                "SELECT COUNT(p) FROM Product p WHERE p.status = :status", Long.class);
+                    "SELECT COUNT(p) FROM Product p WHERE p.status = :status", Long.class);
             query.setParameter("status", status);
             return query.getSingleResult();
         } catch (Exception e) {
@@ -202,15 +107,37 @@ public class AdminProductService {
     }
 
     /**
-     * Đếm tổng số product
+     * Đếm tổng số Product
      */
     public long countAll() {
         EntityManager em = getEntityManager();
         try {
-            return em.createQuery("SELECT COUNT(p) FROM Product p", Long.class).getSingleResult();
+            TypedQuery<Long> query = em.createQuery(
+                    "SELECT COUNT(p) FROM Product p", Long.class);
+            return query.getSingleResult();
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy danh sách Product theo trạng thái (sắp xếp cũ nhất trước - ai đăng trước
+     * duyệt trước)
+     */
+    public List<Product> getProductsByStatus(ProductStatus status) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Product> query = em.createQuery(
+                    "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.createdDate ASC",
+                    Product.class);
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new java.util.ArrayList<>();
         } finally {
             em.close();
         }
@@ -223,8 +150,8 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.createdDate ASC", 
-                Product.class);
+                    "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.createdDate ASC",
+                    Product.class);
             query.setParameter("status", status);
             query.setFirstResult((page - 1) * pageSize);
             query.setMaxResults(pageSize);
@@ -244,14 +171,56 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.createdDate DESC", 
-                Product.class);
+                    "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.createdDate DESC",
+                    Product.class);
             query.setFirstResult((page - 1) * pageSize);
             query.setMaxResults(pageSize);
             return query.getResultList();
         } catch (Exception e) {
             e.printStackTrace();
             return new java.util.ArrayList<>();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Cập nhật status của Product với pessimistic locking
+     */
+    private int updateProductStatus(Long productId, ProductStatus newStatus) {
+        EntityManager em = getEntityManager();
+        EntityTransaction trans = em.getTransaction();
+        try {
+            trans.begin();
+
+            // Sử dụng pessimistic lock để tránh race condition
+            Product product = em.find(Product.class, productId, LockModeType.PESSIMISTIC_WRITE);
+
+            if (product == null) {
+                trans.rollback();
+                return 1; // Product không tồn tại
+            }
+
+            // Chỉ cho phép thay đổi từ PENDING_APPROVAL
+            if (product.getStatus() != ProductStatus.PENDING_APPROVAL) {
+                trans.rollback();
+                return 2; // Đã được xử lý bởi admin khác
+            }
+
+            product.setStatus(newStatus);
+            if (newStatus == ProductStatus.ACTIVE) {
+                product.setApprovedDate(new java.util.Date());
+            }
+
+            em.merge(product);
+            trans.commit();
+            return 0; // Thành công
+
+        } catch (Exception e) {
+            if (trans.isActive())
+                trans.rollback();
+            e.printStackTrace();
+            return 1; // Lỗi
         } finally {
             em.close();
         }

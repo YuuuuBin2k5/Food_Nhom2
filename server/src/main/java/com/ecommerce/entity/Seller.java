@@ -5,13 +5,12 @@
 package com.ecommerce.entity;
 
 import jakarta.persistence.*;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "sellers")
-public class Seller extends User implements Serializable {
+public class Seller extends User {
 
     @Column(name = "shop_name", nullable = false)
     private String shopName;
@@ -39,7 +38,7 @@ public class Seller extends User implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "verification_status", nullable = false)
     private SellerStatus verificationStatus;
-    
+
     // Quan hệ: 1 Seller có nhiều Product
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Product> products;
@@ -62,7 +61,7 @@ public class Seller extends User implements Serializable {
         this.products = new ArrayList<>();
         this.verificationStatus = SellerStatus.UNVERIFIED;
     }
-    
+
     public String getShopName() {
         return shopName;
     }
@@ -94,16 +93,16 @@ public class Seller extends User implements Serializable {
     public void setProducts(List<Product> products) {
         this.products = products;
     }
-    
+
     public String getBusinessLicenseUrl() {
         return businessLicenseUrl;
     }
 
     public void setBusinessLicenseUrl(String businessLicenseUrl) {
-this.businessLicenseUrl = businessLicenseUrl;
+        this.businessLicenseUrl = businessLicenseUrl;
         // Khi seller upload ảnh, tự động set ngày nộp và chuyển status sang PENDING
         this.licenseSubmittedDate = new java.util.Date();
-        this.verificationStatus = SellerStatus.PENDING; 
+        this.verificationStatus = SellerStatus.PENDING;
     }
 
     public java.util.Date getLicenseSubmittedDate() {
@@ -129,5 +128,5 @@ this.businessLicenseUrl = businessLicenseUrl;
     public void setVerificationStatus(SellerStatus verificationStatus) {
         this.verificationStatus = verificationStatus;
     }
-    
+
 }

@@ -1,13 +1,12 @@
-    /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
+/*
+* Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+* Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+*/
 package com.ecommerce.entity;
 
 import jakarta.persistence.*;
 import java.io.Serializable;
 import java.util.Date;
-import java.util.UUID;
 
 @Entity
 @Table(name = "products")
@@ -55,11 +54,10 @@ public class Product implements Serializable {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ProductStatus status;
-    
+
     @Enumerated(EnumType.STRING)
     @Column(name = "category")
     private ProductCategory category;
-
 
     // --- QUAN HỆ (RELATIONSHIP) ---
     // Nhiều sản phẩm thuộc về 1 Seller
@@ -70,21 +68,18 @@ public class Product implements Serializable {
     // --- CONSTRUCTORS ---
 
     public Product() {
-        this.name = null;
-        this.description = null;
-        this.expirationDate = null;
-        this.manufactureDate = null;
-        this.seller = null;
-        this.status = null; 
-        
+        this.createdDate = new Date();
+        this.status = ProductStatus.PENDING_APPROVAL;
+        this.category = ProductCategory.OTHER;
+
         // Kiểu nguyên thủy (primitive) không thể null
         this.originalPrice = 0.0;
         this.salePrice = 0.0;
         this.quantity = 0;
     }
 
-    public Product(String name, String description, double originalPrice, double salePrice, 
-                   Date expirationDate, Date manufactureDate, int quantity, String imageUrl, Seller seller) {
+    public Product(String name, String description, double originalPrice, double salePrice,
+            Date expirationDate, Date manufactureDate, int quantity, String imageUrl, Seller seller) {
         this.name = name;
         this.description = description;
         this.originalPrice = originalPrice;
@@ -94,12 +89,12 @@ public class Product implements Serializable {
         this.quantity = quantity;
         this.imageUrl = imageUrl;
         this.seller = seller;
-        
+
         this.createdDate = new Date();
         this.status = ProductStatus.PENDING_APPROVAL;
         this.category = ProductCategory.OTHER;
     }
-    
+
     public Long getProductId() {
         return productId;
     }
@@ -107,7 +102,7 @@ public class Product implements Serializable {
     public void setProductId(Long productId) {
         this.productId = productId;
     }
-    
+
     public String getName() {
         return name;
     }
@@ -203,13 +198,13 @@ public class Product implements Serializable {
     public void setApprovedDate(Date approvedDate) {
         this.approvedDate = approvedDate;
     }
-    
-    public ProductCategory getCategory(){
+
+    public ProductCategory getCategory() {
         return category;
     }
-    
-    public void setCategory(ProductCategory category){
+
+    public void setCategory(ProductCategory category) {
         this.category = category;
     }
-    
+
 }

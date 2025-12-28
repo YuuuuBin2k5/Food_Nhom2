@@ -1,336 +1,185 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
-<!DOCTYPE html>
-<html lang="vi">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kho thực phẩm - Seller</title>
-    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
-</head>
-<body>
-    <jsp:include page="../common/sidebar.jsp" />
-    
-    <div class="main-content">
-        <!-- Header Banner -->
-        <div class="header-banner">
-            <div class="container">
-                <div class="flex-between">
-                    <div>
-                        <h1 class="page-title">
-                            <span class="icon">📦</span>
-                            Kho thực phẩm
-                        </h1>
-                        <p class="page-subtitle">Quản lý sản phẩm của cửa hàng</p>
-                    </div>
-                    <button onclick="openAddProductModal()" class="btn btn-primary">
-                        <span class="icon">+</span>
-                        Thêm sản phẩm
-                    </button>
-                </div>
-            </div>
-        </div>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
+    <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+        <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
-        <div class="container py-4">
-            <c:choose>
-                <c:when test="${empty products}">
-                    <div class="empty-state">
-                        <span class="empty-icon">📦</span>
-                        <h3>Chưa có sản phẩm nào</h3>
-                        <p>Hãy thêm sản phẩm đầu tiên để bắt đầu bán hàng</p>
-                        <button onclick="openAddProductModal()" class="btn btn-primary mt-3">
-                            + Thêm sản phẩm ngay
-                        </button>
-                    </div>
-                </c:when>
-                <c:otherwise>
-                    <!-- Products Table -->
-                    <div class="card">
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Tên sản phẩm</th>
-                                        <th>Giá gốc</th>
-                                        <th>Giá bán</th>
-                                        <th>Số lượng</th>
-                                        <th>HSD</th>
-                                        <th>Trạng thái</th>
-                                        <th>Thao tác</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <c:forEach var="product" items="${products}">
-                                        <tr>
-                                            <td>#${product.productId}</td>
-                                            <td>
-                                                <div class="product-name">${product.name}</div>
-                                                <c:if test="${not empty product.description}">
-                                                    <div class="text-muted text-sm">${product.description}</div>
-                                                </c:if>
-                                            </td>
-                                            <td>
-                                                <fmt:formatNumber value="${product.originalPrice}" type="currency" currencySymbol="₫" />
-                                            </td>
-                                            <td>
-                                                <span class="text-primary fw-bold">
-                                                    <fmt:formatNumber value="${product.salePrice}" type="currency" currencySymbol="₫" />
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <span class="badge ${product.quantity > 0 ? 'badge-success' : 'badge-danger'}">
-                                                    ${product.quantity}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <fmt:formatDate value="${product.expirationDate}" pattern="dd/MM/yyyy" />
-                                            </td>
-                                            <td>
-                                                <c:choose>
-                                                    <c:when test="${product.status == 'ACTIVE'}">
-                                                        <span class="badge badge-success">✅ Đang bán</span>
-                                                    </c:when>
-                                                    <c:when test="${product.status == 'PENDING_APPROVAL'}">
-                                                        <span class="badge badge-warning">⏳ Chờ duyệt</span>
-                                                    </c:when>
-                                                    <c:when test="${product.status == 'REJECTED'}">
-                                                        <span class="badge badge-danger">❌ Từ chối</span>
-                                                    </c:when>
-                                                    <c:otherwise>
-                                                        <span class="badge badge-secondary">${product.status}</span>
-                                                    </c:otherwise>
-                                                </c:choose>
-                                            </td>
-                                            <td>
-                                                <div class="btn-group">
-                                                    <button onclick="editProduct(${product.productId})" 
-                                                            class="btn btn-sm btn-outline" title="Sửa">
-                                                        ✏️
-                                                    </button>
-                                                    <c:if test="${product.status == 'ACTIVE'}">
-                                                        <button onclick="toggleProductStatus(${product.productId}, 'INACTIVE')" 
-                                                                class="btn btn-sm btn-outline" title="Ẩn">
-                                                            👁️
-                                                        </button>
-                                                    </c:if>
-                                                    <button onclick="deleteProduct(${product.productId})" 
-                                                            class="btn btn-sm btn-danger" title="Xóa">
-                                                        🗑️
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </c:forEach>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </c:otherwise>
-            </c:choose>
-        </div>
-    </div>
+            <!DOCTYPE html>
+            <html lang="vi">
 
-    <!-- Product Form Modal -->
-    <div id="productModal" class="modal">
-        <div class="modal-content modal-lg">
-            <div class="modal-header">
-                <h3 id="modalTitle">Thêm sản phẩm mới</h3>
-                <button onclick="closeProductModal()" class="btn-close">&times;</button>
-            </div>
-            <form id="productForm" onsubmit="handleSubmitProduct(event)">
-                <div class="modal-body">
-                    <input type="hidden" id="productId" name="productId">
-                    
-                    <div class="form-group">
-                        <label for="name">Tên sản phẩm *</label>
-                        <input type="text" id="name" name="name" class="form-control" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="description">Mô tả</label>
-                        <textarea id="description" name="description" class="form-control" rows="3"></textarea>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="originalPrice">Giá gốc (₫) *</label>
-                                <input type="number" id="originalPrice" name="originalPrice" 
-                                       class="form-control" min="0" step="1000" required>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label for="salePrice">Giá bán (₫) *</label>
-                                <input type="number" id="salePrice" name="salePrice" 
-                                       class="form-control" min="0" step="1000" required>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="quantity">Số lượng *</label>
-                                <input type="number" id="quantity" name="quantity" 
-                                       class="form-control" min="0" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="manufactureDate">Ngày sản xuất *</label>
-                                <input type="date" id="manufactureDate" name="manufactureDate" 
-                                       class="form-control" required>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label for="expirationDate">Hạn sử dụng *</label>
-                                <input type="date" id="expirationDate" name="expirationDate" 
-                                       class="form-control" required>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="modal-footer">
-                    <button type="button" onclick="closeProductModal()" class="btn btn-secondary">
-                        Hủy
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        <span id="submitBtnText">Thêm sản phẩm</span>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+            <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Kho hàng - Seller</title>
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/css/seller_style.css">
+            </head>
 
-    <script src="${pageContext.request.contextPath}/js/main.js"></script>
-    <script>
-        const API_BASE = '${pageContext.request.contextPath}/api';
-        
-        function openAddProductModal() {
-            document.getElementById('modalTitle').textContent = 'Thêm sản phẩm mới';
-            document.getElementById('submitBtnText').textContent = 'Thêm sản phẩm';
-            document.getElementById('productForm').reset();
-            document.getElementById('productId').value = '';
-            openModal('productModal');
-        }
-        
-        function closeProductModal() {
-            closeModal('productModal');
-        }
-        
-        async function editProduct(productId) {
-            try {
-                showLoading();
-                const response = await apiRequest(API_BASE + '/products/' + productId);
-                
-                document.getElementById('modalTitle').textContent = 'Sửa sản phẩm';
-                document.getElementById('submitBtnText').textContent = 'Cập nhật';
-                
-                document.getElementById('productId').value = response.productId;
-                document.getElementById('name').value = response.name;
-                document.getElementById('description').value = response.description || '';
-                document.getElementById('originalPrice').value = response.originalPrice;
-                document.getElementById('salePrice').value = response.salePrice;
-                document.getElementById('quantity').value = response.quantity;
-                document.getElementById('manufactureDate').value = formatDateForInput(response.manufactureDate);
-                document.getElementById('expirationDate').value = formatDateForInput(response.expirationDate);
-                
-                openModal('productModal');
-            } catch (error) {
-                showToast('Lỗi tải thông tin sản phẩm', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        async function handleSubmitProduct(event) {
-            event.preventDefault();
-            
-            const formData = new FormData(event.target);
-            const productId = formData.get('productId');
-            
-            const data = {
-                productId: productId || null,
-                name: formData.get('name'),
-                description: formData.get('description'),
-                originalPrice: parseFloat(formData.get('originalPrice')),
-                salePrice: parseFloat(formData.get('salePrice')),
-                quantity: parseInt(formData.get('quantity')),
-                manufactureDate: formData.get('manufactureDate'),
-                expirationDate: formData.get('expirationDate')
-            };
-            
-            try {
-                showLoading();
-                
-                if (productId) {
-                    await apiRequest(API_BASE + '/seller/products/' + productId, {
-                        method: 'PUT',
-                        body: JSON.stringify(data)
-                    });
-                    showToast('Cập nhật sản phẩm thành công!', 'success');
-                } else {
-                    await apiRequest(API_BASE + '/seller/products', {
-                        method: 'POST',
-                        body: JSON.stringify(data)
-                    });
-                    showToast('Thêm sản phẩm thành công!', 'success');
-                }
-                
-                closeProductModal();
-                setTimeout(() => window.location.reload(), 1000);
-                
-            } catch (error) {
-                showToast(error.message || 'Có lỗi xảy ra', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        async function deleteProduct(productId) {
-            if (!confirm('Bạn có chắc muốn xóa sản phẩm này?')) return;
-            
-            try {
-                showLoading();
-                await apiRequest(API_BASE + '/seller/products/' + productId, {
-                    method: 'DELETE'
-                });
-                showToast('Xóa sản phẩm thành công!', 'success');
-                setTimeout(() => window.location.reload(), 1000);
-            } catch (error) {
-                showToast(error.message || 'Không thể xóa sản phẩm', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        async function toggleProductStatus(productId, newStatus) {
-            try {
-                showLoading();
-                await apiRequest(API_BASE + '/seller/products/' + productId + '/status', {
-                    method: 'PATCH',
-                    body: JSON.stringify({ status: newStatus })
-                });
-                showToast('Cập nhật trạng thái thành công!', 'success');
-                setTimeout(() => window.location.reload(), 1000);
-            } catch (error) {
-                showToast('Lỗi cập nhật trạng thái', 'error');
-            } finally {
-                hideLoading();
-            }
-        }
-        
-        function formatDateForInput(dateString) {
-            if (!dateString) return '';
-            const date = new Date(dateString);
-            return date.toISOString().split('T')[0];
-        }
-    </script>
-</body>
-</html>
+            <body class="bg-white">
+
+                <jsp:include page="../common/sidebar.jsp">
+                    <jsp:param name="currentPath" value="/seller/products" />
+                </jsp:include>
+
+                <main
+                    style="margin-top: 96px; min-height: 80vh; padding: 2rem; max-width: 1400px; margin-left: auto; margin-right: auto;">
+
+                    <!-- Thông báo thành công/lỗi -->
+                    <c:if test="${not empty param.message}">
+                        <div
+                            style="background: #d4edda; color: #155724; padding: 1rem; border-radius: 0.375rem; margin-bottom: 1rem; border: 1px solid #c3e6cb;">
+                            <c:choose>
+                                <c:when test="${param.message == 'created'}">
+                                    ✅ Sản phẩm đã được đăng thành công! Đang chờ admin duyệt.
+                                </c:when>
+                                <c:otherwise>
+                                    ${param.message}
+                                </c:otherwise>
+                            </c:choose>
+                        </div>
+                    </c:if>
+
+                    <c:if test="${not empty error}">
+                        <div
+                            style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 0.375rem; margin-bottom: 1rem; border: 1px solid #f5c6cb;">
+                            ❌ ${error}
+                        </div>
+                    </c:if>
+
+                    <div
+                        style="background: white; padding: 2rem; border-radius: 0.5rem; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 2rem; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-top: 0; color: #2d3748;">📝 Đăng sản phẩm mới</h3>
+                        <form action="${pageContext.request.contextPath}/seller/products" method="post"
+                            style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                            <input type="hidden" name="action" value="create">
+
+                            <div style="grid-column: span 2;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Tên sản
+                                    phẩm</label>
+                                <input type="text" name="name" class="form-control" required
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 0.25rem;">
+                            </div>
+
+                            <div style="grid-column: span 2;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Mô tả</label>
+                                <textarea name="description" class="form-control" rows="3"
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 0.25rem;"></textarea>
+                            </div>
+
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Giá bán
+                                    (VNĐ)</label>
+                                <input type="number" name="price" class="form-control" min="1000" required
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 0.25rem;">
+                            </div>
+
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Số lượng</label>
+                                <input type="number" name="quantity" class="form-control" min="1" required
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 0.25rem;">
+                            </div>
+
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Ngày hết
+                                    hạn</label>
+                                <input type="date" name="expirationDate" id="expDate" class="form-control" required
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 0.25rem;">
+                            </div>
+
+                            <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Link ảnh sản
+                                    phẩm</label>
+                                <input type="url" name="imageUrl" class="form-control" placeholder="https://..."
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 0.25rem;">
+                            </div>
+
+                            <div style="grid-column: span 2; margin-top: 1rem;">
+                                <button type="submit"
+                                    style="background: #ea580c; color: white; border: none; padding: 0.75rem 2rem; border-radius: 0.375rem; font-weight: 600; cursor: pointer;">Đăng
+                                    bán ngay</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="filter-bar" style="margin-bottom: 1.5rem; border-bottom: 2px solid #e2e8f0;">
+                        <a href="?tab=active"
+                            class="filter-btn ${param.tab == 'active' || empty param.tab ? 'active' : ''}"
+                            style="padding: 0.75rem 1.5rem; display: inline-block; text-decoration: none; color: ${param.tab == 'active' || empty param.tab ? '#ea580c' : '#718096'}; border-bottom: 2px solid ${param.tab == 'active' || empty param.tab ? '#ea580c' : 'transparent'}; font-weight: 600;">
+                            Đang bán (Active)
+                        </a>
+                        <a href="?tab=pending" class="filter-btn ${param.tab == 'pending' ? 'active' : ''}"
+                            style="padding: 0.75rem 1.5rem; display: inline-block; text-decoration: none; color: ${param.tab == 'pending' ? '#ea580c' : '#718096'}; border-bottom: 2px solid ${param.tab == 'pending' ? '#ea580c' : 'transparent'}; font-weight: 600;">
+                            Chờ duyệt / Bị ẩn
+                        </a>
+                        <a href="?tab=sold" class="filter-btn ${param.tab == 'sold' ? 'active' : ''}"
+                            style="padding: 0.75rem 1.5rem; display: inline-block; text-decoration: none; color: ${param.tab == 'sold' ? '#ea580c' : '#718096'}; border-bottom: 2px solid ${param.tab == 'sold' ? '#ea580c' : 'transparent'}; font-weight: 600;">
+                            Đã bán hết / Hết hạn
+                        </a>
+                    </div>
+
+                    <table
+                        style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                        <thead style="background: #f7fafc;">
+                            <tr>
+                                <th style="padding: 1rem; text-align: left;">Ảnh</th>
+                                <th style="padding: 1rem; text-align: left;">Tên SP</th>
+                                <th style="padding: 1rem; text-align: left;">Giá</th>
+                                <th style="padding: 1rem; text-align: left;">Hết hạn</th>
+                                <th style="padding: 1rem; text-align: left;">Trạng thái</th>
+                                <th style="padding: 1rem; text-align: left;">Hành động</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <c:forEach var="p" items="${products}">
+                                <tr style="border-top: 1px solid #e2e8f0;">
+                                    <td style="padding: 1rem;"><img src="${p.imageUrl}"
+                                            style="width: 48px; height: 48px; object-fit: cover; border-radius: 4px;">
+                                    </td>
+                                    <td style="padding: 1rem; font-weight: 500;">${p.name}</td>
+                                    <td style="padding: 1rem;">
+                                        <fmt:formatNumber value="${p.salePrice}" type="currency" currencySymbol="₫"
+                                            maxFractionDigits="0" />
+                                    </td>
+                                    <td style="padding: 1rem;">
+                                        <fmt:formatDate value="${p.expirationDate}" pattern="dd/MM/yyyy" />
+                                    </td>
+                                    <td style="padding: 1rem;">
+                                        <span
+                                            class="status-badge status-${p.status.toString().toLowerCase()}">${p.status}</span>
+                                    </td>
+                                    <td style="padding: 1rem;">
+                                        <c:if test="${p.status == 'ACTIVE'}">
+                                            <form action="${pageContext.request.contextPath}/seller/products"
+                                                method="post" style="display:inline;">
+                                                <input type="hidden" name="action" value="hide">
+                                                <input type="hidden" name="productId" value="${p.productId}">
+                                                <button type="submit"
+                                                    style="background: #718096; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">👁️
+                                                    Ẩn đi</button>
+                                            </form>
+                                        </c:if>
+
+                                        <c:if test="${p.status == 'HIDDEN'}">
+                                            <form action="${pageContext.request.contextPath}/seller/products"
+                                                method="post" style="display:inline;"
+                                                onsubmit="return confirm('Hiện lại sản phẩm sẽ cần Admin duyệt lại. Bạn chắc chắn chứ?');">
+                                                <input type="hidden" name="action" value="show">
+                                                <input type="hidden" name="productId" value="${p.productId}">
+                                                <button type="submit"
+                                                    style="background: #d69e2e; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">⚠️
+                                                    Hiện lại</button>
+                                            </form>
+                                        </c:if>
+                                    </td>
+                                </tr>
+                            </c:forEach>
+                        </tbody>
+                    </table>
+                </main>
+
+                <jsp:include page="../common/footer.jsp" />
+                <script src="${pageContext.request.contextPath}/js/main.js"></script>
+                <script>
+                    document.getElementById('expDate').min = new Date().toISOString().split("T")[0];
+                </script>
+            </body>
+
+            </html>
