@@ -141,20 +141,25 @@ public class SellerProductsServlet extends HttpServlet {
 
         String name = request.getParameter("name");
         String desc = request.getParameter("description");
+        String originalPriceStr = request.getParameter("originalPrice");
         String priceStr = request.getParameter("price");
         String quantityStr = request.getParameter("quantity");
         String imageUrl = request.getParameter("imageUrl");
         String dateStr = request.getParameter("expirationDate");
         String categoryStr = request.getParameter("category");
 
-        System.out.println("[DEBUG] Product data - Name: " + name + ", Price: " + priceStr + ", Quantity: "
+        System.out.println("[DEBUG] Product data - Name: " + name + ", OriginalPrice: " + originalPriceStr + ", Price: "
+                + priceStr + ", Quantity: "
                 + quantityStr + ", Date: " + dateStr + ", Category: " + categoryStr);
 
         if (name == null || name.trim().isEmpty()) {
             throw new Exception("Tên sản phẩm không được để trống");
         }
+        if (originalPriceStr == null || originalPriceStr.trim().isEmpty()) {
+            throw new Exception("Giá gốc không được để trống");
+        }
         if (priceStr == null || priceStr.trim().isEmpty()) {
-            throw new Exception("Giá sản phẩm không được để trống");
+            throw new Exception("Giá bán không được để trống");
         }
         if (quantityStr == null || quantityStr.trim().isEmpty()) {
             throw new Exception("Số lượng không được để trống");
@@ -163,8 +168,14 @@ public class SellerProductsServlet extends HttpServlet {
             throw new Exception("Ngày hết hạn không được để trống");
         }
 
+        double originalPrice = Double.parseDouble(originalPriceStr);
         double price = Double.parseDouble(priceStr);
         int quantity = Integer.parseInt(quantityStr);
+
+        // Validate giá bán không được lớn hơn giá gốc
+        if (price > originalPrice) {
+            throw new Exception("Giá bán không được lớn hơn giá gốc");
+        }
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Date expDate = sdf.parse(dateStr);
@@ -184,6 +195,7 @@ public class SellerProductsServlet extends HttpServlet {
         ProductDTO dto = new ProductDTO();
         dto.setName(name);
         dto.setDescription(desc);
+        dto.setOriginalPrice(originalPrice);
         dto.setSalePrice(price);
         dto.setQuantity(quantity);
         dto.setImageUrl(imageUrl);
