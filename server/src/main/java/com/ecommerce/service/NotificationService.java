@@ -3,7 +3,6 @@ package com.ecommerce.service;
 import com.ecommerce.dto.NotificationDTO;
 import com.ecommerce.entity.Notification;
 import com.ecommerce.entity.NotificationType;
-import com.ecommerce.websocket.NotificationWebSocket;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
@@ -30,12 +29,8 @@ public class NotificationService {
             // Convert to DTO
             NotificationDTO dto = convertToDTO(notification);
             
-            // Send via WebSocket (best effort - don't fail if WebSocket fails)
-            try {
-                NotificationWebSocket.sendNotificationToUser(userId, dto);
-            } catch (Exception e) {
-                System.err.println("Failed to send WebSocket notification: " + e.getMessage());
-            }
+            // WebSocket removed - notifications stored in DB only
+            // Users can check notifications via polling or page refresh
             
             return dto;
         } catch (Exception e) {

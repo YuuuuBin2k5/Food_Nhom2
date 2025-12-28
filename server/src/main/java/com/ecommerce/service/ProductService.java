@@ -41,7 +41,6 @@ public class ProductService {
             product.setManufactureDate(dto.getManufactureDate());
             product.setStatus(ProductStatus.PENDING_APPROVAL);
             product.setSeller(seller);
-            product.setVerified(false);
 
             em.persist(product);
             trans.commit();
@@ -119,6 +118,10 @@ public class ProductService {
                 "SELECT p FROM Product p JOIN FETCH p.seller WHERE p.seller.userId = :sid", Product.class);
             query.setParameter("sid", sellerId);
             return query.getResultList();
+        } catch (Exception e) {
+            System.err.println("Error in getProductsBySeller: " + e.getMessage());
+            e.printStackTrace();
+            return List.of(); // Return empty list on error
         } finally {
             em.close();
         }
@@ -135,7 +138,6 @@ public class ProductService {
 
             if (isApproved) {
                 product.setStatus(ProductStatus.ACTIVE);
-                product.setVerified(true);
             } else {
                 product.setStatus(ProductStatus.REJECTED);
             }
@@ -151,7 +153,7 @@ public class ProductService {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p WHERE p.status = :st AND p.isVerified = true", Product.class);
+                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :st AND p.isVerified = true", Product.class);
             query.setParameter("st", ProductStatus.ACTIVE);
             return query.getResultList();
         } finally {
@@ -357,5 +359,62 @@ public class ProductService {
         }
         
         return dto;
+    }
+    
+    /**
+     * Get pending products (waiting for approval)
+     */
+    public List<Product> getPendingProducts() {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.productId ASC", 
+                Product.class);
+            query.setParameter("status", ProductStatus.PENDING_APPROVAL);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+    
+    /**
+     * Search products by name or description
+     */
+    public List<Product> searchProducts(String searchTerm) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT p FROM Product p LEFT JOIN FETCH p.seller " +
+                "WHERE (LOWER(p.name) LIKE :search OR LOWER(p.description) LIKE :search) " +
+                "AND p.status = :st AND p.isVerified = true", 
+                Product.class);
+            query.setParameter("search", "%" + searchTerm.toLowerCase() + "%");
+            query.setParameter("st", ProductStatus.ACTIVE);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+    
+    /**
+     * Get products by category
+     */
+    public List<Product> getProductsByCategory(String categoryStr) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            ProductCategory category = ProductCategory.valueOf(categoryStr.toUpperCase());
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT p FROM Product p LEFT JOIN FETCH p.seller " +
+                "WHERE p.category = :cat AND p.status = :st AND p.isVerified = true", 
+                Product.class);
+            query.setParameter("cat", category);
+            query.setParameter("st", ProductStatus.ACTIVE);
+            return query.getResultList();
+        } catch (IllegalArgumentException e) {
+            // Invalid category, return empty list
+            return List.of();
+        } finally {
+            em.close();
+        }
     }
 }

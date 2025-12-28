@@ -8,13 +8,14 @@ import java.util.Properties;
 
 public class MailUtil {
 
-    // Lấy từ environment variables
+//     Lấy từ environment variables
     private static final String SMTP_HOST = System.getenv("SMTP_HOST");
     private static final String SMTP_PORT = System.getenv("SMTP_PORT");
     private static final String USERNAME = System.getenv("SMTP_USERNAME");
     private static final String PASSWORD = System.getenv("SMTP_PASSWORD");
     private static final String FROM_EMAIL = System.getenv("FROM_EMAIL");
     private static final String FROM_NAME = "Food Rescue";
+    
 
     public static void send(String to, String subject, String content) {
 

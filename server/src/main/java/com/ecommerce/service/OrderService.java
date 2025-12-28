@@ -33,7 +33,7 @@ public class OrderService {
             
             // Load tất cả products một lần để tránh N+1 query
             List<Long> productIds = request.getItems().stream()
-                .map(item -> Long.parseLong(item.getProductId()))
+                .map(item -> item.getProduct().getProductId())
                 .toList();
             
             TypedQuery<Product> productQuery = em.createQuery(
@@ -54,7 +54,7 @@ public class OrderService {
                 
             // Validate và group items
             for (CartItemDTO itemDTO : request.getItems()) {
-                Long productId = Long.parseLong(itemDTO.getProductId());
+                Long productId = itemDTO.getProduct().getProductId();
                 Product product = productMap.get(productId);
                 
                 if (product == null) throw new Exception("Product not found: " + productId);
@@ -79,7 +79,7 @@ public class OrderService {
                 double subTotal = 0.0;
 
                 for (CartItemDTO itemDTO : sellerItems) {
-                    Long productId = Long.valueOf(itemDTO.getProductId());
+                    Long productId = itemDTO.getProduct().getProductId();
                     Product product = productMap.get(productId);
 
                     // Trừ tồn kho
@@ -175,6 +175,45 @@ public class OrderService {
         }
     }
 
+    // Lấy đơn hàng theo seller (qua products của seller)
+    public List<Order> getOrdersBySellerProducts(String sellerId) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            // First check if seller has any products
+            TypedQuery<Long> countQuery = em.createQuery(
+                "SELECT COUNT(p) FROM Product p WHERE p.seller.userId = :sellerId",
+                Long.class
+            );
+            countQuery.setParameter("sellerId", sellerId);
+            Long productCount = countQuery.getSingleResult();
+            
+            // If no products, return empty list
+            if (productCount == 0) {
+                return List.of();
+            }
+            
+            TypedQuery<Order> query = em.createQuery(
+                "SELECT DISTINCT o FROM Order o " +
+                "LEFT JOIN FETCH o.payment " +
+                "LEFT JOIN FETCH o.orderDetails od " +
+                "LEFT JOIN FETCH od.product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "LEFT JOIN FETCH o.buyer " +
+                "WHERE p.seller.userId = :sellerId " +
+                "ORDER BY o.orderDate DESC",
+                Order.class
+            );
+            query.setParameter("sellerId", sellerId);
+            return query.getResultList();
+        } catch (Exception e) {
+            System.err.println("Error in getOrdersBySellerProducts: " + e.getMessage());
+            e.printStackTrace();
+            return List.of(); // Return empty list on error
+        } finally {
+            em.close();
+        }
+    }
+
     // Lấy đơn hàng theo shipper
     public List<Order> getOrdersByShipper(String shipperId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
@@ -207,6 +246,33 @@ public class OrderService {
                 Order.class
             );
             query.setParameter("status", status);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+    
+    // Lấy đơn hàng cho shipper (CONFIRMED, SHIPPING của shipper đó, DELIVERED của shipper đó)
+    public List<Order> getOrdersForShipper(String shipperId) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            TypedQuery<Order> query = em.createQuery(
+                "SELECT DISTINCT o FROM Order o " +
+                "LEFT JOIN FETCH o.payment " +
+                "LEFT JOIN FETCH o.orderDetails od " +
+                "LEFT JOIN FETCH od.product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "LEFT JOIN FETCH o.buyer " +
+                "LEFT JOIN FETCH o.shipper " +
+                "WHERE o.status = :confirmed " +
+                "OR (o.shipper.userId = :shipperId AND (o.status = :shipping OR o.status = :delivered)) " +
+                "ORDER BY o.orderDate DESC",
+                Order.class
+            );
+            query.setParameter("confirmed", OrderStatus.CONFIRMED);
+            query.setParameter("shipping", OrderStatus.SHIPPING);
+            query.setParameter("delivered", OrderStatus.DELIVERED);
+            query.setParameter("shipperId", shipperId);
             return query.getResultList();
         } finally {
             em.close();
@@ -294,6 +360,67 @@ public class OrderService {
             }
             
             // Gửi notification cho buyer
+            if (notificationType != null) {
+                notificationService.createNotification(
+                    em,
+                    buyerId,
+                    notificationType,
+                    title,
+                    message,
+                    orderId
+                );
+            }
+            
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            if (em.getTransaction().isActive()) 
+                em.getTransaction().rollback();
+            throw e;
+        } finally {
+            em.close();
+        }
+    }
+    
+    // Cập nhật trạng thái đơn hàng với shipper ID (cho shipper accept/complete)
+    public void updateOrderStatus(Long orderId, OrderStatus newStatus, String shipperId) throws Exception {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            em.getTransaction().begin();
+            
+            Order order = em.find(Order.class, orderId);
+            if (order == null) throw new Exception("Order not found: " + orderId);
+            
+            // Set shipper khi accept order (CONFIRMED -> SHIPPING)
+            if (newStatus == OrderStatus.SHIPPING && order.getStatus() == OrderStatus.CONFIRMED) {
+                Shipper shipper = em.find(Shipper.class, shipperId);
+                if (shipper == null) throw new Exception("Shipper not found: " + shipperId);
+                order.setShipper(shipper);
+            }
+            
+            OrderStatus oldStatus = order.getStatus();
+            order.setStatus(newStatus);
+            em.merge(order);
+            em.flush();
+            
+            // Tạo notification cho buyer
+            String buyerId = order.getBuyer().getUserId();
+            NotificationType notificationType = null;
+            String title = null;
+            String message = null;
+            
+            switch (newStatus) {
+                case SHIPPING:
+                    notificationType = NotificationType.ORDER_SHIPPING;
+                    title = "Đơn hàng đang được giao";
+                    message = "Đơn hàng #" + orderId + " đang trên đường giao đến bạn.";
+                    break;
+                case DELIVERED:
+                    notificationType = NotificationType.ORDER_DELIVERED;
+                    title = "Đơn hàng đã được giao";
+                    message = "Đơn hàng #" + orderId + " đã được giao thành công.";
+                    break;
+            }
+            
             if (notificationType != null) {
                 notificationService.createNotification(
                     em,

@@ -1,129 +1,283 @@
 package com.ecommerce.servlet;
 
-import com.ecommerce.entity.*;
-import com.ecommerce.service.AdminService;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+import com.ecommerce.service.AdminUserService;
+import com.ecommerce.service.UserLogService;
+import com.ecommerce.entity.Admin;
+import com.ecommerce.entity.Seller;
+import com.ecommerce.entity.Buyer;
+import com.ecommerce.entity.Shipper;
+import com.ecommerce.entity.UserLog;
+import com.ecommerce.entity.ActionType;
+import com.ecommerce.entity.Role;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.List;
-
-@WebServlet(name = "AdminUserServlet", urlPatterns = {"/api/admin/users"})
+@WebServlet("/admin/manageUser")
 public class AdminUserServlet extends HttpServlet {
-
-    private final Gson gson = new Gson();
-    private final AdminService adminService = new AdminService();
+    private static final long serialVersionUID = 1L;
+    private static final int PAGE_SIZE = 6;
+    
+    private AdminUserService userDAO = new AdminUserService();
+    private UserLogService userLogDAO = new UserLogService();
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        setAccessControlHeaders(response);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        processRequest(request, response);
+    }
 
-        try (PrintWriter out = response.getWriter()) {
-            String keyword = request.getParameter("keyword");
-            String filter = request.getParameter("filter"); // all, sellers, buyers, shippers, banned
-            
-            List<User> users;
-            
-            // Determine which users to fetch based on filter and keyword
-            if (keyword != null && !keyword.trim().isEmpty()) {
-                users = adminService.searchUsers(keyword);
-            } else if ("banned".equals(filter)) {
-                users = adminService.getBannedUsers();
-            } else if ("sellers".equals(filter)) {
-                users = new ArrayList<>(adminService.getAllSellers());
-            } else if ("buyers".equals(filter)) {
-                users = new ArrayList<>(adminService.getAllBuyers());
-            } else if ("shippers".equals(filter)) {
-                users = new ArrayList<>(adminService.getAllShippers());
-            } else {
-                users = adminService.getAllUsers();
-            }
-            
-            List<JsonObject> allUsers = new ArrayList<>();
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        processRequest(request, response);
+    }
 
-            for (User user : users) {
-                JsonObject userJson = new JsonObject();
-                userJson.addProperty("userId", user.getUserId());
-                userJson.addProperty("fullName", user.getFullName());
-                userJson.addProperty("email", user.getEmail());
-                userJson.addProperty("phoneNumber", user.getPhoneNumber());
-                userJson.addProperty("banned", user.isBanned());
-                
-                // Determine role
-                if (user instanceof Buyer) {
-                    userJson.addProperty("role", "BUYER");
-                } else if (user instanceof Seller) {
-                    userJson.addProperty("role", "SELLER");
-                    userJson.addProperty("shopName", ((Seller) user).getShopName());
-                } else if (user instanceof Shipper) {
-                    userJson.addProperty("role", "SHIPPER");
-                } else if (user instanceof Admin) {
-                    userJson.addProperty("role", "ADMIN");
-                }
-                
-                allUsers.add(userJson);
-            }
-
-            out.print(gson.toJson(allUsers));
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            sendError(response, "Lỗi khi tải danh sách users");
+    private void processRequest(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        request.setCharacterEncoding("UTF-8");
+        
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login.jsp");
+            return;
+        }
+        
+        String action = request.getParameter("action");
+        if (action == null) action = "list";
+        
+        switch (action) {
+            case "viewLog":
+                viewUserLog(request, response);
+                break;
+            case "ban":
+                banUser(request, response);
+                break;
+            case "unban":
+                unbanUser(request, response);
+                break;
+            case "search":
+                loadUsers(request, response);
+                break;
+            default:
+                loadUsers(request, response);
+                break;
         }
     }
 
-    @Override
-    protected void doPut(HttpServletRequest request, HttpServletResponse response)
+
+    private void loadUsers(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        setAccessControlHeaders(response);
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-
-        try (PrintWriter out = response.getWriter()) {
-            JsonObject requestData = gson.fromJson(request.getReader(), JsonObject.class);
-            String userId = requestData.get("userId").getAsString();
-            boolean banned = requestData.get("banned").getAsBoolean();
-
-            adminService.toggleUserBan(userId, banned);
-
-            JsonObject res = new JsonObject();
-            res.addProperty("success", true);
-            res.addProperty("message", banned ? "Đã khóa tài khoản" : "Đã mở khóa tài khoản");
-            out.print(gson.toJson(res));
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            sendError(response, e.getMessage());
+        String keyword = request.getParameter("keyword");
+        String filter = request.getParameter("filter");
+        if (filter == null) filter = "all";
+        
+        int page = 1;
+        try {
+            String pageStr = request.getParameter("page");
+            if (pageStr != null) page = Integer.parseInt(pageStr);
+            if (page < 1) page = 1;
+        } catch (NumberFormatException e) {
+            page = 1;
         }
+        
+        List<Seller> sellers = new ArrayList<>();
+        List<Buyer> buyers = new ArrayList<>();
+        List<Shipper> shippers = new ArrayList<>();
+        long totalItems = 0;
+        int totalPages = 1;
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sellers = userDAO.searchSellers(keyword);
+            buyers = userDAO.searchBuyers(keyword);
+            shippers = userDAO.searchShippers(keyword);
+            totalItems = sellers.size() + buyers.size() + shippers.size();
+        } else if ("sellers".equals(filter)) {
+            sellers = userDAO.getAllSellers(page, PAGE_SIZE);
+            totalItems = userDAO.countUsers("sellers");
+            totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
+        } else if ("buyers".equals(filter)) {
+            buyers = userDAO.getAllBuyers(page, PAGE_SIZE);
+            totalItems = userDAO.countUsers("buyers");
+            totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
+        } else if ("shippers".equals(filter)) {
+            shippers = userDAO.getAllShippers(page, PAGE_SIZE);
+            totalItems = userDAO.countUsers("shippers");
+            totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
+        } else if ("banned".equals(filter)) {
+            sellers = userDAO.getBannedSellers();
+            buyers = userDAO.getBannedBuyers();
+            shippers = userDAO.getBannedShippers();
+            totalItems = sellers.size() + buyers.size() + shippers.size();
+        } else {
+            sellers = userDAO.getAllSellers();
+            buyers = userDAO.getAllBuyers();
+            shippers = userDAO.getAllShippers();
+            totalItems = sellers.size() + buyers.size() + shippers.size();
+        }
+        
+        request.setAttribute("sellers", sellers);
+        request.setAttribute("buyers", buyers);
+        request.setAttribute("shippers", shippers);
+        request.setAttribute("keyword", keyword);
+        request.setAttribute("filter", filter);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalItems", totalItems);
+        request.setAttribute("activePage", "user");
+        request.getRequestDispatcher("/admin/admin_manages_user.jsp").forward(request, response);
     }
 
-    @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) {
-        setAccessControlHeaders(resp);
-        resp.setStatus(HttpServletResponse.SC_OK);
+    private void viewUserLog(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String userId = request.getParameter("userId");
+        String userName = request.getParameter("userName");
+        String userType = request.getParameter("userType");
+        
+        List<UserLog> userLogs = new ArrayList<>();
+        if (userId != null && !userId.trim().isEmpty()) {
+            userLogs = userLogDAO.getLogsByUserId(userId, 50);
+        }
+        
+        String keyword = request.getParameter("keyword");
+        String filter = request.getParameter("filter");
+        if (filter == null) filter = "all";
+        
+        int page = 1;
+        try {
+            String pageStr = request.getParameter("page");
+            if (pageStr != null) page = Integer.parseInt(pageStr);
+            if (page < 1) page = 1;
+        } catch (NumberFormatException e) {
+            page = 1;
+        }
+        
+        List<Seller> sellers = new ArrayList<>();
+        List<Buyer> buyers = new ArrayList<>();
+        List<Shipper> shippers = new ArrayList<>();
+        long totalItems = 0;
+        int totalPages = 1;
+
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            sellers = userDAO.searchSellers(keyword);
+            buyers = userDAO.searchBuyers(keyword);
+            shippers = userDAO.searchShippers(keyword);
+            totalItems = sellers.size() + buyers.size() + shippers.size();
+        } else if ("sellers".equals(filter)) {
+            sellers = userDAO.getAllSellers(page, PAGE_SIZE);
+            totalItems = userDAO.countUsers("sellers");
+            totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
+        } else if ("buyers".equals(filter)) {
+            buyers = userDAO.getAllBuyers(page, PAGE_SIZE);
+            totalItems = userDAO.countUsers("buyers");
+            totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
+        } else if ("shippers".equals(filter)) {
+            shippers = userDAO.getAllShippers(page, PAGE_SIZE);
+            totalItems = userDAO.countUsers("shippers");
+            totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
+        } else if ("banned".equals(filter)) {
+            sellers = userDAO.getBannedSellers();
+            buyers = userDAO.getBannedBuyers();
+            shippers = userDAO.getBannedShippers();
+            totalItems = sellers.size() + buyers.size() + shippers.size();
+        } else {
+            sellers = userDAO.getAllSellers();
+            buyers = userDAO.getAllBuyers();
+            shippers = userDAO.getAllShippers();
+            totalItems = sellers.size() + buyers.size() + shippers.size();
+        }
+        
+        request.setAttribute("userLogs", userLogs);
+        request.setAttribute("selectedUserId", userId);
+        request.setAttribute("selectedUserName", userName);
+        request.setAttribute("selectedUserType", userType);
+        request.setAttribute("sellers", sellers);
+        request.setAttribute("buyers", buyers);
+        request.setAttribute("shippers", shippers);
+        request.setAttribute("keyword", keyword);
+        request.setAttribute("filter", filter);
+        request.setAttribute("currentPage", page);
+        request.setAttribute("totalPages", totalPages);
+        request.setAttribute("totalItems", totalItems);
+        request.setAttribute("activePage", "user");
+        request.getRequestDispatcher("/admin/admin_manages_user.jsp").forward(request, response);
     }
 
-    private void setAccessControlHeaders(HttpServletResponse resp) {
-        resp.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-        resp.setHeader("Access-Control-Allow-Methods", "GET, PUT, OPTIONS");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-        resp.setHeader("Access-Control-Allow-Credentials", "true");
+    private void banUser(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String userId = request.getParameter("userId");
+        String userName = request.getParameter("userName");
+        String userType = request.getParameter("userType");
+        HttpSession session = request.getSession();
+        Admin admin = (Admin) session.getAttribute("user");
+        String adminId = admin != null ? admin.getUserId() : "unknown";
+        
+        boolean success = false;
+        switch (userType) {
+            case "seller": success = userDAO.banSeller(userId); break;
+            case "buyer": success = userDAO.banBuyer(userId); break;
+            case "shipper": success = userDAO.banShipper(userId); break;
+        }
+        
+        if (success) {
+            Role userRole = "seller".equals(userType) ? Role.SELLER 
+                          : "buyer".equals(userType) ? Role.BUYER : Role.SHIPPER;
+            ActionType actionType = "seller".equals(userType) ? ActionType.SELLER_BANNED 
+                                  : "buyer".equals(userType) ? ActionType.BUYER_BANNED 
+                                  : ActionType.SHIPPER_BANNED;
+            
+            UserLog log = new UserLog(userId, userRole, actionType,
+                userType.substring(0, 1).toUpperCase() + userType.substring(1) + " \"" + userName + "\" bị ban bởi admin " + adminId,
+                null, null, adminId);
+            userLogDAO.save(log);
+            
+            request.setAttribute("message", "Đã ban " + userType + " \"" + userName + "\".");
+        } else {
+            request.setAttribute("error", "Không thể ban " + userType + ". Vui lòng thử lại.");
+        }
+        loadUsers(request, response);
     }
 
-    private void sendError(HttpServletResponse resp, String message) throws IOException {
-        JsonObject jsonResponse = new JsonObject();
-        jsonResponse.addProperty("success", false);
-        jsonResponse.addProperty("message", message);
-        resp.getWriter().print(gson.toJson(jsonResponse));
+
+    private void unbanUser(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String userId = request.getParameter("userId");
+        String userName = request.getParameter("userName");
+        String userType = request.getParameter("userType");
+        HttpSession session = request.getSession();
+        Admin admin = (Admin) session.getAttribute("user");
+        String adminId = admin != null ? admin.getUserId() : "unknown";
+        
+        boolean success = false;
+        switch (userType) {
+            case "seller": success = userDAO.unbanSeller(userId); break;
+            case "buyer": success = userDAO.unbanBuyer(userId); break;
+            case "shipper": success = userDAO.unbanShipper(userId); break;
+        }
+        
+        if (success) {
+            Role userRole = "seller".equals(userType) ? Role.SELLER 
+                          : "buyer".equals(userType) ? Role.BUYER : Role.SHIPPER;
+            ActionType actionType = "seller".equals(userType) ? ActionType.SELLER_UNBANNED 
+                                  : "buyer".equals(userType) ? ActionType.BUYER_UNBANNED 
+                                  : ActionType.SHIPPER_UNBANNED;
+            
+            UserLog log = new UserLog(userId, userRole, actionType,
+                userType.substring(0, 1).toUpperCase() + userType.substring(1) + " \"" + userName + "\" được unban bởi admin " + adminId,
+                null, null, adminId);
+            userLogDAO.save(log);
+            
+            request.setAttribute("message", "Đã unban " + userType + " \"" + userName + "\".");
+        } else {
+            request.setAttribute("error", "Không thể unban " + userType + ". Vui lòng thử lại.");
+        }
+        loadUsers(request, response);
     }
 }

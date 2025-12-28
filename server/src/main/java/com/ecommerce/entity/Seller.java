@@ -21,9 +21,6 @@ public class Seller extends User implements Serializable {
 
     @Column(name = "revenue")
     private double revenue;
-    
-    @Column(name = "food_safety_cert")
-    private String foodSafetyCertificate;
 
     @Column(name = "business_license_url")
     private String businessLicenseUrl;
@@ -33,11 +30,16 @@ public class Seller extends User implements Serializable {
     @Column(name = "license_submitted_date")
     private java.util.Date licenseSubmittedDate;
 
+    // Ngày duyệt giấy phép
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "license_approved_date")
+    private java.util.Date licenseApprovedDate;
+
     // Trạng thái duyệt
     @Enumerated(EnumType.STRING)
     @Column(name = "verification_status", nullable = false)
     private SellerStatus verificationStatus;
-
+    
     // Quan hệ: 1 Seller có nhiều Product
     @OneToMany(mappedBy = "seller", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Product> products;
@@ -51,6 +53,7 @@ public class Seller extends User implements Serializable {
         this.verificationStatus = SellerStatus.UNVERIFIED;
     }
 
+    @SuppressWarnings("static-access")
     public Seller(String fullName, String email, String password, String phoneNumber, String address, String shopName) {
         super(fullName, email, password, phoneNumber, address, Role.SELLER);
         this.shopName = shopName;
@@ -92,23 +95,15 @@ public class Seller extends User implements Serializable {
         this.products = products;
     }
     
-    public String getFoodSafetyCertificate() {
-        return foodSafetyCertificate;
-    }
-
-    public void setFoodSafetyCertificate(String foodSafetyCertificate) {
-        this.foodSafetyCertificate = foodSafetyCertificate;
-    }
-
     public String getBusinessLicenseUrl() {
         return businessLicenseUrl;
     }
 
     public void setBusinessLicenseUrl(String businessLicenseUrl) {
-        this.businessLicenseUrl = businessLicenseUrl;
+this.businessLicenseUrl = businessLicenseUrl;
         // Khi seller upload ảnh, tự động set ngày nộp và chuyển status sang PENDING
         this.licenseSubmittedDate = new java.util.Date();
-        this.verificationStatus = SellerStatus.PENDING;
+        this.verificationStatus = SellerStatus.PENDING; 
     }
 
     public java.util.Date getLicenseSubmittedDate() {
@@ -119,6 +114,14 @@ public class Seller extends User implements Serializable {
         this.licenseSubmittedDate = licenseSubmittedDate;
     }
 
+    public java.util.Date getLicenseApprovedDate() {
+        return licenseApprovedDate;
+    }
+
+    public void setLicenseApprovedDate(java.util.Date licenseApprovedDate) {
+        this.licenseApprovedDate = licenseApprovedDate;
+    }
+
     public SellerStatus getVerificationStatus() {
         return verificationStatus;
     }
@@ -126,4 +129,5 @@ public class Seller extends User implements Serializable {
     public void setVerificationStatus(SellerStatus verificationStatus) {
         this.verificationStatus = verificationStatus;
     }
+    
 }

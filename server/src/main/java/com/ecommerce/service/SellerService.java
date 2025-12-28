@@ -25,8 +25,8 @@ public class SellerService {
             if (dto.shopName != null) seller.setShopName(dto.shopName);
             if (dto.phoneNumber != null) seller.setPhoneNumber(dto.phoneNumber);
             if (dto.address != null) seller.setAddress(dto.address);
-            if (dto.foodSafetyCertificate != null) {
-                seller.setFoodSafetyCertificate(dto.foodSafetyCertificate);
+            if (dto.businessLicenseUrl != null) {
+                seller.setBusinessLicenseUrl(dto.businessLicenseUrl);
             }
 
             em.merge(seller);

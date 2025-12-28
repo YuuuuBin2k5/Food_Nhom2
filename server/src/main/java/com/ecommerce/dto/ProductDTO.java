@@ -20,7 +20,6 @@ public class ProductDTO {
     private String imageUrl;
     private Date createdDate;
     private ProductStatus status;
-    private boolean isVerified;
     private ProductCategory category;
     
     // Seller info
@@ -43,7 +42,6 @@ public class ProductDTO {
         this.manufactureDate = product.getManufactureDate();
         this.quantity = product.getQuantity();
         this.status = product.getStatus();
-        this.isVerified = product.isVerified();
         this.category = product.getCategory();
         
         // Get seller info without triggering lazy load issues
@@ -149,14 +147,6 @@ public class ProductDTO {
 
     public void setStatus(ProductStatus status) {
         this.status = status;
-    }
-
-    public boolean isVerified() {
-        return isVerified;
-    }
-
-    public void setVerified(boolean verified) {
-        isVerified = verified;
     }
 
     public String getSellerId() {

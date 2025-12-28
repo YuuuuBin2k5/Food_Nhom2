@@ -1,184 +1,167 @@
 package com.ecommerce.servlet;
 
 import com.ecommerce.entity.Order;
-import com.ecommerce.entity.OrderDetail;
 import com.ecommerce.entity.OrderStatus;
 import com.ecommerce.service.OrderService;
-import com.ecommerce.util.DBUtil;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-@WebServlet(name = "BuyerOrderServlet", urlPatterns = {"/api/buyer/orders", "/api/buyer/orders/*"})
+/**
+ * Buyer order operations servlet (returns JSON for AJAX)
+ * Endpoints:
+ * - GET /api/buyer/orders/{orderId}
+ * - PUT /api/buyer/orders/{orderId}/cancel
+ */
+@WebServlet("/api/buyer/orders/*")
 public class BuyerOrderServlet extends HttpServlet {
-
-    private final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create();
+    
     private final OrderService orderService = new OrderService();
-
-    // --- GET: LẤY DANH SÁCH ĐƠN HÀNG CỦA BUYER ---
+    private final Gson gson = new Gson();
+    
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String buyerId = (String) req.getAttribute("userId");
-        String role = (String) req.getAttribute("role");
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
         
-        // Kiểm tra Role
-        if (!"BUYER".equals(role)) {
-            sendError(resp, 403, "Access Denied");
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
+        // Check authentication
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            sendJsonResponse(response, false, "Chưa đăng nhập", 401);
             return;
         }
-
-        try {
-            // Set headers BEFORE getting writer
-            resp.setContentType("application/json");
-            resp.setCharacterEncoding("UTF-8");
-            resp.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-            resp.setHeader("Access-Control-Allow-Credentials", "true");
-            
-            // Lấy danh sách đơn hàng
-            List<Order> orders = orderService.getOrdersByBuyer(buyerId);
-
-            // Convert sang JSON
-            JsonArray jsonOrders = new JsonArray();
-
-            for (Order o : orders) {
-                try {
-                    JsonObject orderJson = new JsonObject();
-                    orderJson.addProperty("orderId", o.getOrderId());
-                    orderJson.addProperty("orderDate", o.getOrderDate().toString());
-                    orderJson.addProperty("status", o.getStatus().toString());
-                    orderJson.addProperty("shippingAddress", o.getShippingAddress());
-                    
-                    // Safely get payment info
-                    if (o.getPayment() != null) {
-                        orderJson.addProperty("totalAmount", o.getPayment().getAmount());
-                        orderJson.addProperty("paymentMethod", o.getPayment().getMethod().toString());
-                    } else {
-                        orderJson.addProperty("totalAmount", 0);
-                        orderJson.addProperty("paymentMethod", "UNKNOWN");
-                    }
-
-                    // Items
-                    JsonArray itemsJson = new JsonArray();
-                    if (o.getOrderDetails() != null) {
-                        for (OrderDetail od : o.getOrderDetails()) {
-                            try {
-                                JsonObject item = new JsonObject();
-                                item.addProperty("productId", od.getProduct().getProductId());
-                                item.addProperty("name", od.getProduct().getName());
-                                item.addProperty("quantity", od.getQuantity());
-                                item.addProperty("price", od.getPriceAtPurchase());
-                                item.addProperty("imageUrl", od.getProduct().getImageUrl() != null ? od.getProduct().getImageUrl() : "");
-                                item.addProperty("shopName", od.getProduct().getSeller() != null ? od.getProduct().getSeller().getShopName() : "Unknown");
-                                itemsJson.add(item);
-                            } catch (Exception e) {
-                                // Skip this item if error
-                                e.printStackTrace();
-                            }
-                        }
-                    }
-                    orderJson.add("items", itemsJson);
-
-                    jsonOrders.add(orderJson);
-                } catch (Exception e) {
-                    // Skip this order if error
-                    e.printStackTrace();
-                }
-            }
-
-            String jsonResponse = gson.toJson(jsonOrders);
-            
-            // Write response
-            PrintWriter out = resp.getWriter();
-            out.write(jsonResponse);
-            out.flush();
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendError(resp, 500, e.getMessage());
+        
+        String userId = (String) session.getAttribute("userId");
+        String role = (String) session.getAttribute("role");
+        
+        if (!"BUYER".equals(role)) {
+            sendJsonResponse(response, false, "Không có quyền", 403);
+            return;
         }
-    }
-
-    // --- PUT: HỦY ĐƠN HÀNG (CHỈ KHI PENDING) ---
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        setHeaders(resp);
-
-        try (PrintWriter out = resp.getWriter()) {
-            // Lấy Order ID từ URL
-            String pathInfo = req.getPathInfo();
-            if (pathInfo == null || pathInfo.length() < 2) throw new Exception("Invalid Order ID");
-
-            // Format URL mong đợi: /123/cancel
-            String[] parts = pathInfo.split("/");
-            Long orderId = Long.parseLong(parts[1]);
-            String action = parts.length > 2 ? parts[2] : "";
-
-            if (!"cancel".equals(action)) {
-                throw new Exception("Invalid action");
-            }
-
-            // Kiểm tra trạng thái hiện tại trước khi hủy
-            Order order = orderService.getOrderById(orderId);
-
-            // Bảo mật: check xem đơn này có đúng của user đang login không
-            String currentUserId = (String) req.getAttribute("userId");
-            if (!order.getBuyer().getUserId().equals(currentUserId)) {
-                sendError(resp, 403, "Bạn không có quyền hủy đơn hàng này");
+        
+        try {
+            String pathInfo = request.getPathInfo();
+            if (pathInfo == null || pathInfo.length() <= 1) {
+                sendJsonResponse(response, false, "URL không hợp lệ", 400);
                 return;
             }
-
-            if (order.getStatus() != OrderStatus.PENDING) {
-                throw new Exception("Chỉ có thể hủy đơn hàng khi đang ở trạng thái CHỜ (Pending)");
+            
+            // Parse orderId from URL
+            String orderIdStr = pathInfo.substring(1);
+            Long orderId = Long.parseLong(orderIdStr);
+            
+            Order order = orderService.getOrderById(orderId);
+            
+            // Verify buyer owns this order
+            if (!order.getBuyer().getUserId().equals(userId)) {
+                sendJsonResponse(response, false, "Không có quyền xem đơn hàng này", 403);
+                return;
             }
-
-            // Thực hiện hủy
-            orderService.updateOrderStatus(orderId, OrderStatus.CANCELLED);
-
-            JsonObject success = new JsonObject();
-            success.addProperty("success", true);
-            success.addProperty("message", "Đã hủy đơn hàng thành công");
-            out.print(gson.toJson(success));
-
+            
+            // Return order data
+            response.setStatus(200);
+            response.getWriter().write(gson.toJson(order));
+            
+        } catch (NumberFormatException e) {
+            sendJsonResponse(response, false, "Order ID không hợp lệ", 400);
         } catch (Exception e) {
-            resp.setStatus(500); // Hoặc 400 tùy logic
-            JsonObject err = new JsonObject();
-            err.addProperty("success", false);
-            err.addProperty("message", e.getMessage());
-            resp.getWriter().print(gson.toJson(err));
+            e.printStackTrace();
+            sendJsonResponse(response, false, "Lỗi: " + e.getMessage(), 500);
         }
     }
-
+    
     @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        setHeaders(resp);
-        resp.setStatus(HttpServletResponse.SC_OK);
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
+        // Check authentication
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("userId") == null) {
+            sendJsonResponse(response, false, "Chưa đăng nhập", 401);
+            return;
+        }
+        
+        String userId = (String) session.getAttribute("userId");
+        String role = (String) session.getAttribute("role");
+        
+        if (!"BUYER".equals(role)) {
+            sendJsonResponse(response, false, "Không có quyền", 403);
+            return;
+        }
+        
+        try {
+            // Parse URL: /api/buyer/orders/123/cancel
+            String pathInfo = request.getPathInfo();
+            if (pathInfo == null || pathInfo.length() <= 1) {
+                sendJsonResponse(response, false, "URL không hợp lệ", 400);
+                return;
+            }
+            
+            String[] parts = pathInfo.substring(1).split("/");
+            if (parts.length < 2) {
+                sendJsonResponse(response, false, "URL không hợp lệ", 400);
+                return;
+            }
+            
+            String orderIdStr = parts[0];
+            String action = parts[1];
+            
+            if (!"cancel".equals(action)) {
+                sendJsonResponse(response, false, "Action không hợp lệ", 400);
+                return;
+            }
+            
+            Long orderId = Long.parseLong(orderIdStr);
+            
+            // Get order and verify ownership
+            Order order = orderService.getOrderById(orderId);
+            if (!order.getBuyer().getUserId().equals(userId)) {
+                sendJsonResponse(response, false, "Không có quyền hủy đơn hàng này", 403);
+                return;
+            }
+            
+            // Check if order can be cancelled
+            if (order.getStatus() == OrderStatus.CANCELLED) {
+                sendJsonResponse(response, false, "Đơn hàng đã bị hủy", 400);
+                return;
+            }
+            
+            if (order.getStatus() == OrderStatus.DELIVERED) {
+                sendJsonResponse(response, false, "Không thể hủy đơn hàng đã giao", 400);
+                return;
+            }
+            
+            // Cancel order
+            orderService.updateOrderStatus(orderId, OrderStatus.CANCELLED);
+            
+            sendJsonResponse(response, true, "Đã hủy đơn hàng thành công", 200);
+            
+        } catch (NumberFormatException e) {
+            sendJsonResponse(response, false, "Order ID không hợp lệ", 400);
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendJsonResponse(response, false, "Lỗi: " + e.getMessage(), 500);
+        }
     }
-
-    private void setHeaders(HttpServletResponse resp) {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
-        resp.setHeader("Access-Control-Allow-Origin", "http://localhost:5173");
-        resp.setHeader("Access-Control-Allow-Methods", "GET, PUT, OPTIONS");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-        resp.setHeader("Access-Control-Allow-Credentials", "true");
-    }
-
-    private void sendError(HttpServletResponse resp, int code, String message) throws IOException {
-        resp.setStatus(code);
-        JsonObject json = new JsonObject();
-        json.addProperty("success", false);
-        json.addProperty("message", message);
-        resp.getWriter().print(gson.toJson(json));
+    
+    private void sendJsonResponse(HttpServletResponse response, boolean success, String message, int status) 
+            throws IOException {
+        response.setStatus(status);
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", success);
+        result.put("message", message);
+        response.getWriter().write(gson.toJson(result));
     }
 }

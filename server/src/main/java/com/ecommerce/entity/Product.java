@@ -1,4 +1,4 @@
-/*
+    /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
@@ -48,16 +48,18 @@ public class Product implements Serializable {
     @Column(name = "created_date")
     private Date createdDate;
 
+    @Temporal(TemporalType.TIMESTAMP)
+    @Column(name = "approved_date")
+    private Date approvedDate;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private ProductStatus status;
-
-    @Column(name = "is_verified")
-    private boolean isVerified;
-
+    
     @Enumerated(EnumType.STRING)
     @Column(name = "category")
     private ProductCategory category;
+
 
     // --- QUAN HỆ (RELATIONSHIP) ---
     // Nhiều sản phẩm thuộc về 1 Seller
@@ -79,7 +81,6 @@ public class Product implements Serializable {
         this.originalPrice = 0.0;
         this.salePrice = 0.0;
         this.quantity = 0;
-        this.isVerified = false;
     }
 
     public Product(String name, String description, double originalPrice, double salePrice, 
@@ -96,7 +97,6 @@ public class Product implements Serializable {
         
         this.createdDate = new Date();
         this.status = ProductStatus.PENDING_APPROVAL;
-        this.isVerified = false;
         this.category = ProductCategory.OTHER;
     }
     
@@ -172,14 +172,6 @@ public class Product implements Serializable {
         this.status = status;
     }
 
-    public boolean isVerified() {
-        return isVerified;
-    }
-
-    public void setVerified(boolean verified) {
-        isVerified = verified;
-    }
-
     public Seller getSeller() {
         return seller;
     }
@@ -204,12 +196,20 @@ public class Product implements Serializable {
         this.createdDate = createdDate;
     }
 
-    public ProductCategory getCategory() {
+    public Date getApprovedDate() {
+        return approvedDate;
+    }
+
+    public void setApprovedDate(Date approvedDate) {
+        this.approvedDate = approvedDate;
+    }
+    
+    public ProductCategory getCategory(){
         return category;
     }
-
-    public void setCategory(ProductCategory category) {
+    
+    public void setCategory(ProductCategory category){
         this.category = category;
     }
-
+    
 }

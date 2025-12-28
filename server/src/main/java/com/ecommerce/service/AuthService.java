@@ -1,22 +1,28 @@
 package com.ecommerce.service;
 
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
-import com.ecommerce.entity.Admin;
-import com.ecommerce.entity.Buyer;
-import com.ecommerce.entity.PasswordResetToken;
-import com.ecommerce.entity.Seller;
-import com.ecommerce.entity.Shipper;
-import com.ecommerce.entity.User;
+import com.ecommerce.entity.*;
 import com.ecommerce.util.DBUtil;
 import com.ecommerce.util.MailUtil;
 import com.ecommerce.util.PasswordUtil;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.NoResultException;
+import jakarta.persistence.TypedQuery;
 
+/**
+ * Service xử lý authentication & authorization
+ * - Login
+ * - Register
+ * - Forgot/Reset Password
+ */
 public class AuthService {
+
+    private final NotificationService notificationService = new NotificationService();
 
     /* =========================
        LOGIN
@@ -27,19 +33,101 @@ public class AuthService {
             User user = findUserByEmail(em, email);
 
             if (user == null) {
-                throw new Exception("EMAIL_NOT_FOUND");
+                throw new Exception("Email không tồn tại");
             }
 
-            // ✅ Use BCrypt to verify password
             if (!PasswordUtil.verify(password, user.getPassword())) {
-                throw new Exception("INVALID_PASSWORD");
+                throw new Exception("Sai mật khẩu");
             }
 
             if (user.isBanned()) {
-                throw new Exception("ACCOUNT_BANNED");
+                throw new Exception("Tài khoản của bạn đã bị khóa");
             }
 
             return user;
+        } finally {
+            em.close();
+        }
+    }
+    
+    /* =========================
+       REGISTER
+       ========================= */
+    public void register(String fullName, String email, String password, String phone, String role, String shopName) throws Exception {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction trans = em.getTransaction();
+
+        try {
+            // Kiểm tra email đã tồn tại
+            if (findUserByEmail(em, email) != null) {
+                throw new Exception("Email này đã được sử dụng!");
+            }
+
+            User newUser = null;
+            String userRoleStr = (role != null) ? role.toUpperCase() : "BUYER";
+            Role enumRole;
+            
+            switch (userRoleStr) {
+                case "SELLER":
+                    if (shopName == null || shopName.trim().isEmpty()) {
+                        throw new Exception("Người bán phải có tên cửa hàng!");
+                    }
+                    Seller seller = new Seller();
+                    seller.setShopName(shopName);
+                    seller.setRevenue(0.0);
+                    newUser = seller;
+                    enumRole = Role.SELLER;
+                    break;
+                    
+                case "SHIPPER":
+                    newUser = new Shipper();
+                    enumRole = Role.SHIPPER;
+                    break;
+                    
+                case "BUYER":
+                default:
+                    newUser = new Buyer();
+                    enumRole = Role.BUYER;
+                    break;
+            }
+
+            newUser.setFullName(fullName);
+            newUser.setEmail(email);
+            newUser.setPassword(PasswordUtil.hash(password));
+            newUser.setPhoneNumber(phone);
+            newUser.setCreatedDate(new Date());
+            newUser.setRole(enumRole);
+
+            trans.begin();
+            em.persist(newUser);
+            em.flush();
+            
+            // Gửi notification cho admin nếu là seller mới
+            if (enumRole == Role.SELLER) {
+                TypedQuery<Admin> adminQuery = em.createQuery("SELECT a FROM Admin a", Admin.class);
+                List<Admin> admins = adminQuery.getResultList();
+                
+                for (Admin admin : admins) {
+                    try {
+                        notificationService.createNotification(
+                            em,
+                            admin.getUserId(),
+                            NotificationType.NEW_SELLER_REGISTRATION,
+                            "Seller mới đăng ký",
+                            "Seller '" + shopName + "' vừa đăng ký và chờ duyệt.",
+                            null
+                        );
+                    } catch (Exception e) {
+                        System.err.println("Lỗi gửi notification: " + e.getMessage());
+                    }
+                }
+            }
+            
+            trans.commit();
+
+        } catch (Exception e) {
+            if (trans.isActive()) trans.rollback();
+            throw e;
         } finally {
             em.close();
         }
@@ -48,39 +136,33 @@ public class AuthService {
     /* =========================
        FORGOT PASSWORD
        ========================= */
-    public void requestPasswordReset(String email) throws Exception {
+    public void forgotPassword(String email) throws Exception {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
 
         try {
             User user = findUserByEmail(em, email);
 
-            // ⚠️ Không leak thông tin email tồn tại hay không
+            // Không leak thông tin email có tồn tại hay không
             if (user == null) return;
 
             em.getTransaction().begin();
 
-                String tokenValue = UUID.randomUUID().toString();
-                Date expiredAt = new Date(System.currentTimeMillis() + 15 * 60 * 1000);
+            String tokenValue = UUID.randomUUID().toString();
+            Date expiredAt = new Date(System.currentTimeMillis() + 15 * 60 * 1000);
 
-                String userId = user.getUserId();
-                String userType = "UNKNOWN";
-                if (user instanceof Admin) userType = "ADMIN";
-                else if (user instanceof Seller) userType = "SELLER";
-                else if (user instanceof Buyer) userType = "BUYER";
-                else if (user instanceof Shipper) userType = "SHIPPER";
+            String userId = user.getUserId();
+            String userType = getUserType(user);
 
-                PasswordResetToken token = new PasswordResetToken(tokenValue, userId, userType, expiredAt);
-                em.persist(token);
+            PasswordResetToken token = new PasswordResetToken(tokenValue, userId, userType, expiredAt);
+            em.persist(token);
             em.getTransaction().commit();
 
-            // 👉 Gửi mail
-            String resetLink =
-                    "http://localhost:5173/reset-password?token=" + tokenValue;
-
+            // Gửi mail
+            String resetLink = "http://localhost:5173/reset-password?token=" + tokenValue;
             MailUtil.send(
-                    user.getEmail(),
-                    "Reset your password",
-                    "Click the link to reset your password:\n\n" + resetLink
+                user.getEmail(),
+                "Reset your password",
+                "Click the link to reset your password:\n\n" + resetLink
             );
 
         } catch (Exception e) {
@@ -92,7 +174,7 @@ public class AuthService {
     }
 
     /* =========================
-       RESET PASSWORD (BOOLEAN)
+       RESET PASSWORD
        ========================= */
     public boolean resetPassword(String tokenValue, String newPassword) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
@@ -110,31 +192,13 @@ public class AuthService {
 
             em.getTransaction().begin();
 
-            // Lookup user by stored userId and userType
-
-            String userId = token.getUserId();
-            String userType = token.getUserType();
-
-            User user = null;
-            if ("SELLER".equals(userType)) {
-                user = em.find(Seller.class, userId);
-            } else if ("BUYER".equals(userType)) {
-                user = em.find(Buyer.class, userId);
-            } else if ("SHIPPER".equals(userType)) {
-                user = em.find(Shipper.class, userId);
-            } else if ("ADMIN".equals(userType)) {
-                user = em.find(Admin.class, userId);
-            }
-
+            User user = findUserByIdAndType(em, token.getUserId(), token.getUserType());
             if (user == null) {
                 if (em.getTransaction().isActive()) em.getTransaction().rollback();
                 return false;
             }
 
-            // ✅ Hash password before saving
-            String hashedPassword = PasswordUtil.hash(newPassword);
-            user.setPassword(hashedPassword);
-
+            user.setPassword(PasswordUtil.hash(newPassword));
             token.markUsed();
 
             em.merge(user);
@@ -154,42 +218,47 @@ public class AuthService {
     }
 
     /* =========================
-       FIND USER BY EMAIL
+       HELPER METHODS
        ========================= */
     private User findUserByEmail(EntityManager em, String email) {
-
         try {
-            return em.createQuery(
-                    "SELECT s FROM Seller s WHERE s.email = :email",
-                    Seller.class)
-                    .setParameter("email", email)
-                    .getSingleResult();
+            return em.createQuery("SELECT s FROM Seller s WHERE s.email = :email", Seller.class)
+                    .setParameter("email", email).getSingleResult();
         } catch (NoResultException ignored) {}
 
         try {
-            return em.createQuery(
-                    "SELECT b FROM Buyer b WHERE b.email = :email",
-                    Buyer.class)
-                    .setParameter("email", email)
-                    .getSingleResult();
+            return em.createQuery("SELECT b FROM Buyer b WHERE b.email = :email", Buyer.class)
+                    .setParameter("email", email).getSingleResult();
         } catch (NoResultException ignored) {}
 
         try {
-            return em.createQuery(
-                    "SELECT sh FROM Shipper sh WHERE sh.email = :email",
-                    Shipper.class)
-                    .setParameter("email", email)
-                    .getSingleResult();
+            return em.createQuery("SELECT sh FROM Shipper sh WHERE sh.email = :email", Shipper.class)
+                    .setParameter("email", email).getSingleResult();
         } catch (NoResultException ignored) {}
 
         try {
-            return em.createQuery(
-                    "SELECT a FROM Admin a WHERE a.email = :email",
-                    Admin.class)
-                    .setParameter("email", email)
-                    .getSingleResult();
+            return em.createQuery("SELECT a FROM Admin a WHERE a.email = :email", Admin.class)
+                    .setParameter("email", email).getSingleResult();
         } catch (NoResultException ignored) {}
 
         return null;
+    }
+    
+    private User findUserByIdAndType(EntityManager em, String userId, String userType) {
+        switch (userType) {
+            case "SELLER": return em.find(Seller.class, userId);
+            case "BUYER": return em.find(Buyer.class, userId);
+            case "SHIPPER": return em.find(Shipper.class, userId);
+            case "ADMIN": return em.find(Admin.class, userId);
+            default: return null;
+        }
+    }
+    
+    private String getUserType(User user) {
+        if (user instanceof Admin) return "ADMIN";
+        if (user instanceof Seller) return "SELLER";
+        if (user instanceof Buyer) return "BUYER";
+        if (user instanceof Shipper) return "SHIPPER";
+        return "UNKNOWN";
     }
 }

@@ -5,5 +5,5 @@ public class SellerUpdateDTO {
     public String shopName;
     public String phoneNumber;
     public String address;
-    public String foodSafetyCertificate;
+    public String businessLicenseUrl;
 }

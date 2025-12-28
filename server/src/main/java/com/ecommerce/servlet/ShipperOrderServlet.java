@@ -1,159 +1,155 @@
 package com.ecommerce.servlet;
 
+import java.io.IOException;
 import com.ecommerce.entity.Order;
-import com.ecommerce.entity.OrderDetail;
 import com.ecommerce.entity.OrderStatus;
+import com.ecommerce.entity.User;
 import com.ecommerce.service.OrderService;
-import com.ecommerce.util.DBUtil;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import jakarta.persistence.EntityManager;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.List;
-
-@WebServlet(name = "ShipperOrderServlet", urlPatterns = {"/api/shipper/orders", "/api/shipper/orders/*"})
+@WebServlet("/api/shipper/orders/*")
 public class ShipperOrderServlet extends HttpServlet {
-
-    private final Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd'T'HH:mm:ss").create();
+    
     private final OrderService orderService = new OrderService();
-
+    private final Gson gson = new Gson();
+    
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        setHeaders(resp);
-        String shipperId = (String) req.getAttribute("userId");
-
-        EntityManager em = DBUtil.getEmFactory().createEntityManager();
-        try (PrintWriter out = resp.getWriter()) {
-
-            // ✅ FIX: Sử dụng JOIN FETCH để load tất cả data trong 1 query
-            // Tránh N+1 query problem
-            String jpql = "SELECT DISTINCT o FROM Order o " +
-                    "LEFT JOIN FETCH o.payment " +
-                    "LEFT JOIN FETCH o.orderDetails od " +
-                    "LEFT JOIN FETCH od.product p " +
-                    "LEFT JOIN FETCH p.seller " +
-                    "LEFT JOIN FETCH o.buyer " +
-                    "WHERE " +
-                    "(o.status = com.ecommerce.entity.OrderStatus.CONFIRMED AND o.shipper IS NULL) " +
-                    "OR (o.shipper.userId = :shipperId AND o.status IN " +
-                    "(com.ecommerce.entity.OrderStatus.SHIPPING, " +
-                    "com.ecommerce.entity.OrderStatus.DELIVERED)) " +
-                    "ORDER BY o.orderDate DESC";
-
-            List<Order> orders = em.createQuery(jpql, Order.class)
-                    .setParameter("shipperId", shipperId)
-                    .getResultList();
-
-            JsonArray jsonOrders = new JsonArray();
-
-            for (Order o : orders) {
-                JsonObject orderJson = new JsonObject();
-                orderJson.addProperty("orderId", o.getOrderId());
-                orderJson.addProperty("orderDate", o.getOrderDate().toString());
-                orderJson.addProperty("status", o.getStatus().toString());
-                orderJson.addProperty("buyerName", o.getBuyer().getFullName());
-                orderJson.addProperty("shippingAddress", o.getShippingAddress());
-                orderJson.addProperty("totalAmount", o.getPayment().getAmount());
-                orderJson.addProperty("shippingFee", 15000.0); // Phí cố định hoặc tính toán
-
-                // Items
-                JsonArray itemsJson = new JsonArray();
-                for (OrderDetail od : o.getOrderDetails()) {
-                    JsonObject item = new JsonObject();
-                    item.addProperty("name", od.getProduct().getName());
-                    item.addProperty("quantity", od.getQuantity());
-                    item.addProperty("price", od.getPriceAtPurchase());
-                    itemsJson.add(item);
-                }
-                orderJson.add("items", itemsJson);
-
-                jsonOrders.add(orderJson);
+    protected void service(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        String method = request.getMethod();
+        if ("PATCH".equalsIgnoreCase(method)) {
+            doPatch(request, response);
+        } else {
+            super.service(request, response);
+        }
+    }
+    
+    protected void doPatch(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
+        // Check authentication
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write(gson.toJson(new ErrorResponse("Vui lòng đăng nhập")));
+            return;
+        }
+        
+        String role = (String) session.getAttribute("role");
+        if (!"SHIPPER".equals(role)) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            response.getWriter().write(gson.toJson(new ErrorResponse("Không có quyền truy cập")));
+            return;
+        }
+        
+        User shipper = (User) session.getAttribute("user");
+        
+        try {
+            String pathInfo = request.getPathInfo();
+            if (pathInfo == null || pathInfo.equals("/")) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write(gson.toJson(new ErrorResponse("Thiếu order ID")));
+                return;
             }
-
-            out.print(gson.toJson(jsonOrders));
-
+            
+            // Parse path: /22/accept or /22/complete
+            String[] pathParts = pathInfo.split("/");
+            if (pathParts.length < 3) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write(gson.toJson(new ErrorResponse("URL không hợp lệ")));
+                return;
+            }
+            
+            String orderIdStr = pathParts[1];
+            String action = pathParts[2];
+            
+            Long orderId = Long.parseLong(orderIdStr);
+            
+            // Get order
+            Order order = orderService.getOrderById(orderId);
+            if (order == null) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.getWriter().write(gson.toJson(new ErrorResponse("Không tìm thấy đơn hàng")));
+                return;
+            }
+            
+            // Handle action
+            if ("accept".equals(action)) {
+                // Accept order (CONFIRMED -> SHIPPING)
+                if (order.getStatus() != OrderStatus.CONFIRMED) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write(gson.toJson(new ErrorResponse("Đơn hàng không ở trạng thái chờ giao")));
+                    return;
+                }
+                
+                orderService.updateOrderStatus(orderId, OrderStatus.SHIPPING, shipper.getUserId());
+                response.getWriter().write(gson.toJson(new SuccessResponse("Nhận đơn thành công")));
+                
+            } else if ("complete".equals(action)) {
+                // Complete order (SHIPPING -> DELIVERED)
+                if (order.getStatus() != OrderStatus.SHIPPING) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.getWriter().write(gson.toJson(new ErrorResponse("Đơn hàng không ở trạng thái đang giao")));
+                    return;
+                }
+                
+                // Verify shipper owns this order
+                if (order.getShipper() == null || !order.getShipper().getUserId().equals(shipper.getUserId())) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.getWriter().write(gson.toJson(new ErrorResponse("Bạn không phải shipper của đơn hàng này")));
+                    return;
+                }
+                
+                orderService.updateOrderStatus(orderId, OrderStatus.DELIVERED, shipper.getUserId());
+                response.getWriter().write(gson.toJson(new SuccessResponse("Xác nhận giao hàng thành công")));
+                
+            } else {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.getWriter().write(gson.toJson(new ErrorResponse("Action không hợp lệ")));
+            }
+            
+        } catch (NumberFormatException e) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.getWriter().write(gson.toJson(new ErrorResponse("Order ID không hợp lệ")));
         } catch (Exception e) {
             e.printStackTrace();
-            resp.setStatus(500);
-            JsonObject err = new JsonObject();
-            err.addProperty("message", e.getMessage());
-            resp.getWriter().print(gson.toJson(err));
-        } finally {
-            em.close();
+            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            response.getWriter().write(gson.toJson(new ErrorResponse("Có lỗi xảy ra: " + e.getMessage())));
         }
     }
-
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        setHeaders(resp);
-
-        try (PrintWriter out = resp.getWriter()) {
-            // URL format: /api/shipper/orders/123/status
-            String pathInfo = req.getPathInfo();
-            if (pathInfo == null) throw new Exception("Invalid ID");
-
-            String[] parts = pathInfo.split("/");
-            if (parts.length < 3) throw new Exception("Invalid URL format");
-
-            Long orderId = Long.parseLong(parts[1]);
-
-            // Đọc body lấy status mới
-            JsonObject body = gson.fromJson(req.getReader(), JsonObject.class);
-            String statusStr = body.get("status").getAsString();
-            OrderStatus newStatus = OrderStatus.valueOf(statusStr);
-
-            // Shipper chỉ có thể chuyển từ CONFIRMED -> SHIPPING hoặc SHIPPING -> DELIVERED
-            Order order = orderService.getOrderById(orderId);
-            
-            if (order.getStatus() == OrderStatus.CONFIRMED && newStatus == OrderStatus.SHIPPING) {
-                // Shipper nhận đơn
-                String shipperId = (String) req.getAttribute("userId");
-                orderService.assignShipper(orderId, shipperId);
-                orderService.updateOrderStatus(orderId, newStatus);
-            } else if (order.getStatus() == OrderStatus.SHIPPING && newStatus == OrderStatus.DELIVERED) {
-                // Shipper xác nhận đã giao
-                orderService.updateOrderStatus(orderId, newStatus);
-            } else {
-                throw new Exception("Invalid status transition");
-            }
-
-            JsonObject success = new JsonObject();
-            success.addProperty("success", true);
-            success.addProperty("message", "Updated status to " + statusStr);
-            out.print(gson.toJson(success));
-
-        } catch (Exception e) {
-            resp.setStatus(500);
-            JsonObject err = new JsonObject();
-            err.addProperty("success", false);
-            err.addProperty("message", e.getMessage());
-            resp.getWriter().print(gson.toJson(err));
+    
+    // Response classes
+    private static class ErrorResponse {
+        private final String error;
+        
+        public ErrorResponse(String error) {
+            this.error = error;
+        }
+        
+        public String getError() {
+            return error;
         }
     }
-
-    @Override
-    protected void doOptions(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        String origin = req.getHeader("Origin");
-        if (origin != null && (origin.equals("http://localhost:5173"))) {
-            resp.setHeader("Access-Control-Allow-Origin", origin);
+    
+    private static class SuccessResponse {
+        private final String message;
+        
+        public SuccessResponse(String message) {
+            this.message = message;
         }
-        resp.setHeader("Access-Control-Allow-Methods", "GET, PUT, OPTIONS");
-        resp.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-        resp.setHeader("Access-Control-Allow-Credentials", "true");
-        resp.setStatus(HttpServletResponse.SC_OK);
-    }
-
-    private void setHeaders(HttpServletResponse resp) {
-        resp.setContentType("application/json");
-        resp.setCharacterEncoding("UTF-8");
+        
+        public String getMessage() {
+            return message;
+        }
     }
 }

@@ -1,24 +1,26 @@
 package com.ecommerce.dto;
 
+import com.ecommerce.entity.Product;
+
 public class CartItemDTO {
     
-    private String productId;
+    private Product product;
     private int quantity;
     
     public CartItemDTO() {
     }
     
-    public CartItemDTO(String productId, int quantity) {
-        this.productId = productId;
+    public CartItemDTO(Product product, int quantity) {
+        this.product = product;
         this.quantity = quantity;
     }
     
-    public String getProductId() {
-        return productId;
+    public Product getProduct() {
+        return product;
     }
     
-    public void setProductId(String productId) {
-        this.productId = productId;
+    public void setProduct(Product product) {
+        this.product = product;
     }
     
     public int getQuantity() {
@@ -27,5 +29,15 @@ public class CartItemDTO {
     
     public void setQuantity(int quantity) {
         this.quantity = quantity;
+    }
+    
+    // Helper methods
+    public double getSubtotal() {
+        return product != null ? product.getSalePrice() * quantity : 0;
+    }
+    
+    public double getSavings() {
+        if (product == null) return 0;
+        return (product.getOriginalPrice() - product.getSalePrice()) * quantity;
     }
 }
