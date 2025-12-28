@@ -96,7 +96,52 @@ body {
 }
 
 .form-group {
+    position: relative;
     margin-bottom: 1.5rem;
+}
+
+/* Password wrapper for toggle button */
+.password-group {
+    position: relative;
+}
+
+.password-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.password-wrapper .form-input {
+    width: 100%;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #64748b;
+    transition: color 0.2s;
+    z-index: 10;
+    line-height: 1;
+}
+
+.toggle-password:hover {
+    color: #FF6B6B;
+}
+
+.toggle-password svg {
+    width: 20px;
+    height: 20px;
+    pointer-events: none;
+    display: block;
 }
 
 .form-label {
@@ -109,11 +154,18 @@ body {
 
 .form-input {
     width: 100%;
-    padding: 0.875rem 1rem;
+    padding: 10px;
     border: 2px solid #e2e8f0;
     border-radius: 0.75rem;
     font-size: 1rem;
     transition: all 0.2s;
+    background: #f8fafc;
+}
+
+/* Override for password input */
+.password-wrapper input.form-input {
+    padding-right: 50px !important;
+}
     background: #f8fafc;
 }
 
