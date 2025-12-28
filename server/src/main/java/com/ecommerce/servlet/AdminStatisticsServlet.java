@@ -3,6 +3,7 @@ package com.ecommerce.servlet;
 import com.ecommerce.service.AdminService;
 import com.ecommerce.util.MenuHelper;
 import java.io.IOException;
+import java.util.Map;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -36,12 +37,14 @@ public class AdminStatisticsServlet extends HttpServlet {
         // Set menu items
         MenuHelper.setMenuItems(request, "ADMIN", "/admin/statistics");
         
-        // Load statistics
-        long totalBuyers = adminService.countBuyers();
-        long totalSellers = adminService.countSellers();
-        long totalShippers = adminService.countShippers();
-        long totalOrders = adminService.countOrders();
-        long totalProducts = adminService.countProducts();
+        // Load statistics - TỐI ƯU: Dùng 1 EntityManager thay vì 5
+        Map<String, Long> stats = adminService.getAllStatistics();
+        
+        long totalBuyers = stats.get("buyers");
+        long totalSellers = stats.get("sellers");
+        long totalShippers = stats.get("shippers");
+        long totalOrders = stats.get("orders");
+        long totalProducts = stats.get("products");
         long totalUsers = totalBuyers + totalSellers + totalShippers;
         
         request.setAttribute("totalBuyers", totalBuyers);

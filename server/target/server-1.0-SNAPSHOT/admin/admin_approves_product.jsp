@@ -100,7 +100,7 @@
                     <thead><tr><th>Sản phẩm</th><th>Shop</th><th>Chủ shop</th><th>Giá bán</th><th>Ngày đăng</th><th>Ngày duyệt</th><th>Trạng thái</th></tr></thead>
                     <tbody>
                         <c:forEach var="p" items="${productList}">
-                            <tr onclick="window.location='${pageContext.request.contextPath}/admin/approveProduct?action=detail&productId=${p.productId}&tab=${currentTab}&page=${currentPage}'" class="clickable-row">
+                            <tr onclick="window.location='${pageContext.request.contextPath}/admin/approveProduct?action=detail&productId=${p.productId}&tab=${currentTab}'" class="clickable-row">
                                 <td>${p.name}</td>
                                 <td>${p.seller.shopName}</td>
                                 <td>${p.seller.fullName}</td>

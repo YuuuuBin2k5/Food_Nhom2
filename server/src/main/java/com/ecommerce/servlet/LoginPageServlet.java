@@ -90,22 +90,22 @@ public class LoginPageServlet extends HttpServlet {
     // Đã thêm tham số HttpServletRequest để lấy ContextPath
     private void redirectByRole(HttpServletRequest request, HttpServletResponse response, String role) throws IOException {
         String contextPath = request.getContextPath(); // Lấy tên project, ví dụ: "/MyEcommerce"
-        String redirectUrl = contextPath + "/server/"; // Mặc định
+        String redirectUrl = contextPath + "/"; // Mặc định
 
         switch (role) {
             case "ADMIN":
-                redirectUrl = contextPath + "/server/admin/statistics";
+                redirectUrl = contextPath + "/admin/statistics";
                 break;
             case "SELLER":
-                redirectUrl = contextPath + "/server/seller/dashboard";
+                redirectUrl = contextPath + "/seller/dashboard";
                 break;
             case "SHIPPER":
-                redirectUrl = contextPath + "/server/shipper/orders";
+                redirectUrl = contextPath + "/shipper/orders";
                 break;
             case "BUYER":
             default:
                 // Buyer thường về trang chủ shop chứ không vào trang server quản trị
-                redirectUrl = contextPath + "/home"; 
+                redirectUrl = contextPath + "/"; 
                 break;
         }
         

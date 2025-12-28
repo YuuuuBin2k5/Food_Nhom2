@@ -22,7 +22,8 @@ import com.ecommerce.entity.Role;
 @WebServlet("/admin/approveProduct")
 public class AdminProductServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    private static final int PAGE_SIZE = 6;
+    // Bỏ phân trang - load tất cả để scroll
+    // private static final int PAGE_SIZE = 6;
     
     private AdminProductService productService = new AdminProductService();
     private UserLogService userLogService = new UserLogService();
@@ -45,7 +46,14 @@ public class AdminProductServlet extends HttpServlet {
         
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
-            response.sendRedirect(request.getContextPath() + "/index.jsp");
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
+        }
+        
+        // Kiểm tra role ADMIN
+        String role = (String) session.getAttribute("role");
+        if (!"ADMIN".equals(role)) {
+            response.sendRedirect(request.getContextPath() + "/home");
             return;
         }
         
@@ -77,15 +85,6 @@ public class AdminProductServlet extends HttpServlet {
         String tab = request.getParameter("tab");
         if (tab == null) tab = "pending";
         
-        int page = 1;
-        try {
-            String pageStr = request.getParameter("page");
-            if (pageStr != null) page = Integer.parseInt(pageStr);
-            if (page < 1) page = 1;
-        } catch (NumberFormatException e) {
-            page = 1;
-        }
-        
         Product product = productService.getFirstPendingProduct();
         
         long pendingCount = productService.countByStatus(ProductStatus.PENDING_APPROVAL);
@@ -94,32 +93,25 @@ public class AdminProductServlet extends HttpServlet {
         long allCount = productService.countAll();
         
         List<Product> productList = new ArrayList<>();
-        long totalItems = 0;
         
+        // Load tất cả sản phẩm theo tab - không phân trang
         switch (tab) {
             case "active":
-                productList = productService.getProductsByStatus(ProductStatus.ACTIVE, page, PAGE_SIZE);
-                totalItems = activeCount;
+                productList = productService.getProductsByStatus(ProductStatus.ACTIVE);
                 break;
             case "rejected":
-                productList = productService.getProductsByStatus(ProductStatus.REJECTED, page, PAGE_SIZE);
-                totalItems = rejectedCount;
+                productList = productService.getProductsByStatus(ProductStatus.REJECTED);
                 break;
             case "all":
-                productList = productService.getAllProducts(page, PAGE_SIZE);
-                totalItems = allCount;
+                productList = productService.getAllProducts();
                 break;
             default:
                 tab = "pending";
-                productList = productService.getProductsByStatus(ProductStatus.PENDING_APPROVAL, page, PAGE_SIZE);
-                totalItems = pendingCount;
+                productList = productService.getProductsByStatus(ProductStatus.PENDING_APPROVAL);
                 break;
         }
         
-        int totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
-        
-        setAttributes(request, product, productList, tab, page, totalPages, totalItems,
-                     pendingCount, activeCount, rejectedCount, allCount);
+        setAttributes(request, product, productList, tab, pendingCount, activeCount, rejectedCount, allCount);
         request.getRequestDispatcher("/admin/admin_approves_product.jsp").forward(request, response);
     }
 
@@ -130,7 +122,6 @@ public class AdminProductServlet extends HttpServlet {
         
         String productIdStr = request.getParameter("productId");
         String tab = request.getParameter("tab");
-        String pageStr = request.getParameter("page");
         
         Product product = null;
         if (productIdStr != null) {
@@ -143,12 +134,6 @@ public class AdminProductServlet extends HttpServlet {
         }
         
         if (tab == null) tab = "pending";
-        int page = 1;
-        try {
-            if (pageStr != null) page = Integer.parseInt(pageStr);
-        } catch (NumberFormatException e) {
-            page = 1;
-        }
         
         long pendingCount = productService.countByStatus(ProductStatus.PENDING_APPROVAL);
         long activeCount = productService.countByStatus(ProductStatus.ACTIVE);
@@ -156,32 +141,25 @@ public class AdminProductServlet extends HttpServlet {
         long allCount = productService.countAll();
         
         List<Product> productList = new ArrayList<>();
-        long totalItems = 0;
         
+        // Load tất cả sản phẩm theo tab - không phân trang
         switch (tab) {
             case "active":
-                productList = productService.getProductsByStatus(ProductStatus.ACTIVE, page, PAGE_SIZE);
-                totalItems = activeCount;
+                productList = productService.getProductsByStatus(ProductStatus.ACTIVE);
                 break;
             case "rejected":
-                productList = productService.getProductsByStatus(ProductStatus.REJECTED, page, PAGE_SIZE);
-                totalItems = rejectedCount;
+                productList = productService.getProductsByStatus(ProductStatus.REJECTED);
                 break;
             case "all":
-                productList = productService.getAllProducts(page, PAGE_SIZE);
-                totalItems = allCount;
+                productList = productService.getAllProducts();
                 break;
             default:
                 tab = "pending";
-                productList = productService.getProductsByStatus(ProductStatus.PENDING_APPROVAL, page, PAGE_SIZE);
-                totalItems = pendingCount;
+                productList = productService.getProductsByStatus(ProductStatus.PENDING_APPROVAL);
                 break;
         }
         
-        int totalPages = (int) Math.ceil((double) totalItems / PAGE_SIZE);
-        
-        setAttributes(request, product, productList, tab, page, totalPages, totalItems,
-                     pendingCount, activeCount, rejectedCount, allCount);
+        setAttributes(request, product, productList, tab, pendingCount, activeCount, rejectedCount, allCount);
         request.getRequestDispatcher("/admin/admin_approves_product.jsp").forward(request, response);
     }
 
@@ -263,14 +241,10 @@ public class AdminProductServlet extends HttpServlet {
     }
 
     private void setAttributes(HttpServletRequest request, Product product, List<Product> productList,
-            String tab, int page, int totalPages, long totalItems,
-            long pendingCount, long activeCount, long rejectedCount, long allCount) {
+            String tab, long pendingCount, long activeCount, long rejectedCount, long allCount) {
         request.setAttribute("product", product);
         request.setAttribute("productList", productList);
         request.setAttribute("currentTab", tab);
-        request.setAttribute("currentPage", page);
-        request.setAttribute("totalPages", totalPages);
-        request.setAttribute("totalItems", totalItems);
         request.setAttribute("pendingCount", pendingCount);
         request.setAttribute("activeCount", activeCount);
         request.setAttribute("rejectedCount", rejectedCount);
