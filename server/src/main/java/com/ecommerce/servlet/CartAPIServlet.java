@@ -19,6 +19,15 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * REST API for cart operations (AJAX requests)
+ * Endpoints:
+ * - POST /api/cart/add - Add product to cart
+ * - POST /api/cart/update - Update item quantity
+ * - POST /api/cart/remove - Remove item from cart
+ * - POST /api/cart/clear - Clear all items
+ * - GET /api/cart/items - Get all cart items
+ */
 @WebServlet(name = "CartAPIServlet", urlPatterns = {"/api/cart/*"})
 public class CartAPIServlet extends HttpServlet {
 
@@ -32,18 +41,20 @@ public class CartAPIServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         
+        // Authentication check
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            sendError(response, 401, "Vui lòng đăng nhập");
+            return;
+        }
+        
         String pathInfo = request.getPathInfo();
         if (pathInfo == null) {
             sendError(response, 400, "Invalid request");
             return;
         }
 
-        HttpSession session = request.getSession();
-        List<CartItemDTO> cart = (List<CartItemDTO>) session.getAttribute("cart");
-        if (cart == null) {
-            cart = new ArrayList<>();
-            session.setAttribute("cart", cart);
-        }
+        List<CartItemDTO> cart = getOrCreateCart(session);
 
         try {
             switch (pathInfo) {
@@ -60,11 +71,58 @@ public class CartAPIServlet extends HttpServlet {
                     cart.clear();
                     session.setAttribute("cart", cart);
                     updateCartSize(session, cart);
-                    sendSuccess(response, "Đã xóa giỏ hàng");
+                    sendSuccessWithData(response, "Đã xóa giỏ hàng", Map.of("cartSize", 0));
                     break;
                 default:
                     sendError(response, 404, "Endpoint not found");
             }
+        } catch (IllegalArgumentException e) {
+            sendError(response, 400, e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendError(response, 500, "Lỗi server: " + e.getMessage());
+        }
+    }
+
+    @Override
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        response.setContentType("application/json");
+        response.setCharacterEncoding("UTF-8");
+        
+        // Authentication check
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            sendError(response, 401, "Vui lòng đăng nhập");
+            return;
+        }
+        
+        String pathInfo = request.getPathInfo();
+        if (pathInfo == null) {
+            sendError(response, 400, "Invalid request");
+            return;
+        }
+
+        List<CartItemDTO> cart = getOrCreateCart(session);
+
+        try {
+            // Handle /remove/{productId} or /clear
+            if (pathInfo.equals("/clear")) {
+                cart.clear();
+                session.setAttribute("cart", cart);
+                updateCartSize(session, cart);
+                sendSuccessWithData(response, "Đã xóa giỏ hàng", Map.of("cartSize", 0));
+            } else if (pathInfo.startsWith("/remove/")) {
+                // Extract productId from path: /remove/123
+                String productIdStr = pathInfo.substring("/remove/".length());
+                Long productId = Long.parseLong(productIdStr);
+                handleRemoveFromCartInternal(productId, cart, session, response);
+            } else {
+                sendError(response, 404, "Endpoint not found");
+            }
+        } catch (NumberFormatException e) {
+            sendError(response, 400, "Invalid product ID");
         } catch (Exception e) {
             e.printStackTrace();
             sendError(response, 500, "Lỗi server: " + e.getMessage());
@@ -78,17 +136,20 @@ public class CartAPIServlet extends HttpServlet {
         response.setContentType("application/json");
         response.setCharacterEncoding("UTF-8");
         
+        // Authentication check
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            sendError(response, 401, "Vui lòng đăng nhập");
+            return;
+        }
+        
         String pathInfo = request.getPathInfo();
         if (pathInfo == null || !pathInfo.equals("/items")) {
             sendError(response, 400, "Invalid request");
             return;
         }
 
-        HttpSession session = request.getSession();
-        List<CartItemDTO> cart = (List<CartItemDTO>) session.getAttribute("cart");
-        if (cart == null) {
-            cart = new ArrayList<>();
-        }
+        List<CartItemDTO> cart = getOrCreateCart(session);
 
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);
@@ -98,125 +159,224 @@ public class CartAPIServlet extends HttpServlet {
         response.getWriter().write(gson.toJson(result));
     }
 
+    /**
+     * Handle add to cart request
+     */
     private void handleAddToCart(HttpServletRequest request, HttpServletResponse response, 
                                   List<CartItemDTO> cart, HttpSession session) throws Exception {
-        // Read JSON body
-        StringBuilder sb = new StringBuilder();
-        BufferedReader reader = request.getReader();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
+        
+        // Parse JSON request body
+        Map<String, Object> data = parseJsonBody(request);
+        
+        Long productId = parseLong(data.get("productId"));
+        int quantity = parseInt(data.get("quantity"));
+        
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Số lượng phải lớn hơn 0");
         }
-        
-        Map<String, Object> data = gson.fromJson(sb.toString(), Map.class);
-        Long productId = ((Number) data.get("productId")).longValue();
-        int quantity = ((Number) data.get("quantity")).intValue();
-        
-        // Check if item exists
+
+        // Check if item already exists
         boolean found = false;
         for (CartItemDTO item : cart) {
             if (item.getProduct().getProductId().equals(productId)) {
-                item.setQuantity(item.getQuantity() + quantity);
+                int newQuantity = item.getQuantity() + quantity;
+                
+                // Validate stock
+                if (item.getProduct().getQuantity() < newQuantity) {
+                    throw new IllegalArgumentException("Không đủ hàng trong kho (Còn: " + item.getProduct().getQuantity() + ")");
+                }
+                
+                item.setQuantity(newQuantity);
+                found = true;
+                break;
+            }
+        }
+        
+        // Add new item if not found
+        if (!found) {
+            ProductDTO product = productService.getProductById(productId);
+            if (product == null) {
+                throw new IllegalArgumentException("Sản phẩm không tồn tại");
+            }
+            
+            // Validate stock
+            if (product.getQuantity() < quantity) {
+                throw new IllegalArgumentException("Không đủ hàng trong kho (Còn: " + product.getQuantity() + ")");
+            }
+            
+            cart.add(new CartItemDTO(product, quantity));
+        }
+        
+        // Save to session
+        session.setAttribute("cart", cart);
+        updateCartSize(session, cart);
+        
+        sendSuccessWithData(response, "Đã thêm vào giỏ hàng", 
+            Map.of("cartSize", session.getAttribute("cartSize")));
+    }
+
+    /**
+     * Handle update cart request
+     */
+    private void handleUpdateCart(HttpServletRequest request, HttpServletResponse response,
+                                   List<CartItemDTO> cart, HttpSession session) throws Exception {
+        
+        Map<String, Object> data = parseJsonBody(request);
+        
+        Long productId = parseLong(data.get("productId"));
+        int quantity = parseInt(data.get("quantity"));
+        
+        if (quantity <= 0) {
+            // If quantity is 0 or negative, remove item
+            handleRemoveFromCartInternal(productId, cart, session, response);
+            return;
+        }
+
+        boolean found = false;
+        for (CartItemDTO item : cart) {
+            if (item.getProduct().getProductId().equals(productId)) {
+                // Validate stock
+                if (item.getProduct().getQuantity() < quantity) {
+                    throw new IllegalArgumentException("Không đủ hàng trong kho (Còn: " + item.getProduct().getQuantity() + ")");
+                }
+                
+                item.setQuantity(quantity);
                 found = true;
                 break;
             }
         }
         
         if (!found) {
-            ProductDTO product = productService.getProductById(productId);
-            if (product != null) {
-                cart.add(new CartItemDTO(product, quantity));
-            } else {
-                sendError(response, 404, "Không tìm thấy sản phẩm");
-                return;
-            }
+            throw new IllegalArgumentException("Sản phẩm không có trong giỏ hàng");
         }
         
-        // Lưu cart vào session
         session.setAttribute("cart", cart);
         updateCartSize(session, cart);
-        
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("message", "Đã thêm vào giỏ hàng");
-        result.put("cartSize", session.getAttribute("cartSize"));
-        
-        response.getWriter().write(gson.toJson(result));
+        sendSuccessWithData(response, "Đã cập nhật giỏ hàng",
+            Map.of("cartSize", session.getAttribute("cartSize")));
     }
 
-    private void handleUpdateCart(HttpServletRequest request, HttpServletResponse response,
-                                   List<CartItemDTO> cart, HttpSession session) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        BufferedReader reader = request.getReader();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
-        }
-        
-        Map<String, Object> data = gson.fromJson(sb.toString(), Map.class);
-        Long productId = ((Number) data.get("productId")).longValue();
-        int quantity = ((Number) data.get("quantity")).intValue();
-        
-        if (quantity <= 0) {
-            handleRemoveFromCart(request, response, cart, session);
-            return;
-        }
-
-        for (CartItemDTO item : cart) {
-            if (item.getProduct().getProductId().equals(productId)) {
-                item.setQuantity(quantity);
-                break;
-            }
-        }
-        
-        // Lưu cart vào session
-        session.setAttribute("cart", cart);
-        updateCartSize(session, cart);
-        sendSuccess(response, "Đã cập nhật giỏ hàng");
-    }
-
+    /**
+     * Handle remove from cart request
+     */
     private void handleRemoveFromCart(HttpServletRequest request, HttpServletResponse response,
                                       List<CartItemDTO> cart, HttpSession session) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        BufferedReader reader = request.getReader();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            sb.append(line);
-        }
         
-        Map<String, Object> data = gson.fromJson(sb.toString(), Map.class);
-        Long productId = ((Number) data.get("productId")).longValue();
+        Map<String, Object> data = parseJsonBody(request);
+        Long productId = parseLong(data.get("productId"));
+        
+        handleRemoveFromCartInternal(productId, cart, session, response);
+    }
+
+    /**
+     * Internal method to remove item from cart
+     */
+    private void handleRemoveFromCartInternal(Long productId, List<CartItemDTO> cart, 
+                                              HttpSession session, HttpServletResponse response) 
+            throws IOException {
         
         Iterator<CartItemDTO> iterator = cart.iterator();
+        boolean removed = false;
+        
         while (iterator.hasNext()) {
             CartItemDTO item = iterator.next();
             if (item.getProduct().getProductId().equals(productId)) {
                 iterator.remove();
+                removed = true;
                 break;
             }
         }
         
-        // Lưu cart vào session
+        if (!removed) {
+            sendError(response, 404, "Sản phẩm không có trong giỏ hàng");
+            return;
+        }
+        
         session.setAttribute("cart", cart);
         updateCartSize(session, cart);
-        sendSuccess(response, "Đã xóa khỏi giỏ hàng");
+        sendSuccessWithData(response, "Đã xóa khỏi giỏ hàng",
+            Map.of("cartSize", session.getAttribute("cartSize")));
     }
 
-    private void updateCartSize(HttpSession session, List<CartItemDTO> cart) {
-        int totalItems = 0;
-        for (CartItemDTO item : cart) {
-            totalItems += item.getQuantity();
+    /**
+     * Parse JSON request body
+     */
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> parseJsonBody(HttpServletRequest request) throws IOException {
+        StringBuilder sb = new StringBuilder();
+        try (BufferedReader reader = request.getReader()) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+            }
         }
+        return gson.fromJson(sb.toString(), Map.class);
+    }
+
+    /**
+     * Safely parse Long from JSON (Gson may return Double)
+     */
+    private Long parseLong(Object value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Missing required parameter");
+        }
+        if (value instanceof Number) {
+            return ((Number) value).longValue();
+        }
+        return Long.parseLong(String.valueOf(value));
+    }
+
+    /**
+     * Safely parse Integer from JSON (Gson may return Double)
+     */
+    private int parseInt(Object value) {
+        if (value == null) {
+            throw new IllegalArgumentException("Missing required parameter");
+        }
+        if (value instanceof Number) {
+            return ((Number) value).intValue();
+        }
+        return Integer.parseInt(String.valueOf(value));
+    }
+
+    /**
+     * Get cart from session or create new one
+     */
+    @SuppressWarnings("unchecked")
+    private List<CartItemDTO> getOrCreateCart(HttpSession session) {
+        List<CartItemDTO> cart = (List<CartItemDTO>) session.getAttribute("cart");
+        if (cart == null) {
+            cart = new ArrayList<>();
+            session.setAttribute("cart", cart);
+        }
+        return cart;
+    }
+
+    /**
+     * Update cart size in session
+     */
+    private void updateCartSize(HttpSession session, List<CartItemDTO> cart) {
+        int totalItems = cart.stream()
+            .mapToInt(CartItemDTO::getQuantity)
+            .sum();
         session.setAttribute("cartSize", totalItems);
     }
 
-    private void sendSuccess(HttpServletResponse response, String message) throws IOException {
+    /**
+     * Send success response with data
+     */
+    private void sendSuccessWithData(HttpServletResponse response, String message, Map<String, Object> data) 
+            throws IOException {
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);
         result.put("message", message);
+        result.putAll(data);
         response.getWriter().write(gson.toJson(result));
     }
 
+    /**
+     * Send error response
+     */
     private void sendError(HttpServletResponse response, int status, String message) throws IOException {
         response.setStatus(status);
         Map<String, Object> error = new HashMap<>();
