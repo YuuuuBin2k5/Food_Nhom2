@@ -145,9 +145,10 @@ public class SellerProductsServlet extends HttpServlet {
         String quantityStr = request.getParameter("quantity");
         String imageUrl = request.getParameter("imageUrl");
         String dateStr = request.getParameter("expirationDate");
+        String categoryStr = request.getParameter("category");
 
         System.out.println("[DEBUG] Product data - Name: " + name + ", Price: " + priceStr + ", Quantity: "
-                + quantityStr + ", Date: " + dateStr);
+                + quantityStr + ", Date: " + dateStr + ", Category: " + categoryStr);
 
         if (name == null || name.trim().isEmpty()) {
             throw new Exception("Tên sản phẩm không được để trống");
@@ -168,6 +169,17 @@ public class SellerProductsServlet extends HttpServlet {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         Date expDate = sdf.parse(dateStr);
 
+        // Xử lý category - mặc định OTHER nếu không chọn hoặc không hợp lệ
+        com.ecommerce.entity.ProductCategory category = com.ecommerce.entity.ProductCategory.OTHER;
+        if (categoryStr != null && !categoryStr.trim().isEmpty()) {
+            try {
+                category = com.ecommerce.entity.ProductCategory.valueOf(categoryStr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                System.out.println("[DEBUG] Invalid category: " + categoryStr + ", using OTHER as default");
+                category = com.ecommerce.entity.ProductCategory.OTHER;
+            }
+        }
+
         // Tạo DTO (Data Transfer Object)
         ProductDTO dto = new ProductDTO();
         dto.setName(name);
@@ -176,6 +188,7 @@ public class SellerProductsServlet extends HttpServlet {
         dto.setQuantity(quantity);
         dto.setImageUrl(imageUrl);
         dto.setExpirationDate(expDate);
+        dto.setCategory(category);
 
         System.out.println("[DEBUG] Calling productService.addProduct...");
         // Gọi Service (Lưu ý: Bạn cần chắc chắn ProductDTO có các setter này)

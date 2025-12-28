@@ -22,7 +22,7 @@ public class MenuHelper {
                 menuItems.add(createMenuItem("/seller/dashboard", "Tổng quan", "📊"));
                 menuItems.add(createMenuItem("/seller/products", "Kho hàng", "📦"));
                 menuItems.add(createMenuItem("/seller/orders", "Đơn hàng", "📋"));
-                menuItems.add(createMenuItem("/seller/settings", "Cài đặt", "⚙️"));
+                menuItems.add(createMenuItem("/seller/settings", "Cài đặt", "⚙️")); 
                 break;
                 
             case "SHIPPER":

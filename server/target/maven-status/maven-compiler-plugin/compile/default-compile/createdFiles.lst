@@ -44,7 +44,6 @@ com\ecommerce\dto\CheckoutResponse.class
 com\ecommerce\entity\SellerStatus.class
 com\ecommerce\servlet\ResetPasswordPageServlet.class
 com\ecommerce\servlet\AddToCartServlet.class
-com\ecommerce\servlet\TestProductServlet.class
 com\ecommerce\entity\Product.class
 com\ecommerce\servlet\BuyerOrderServlet.class
 com\ecommerce\dto\SellerDTO.class

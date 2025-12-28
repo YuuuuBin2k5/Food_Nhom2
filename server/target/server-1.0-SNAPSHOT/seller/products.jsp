@@ -65,6 +65,26 @@
                             </div>
 
                             <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Danh mục sản
+                                    phẩm</label>
+                                <select name="category" class="form-control"
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 0.25rem;">
+                                    <option value="VEGETABLES">🥬 Rau củ quả</option>
+                                    <option value="FRUITS">🍎 Trái cây</option>
+                                    <option value="MEAT">🥩 Thịt tươi</option>
+                                    <option value="SEAFOOD">🦐 Hải sản</option>
+                                    <option value="DAIRY">🥛 Sữa & Phô mai</option>
+                                    <option value="BAKERY">🥖 Bánh mì & Bánh ngọt</option>
+                                    <option value="SNACKS">🍿 Snack & Đồ ăn vặt</option>
+                                    <option value="BEVERAGES">🥤 Đồ uống</option>
+                                    <option value="FROZEN">🧊 Thực phẩm đông lạnh</option>
+                                    <option value="CANNED">🥫 Đồ hộp</option>
+                                    <option value="CONDIMENTS">🧂 Gia vị & Nước sốt</option>
+                                    <option value="OTHER" selected>📦 Khác</option>
+                                </select>
+                            </div>
+
+                            <div>
                                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Giá bán
                                     (VNĐ)</label>
                                 <input type="number" name="price" class="form-control" min="1000" required
@@ -121,6 +141,7 @@
                             <tr>
                                 <th style="padding: 1rem; text-align: left;">Ảnh</th>
                                 <th style="padding: 1rem; text-align: left;">Tên SP</th>
+                                <th style="padding: 1rem; text-align: left;">Danh mục</th>
                                 <th style="padding: 1rem; text-align: left;">Giá</th>
                                 <th style="padding: 1rem; text-align: left;">Hết hạn</th>
                                 <th style="padding: 1rem; text-align: left;">Trạng thái</th>
@@ -134,6 +155,12 @@
                                             style="width: 48px; height: 48px; object-fit: cover; border-radius: 4px;">
                                     </td>
                                     <td style="padding: 1rem; font-weight: 500;">${p.name}</td>
+                                    <td style="padding: 1rem;">
+                                        <span
+                                            style="background: #f7fafc; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.875rem;">
+                                            ${p.category.emoji} ${p.category.displayName}
+                                        </span>
+                                    </td>
                                     <td style="padding: 1rem;">
                                         <fmt:formatNumber value="${p.salePrice}" type="currency" currencySymbol="₫"
                                             maxFractionDigits="0" />

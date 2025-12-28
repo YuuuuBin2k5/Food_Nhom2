@@ -48,6 +48,13 @@ public class ProductService {
             product.setImageUrl(dto.getImageUrl());
             product.setExpirationDate(dto.getExpirationDate());
 
+            // Set category từ DTO, mặc định OTHER nếu null
+            if (dto.getCategory() != null) {
+                product.setCategory(dto.getCategory());
+            } else {
+                product.setCategory(ProductCategory.OTHER);
+            }
+
             // 3. Gán Seller cho Product
             product.setSeller(seller);
 
