@@ -1,21 +1,18 @@
 package com.ecommerce.servlet;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import com.ecommerce.entity.Product;
+import com.ecommerce.entity.ProductCategory;
 import com.ecommerce.entity.User;
 import com.ecommerce.service.ProductService;
-
+import com.ecommerce.util.MenuHelper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import java.io.IOException;
+import java.util.List;
 
 @WebServlet(name = "ProductListServlet", urlPatterns = {"/products"})
 public class ProductListServlet extends HttpServlet {
@@ -26,26 +23,22 @@ public class ProductListServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
-        // Check authentication
         HttpSession session = request.getSession(false);
         if (session == null || session.getAttribute("user") == null) {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
         
-        User user = (User) session.getAttribute("user");
-        String role = (String) session.getAttribute("role");
-        
-        // Setup menu items based on role
-        List<Map<String, String>> menuItems = getMenuItems(role);
-        request.setAttribute("menuItems", menuItems);
-        request.setAttribute("currentPath", "/products");
+        // Set menu items for buyer
+        MenuHelper.setMenuItems(request, "BUYER", "/products");
         
         try {
             // Get filter parameters
             String category = request.getParameter("category");
             String search = request.getParameter("search");
             String sortBy = request.getParameter("sortBy");
+            String minPriceStr = request.getParameter("minPrice");
+            String maxPriceStr = request.getParameter("maxPrice");
             
             // Fetch products
             List<Product> products;
@@ -57,22 +50,46 @@ public class ProductListServlet extends HttpServlet {
                 products = productService.getActiveProducts();
             }
             
-            // Apply sorting
+            // Filter by price range
+            if (minPriceStr != null && !minPriceStr.trim().isEmpty()) {
+                try {
+                    double minPrice = Double.parseDouble(minPriceStr);
+                    products.removeIf(p -> p.getSalePrice() < minPrice);
+                } catch (NumberFormatException e) {
+                    // Ignore invalid price
+                }
+            }
+            if (maxPriceStr != null && !maxPriceStr.trim().isEmpty()) {
+                try {
+                    double maxPrice = Double.parseDouble(maxPriceStr);
+                    products.removeIf(p -> p.getSalePrice() > maxPrice);
+                } catch (NumberFormatException e) {
+                    // Ignore invalid price
+                }
+            }
+            
+            // Sort if needed
             if ("price_asc".equals(sortBy)) {
                 products.sort((p1, p2) -> Double.compare(p1.getSalePrice(), p2.getSalePrice()));
             } else if ("price_desc".equals(sortBy)) {
                 products.sort((p1, p2) -> Double.compare(p2.getSalePrice(), p1.getSalePrice()));
-            } else if ("name".equals(sortBy)) {
-                products.sort((p1, p2) -> p1.getName().compareTo(p2.getName()));
+            } else if ("name_asc".equals(sortBy)) {
+                products.sort((p1, p2) -> p1.getName().compareToIgnoreCase(p2.getName()));
+            } else if ("discount".equals(sortBy)) {
+                products.sort((p1, p2) -> {
+                    double d1 = (p1.getOriginalPrice() - p1.getSalePrice()) / p1.getOriginalPrice();
+                    double d2 = (p2.getOriginalPrice() - p2.getSalePrice()) / p2.getOriginalPrice();
+                    return Double.compare(d2, d1);
+                });
             }
             
+            // Set all categories
+            request.setAttribute("categories", ProductCategory.values());
             request.setAttribute("products", products);
-            request.setAttribute("productsCount", products.size());
-            request.setAttribute("category", category);
-            request.setAttribute("search", search);
-            request.setAttribute("sortBy", sortBy);
+            request.setAttribute("currentCategory", category != null ? category : "");
+            request.setAttribute("search", search != null ? search : "");
+            request.setAttribute("currentSort", sortBy != null ? sortBy : "newest");
             
-            // Forward to JSP
             request.getRequestDispatcher("/buyer/products.jsp").forward(request, response);
             
         } catch (Exception e) {
@@ -80,51 +97,5 @@ public class ProductListServlet extends HttpServlet {
             request.setAttribute("error", "Không thể tải danh sách sản phẩm: " + e.getMessage());
             request.getRequestDispatcher("/buyer/products.jsp").forward(request, response);
         }
-    }
-    
-    private List<Map<String, String>> getMenuItems(String role) {
-        List<Map<String, String>> items = new ArrayList<>();
-        
-        // Common menu
-        if (!"ADMIN".equals(role)) {
-            items.add(createMenuItem("/", "Trang chủ", "🏠"));
-        }
-        
-        // Role-specific menu
-        switch (role) {
-            case "BUYER":
-                items.add(createMenuItem("/products", "Sản phẩm", "🛍️"));
-                items.add(createMenuItem("/cart", "Giỏ hàng", "🛒"));
-                items.add(createMenuItem("/orders", "Đơn mua", "📦"));
-                break;
-                
-            case "SELLER":
-                items.add(createMenuItem("/seller/dashboard", "Tổng quan", "📊"));
-                items.add(createMenuItem("/seller/products", "Kho hàng", "📦"));
-                items.add(createMenuItem("/seller/orders", "Đơn hàng", "📄"));
-                items.add(createMenuItem("/seller/settings", "Cài đặt", "⚙️"));
-                break;
-                
-            case "ADMIN":
-                items.add(createMenuItem("/admin/dashboard", "Trang chủ", "📊"));
-                items.add(createMenuItem("/admin/users", "Quản lý User", "👥"));
-                items.add(createMenuItem("/admin/seller-approval", "Duyệt Seller", "🏪"));
-                items.add(createMenuItem("/admin/product-approval", "Duyệt Product", "📦"));
-                break;
-                
-            case "SHIPPER":
-                items.add(createMenuItem("/shipper/orders", "Đơn cần giao", "🚚"));
-                break;
-        }
-        
-        return items;
-    }
-    
-    private Map<String, String> createMenuItem(String path, String label, String icon) {
-        Map<String, String> item = new HashMap<>();
-        item.put("path", path);
-        item.put("label", label);
-        item.put("icon", icon);
-        return item;
     }
 }

@@ -499,7 +499,7 @@
             try {
                 showLoading();
                 
-                await apiRequest('${pageContext.request.contextPath}/api/cart/add', {
+                const result = await apiRequest('${pageContext.request.contextPath}/api/cart/add', {
                     method: 'POST',
                     body: JSON.stringify({
                         productId: productId,
@@ -508,17 +508,24 @@
                 });
                 
                 if (buyNow) {
+                    // Mua ngay - chuyển đến giỏ hàng
                     window.location.href = '${pageContext.request.contextPath}/cart';
                 } else {
+                    // Thêm vào giỏ - hiển thị thông báo và cập nhật số lượng
                     showToast('Đã thêm ' + quantity + ' sản phẩm vào giỏ hàng!', 'success');
                     document.getElementById('quantity').value = 1;
                     
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
+                    // Cập nhật số lượng giỏ hàng trong header
+                    if (result && result.cartSize) {
+                        const cartBadge = document.querySelector('.cart-badge');
+                        if (cartBadge) {
+                            cartBadge.textContent = result.cartSize;
+                            cartBadge.style.display = result.cartSize > 0 ? 'flex' : 'none';
+                        }
+                    }
                 }
             } catch (error) {
-                showToast('Không thể thêm vào giỏ hàng', 'error');
+                showToast('Không thể thêm vào giỏ hàng: ' + error.message, 'error');
             } finally {
                 hideLoading();
             }

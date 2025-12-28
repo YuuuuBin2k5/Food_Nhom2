@@ -505,7 +505,7 @@
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                         <c:forEach items="${products}" var="product" begin="0" end="11">
                             <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all cursor-pointer" 
-                                 onclick="location.href='${pageContext.request.contextPath}/products/${product.productId}'">
+                                 onclick="location.href='${pageContext.request.contextPath}/product?id=${product.productId}'">
                                 <div class="relative">
                                     <c:set var="discount" value="${((product.originalPrice - product.salePrice) / product.originalPrice * 100)}" />
                                     <c:if test="${product.originalPrice > product.salePrice}">

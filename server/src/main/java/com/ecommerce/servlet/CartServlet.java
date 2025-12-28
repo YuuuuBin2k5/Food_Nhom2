@@ -1,8 +1,9 @@
 package com.ecommerce.servlet;
 
-import com.ecommerce.service.CartService;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
+import com.ecommerce.dto.CartItemDTO;
+import com.ecommerce.dto.ProductDTO;
+import com.ecommerce.service.ProductService;
+import com.ecommerce.util.MenuHelper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -10,179 +11,123 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Iterator;
 
-/**
- * Cart operations servlet (returns JSON for AJAX)
- * Endpoints:
- * - POST /api/cart/add
- * - POST /api/cart/update
- * - DELETE /api/cart/remove/{productId}
- * - DELETE /api/cart/clear
- */
-@WebServlet("/api/cart/*")
+@WebServlet(name = "CartServlet", urlPatterns = {"/cart"})
 public class CartServlet extends HttpServlet {
-    
-    private final CartService cartService = new CartService();
-    private final Gson gson = new Gson();
-    
+
+    private final ProductService productService = new ProductService();
+
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+        // Set menu items for buyer
+        MenuHelper.setMenuItems(request, "BUYER", "/cart");
         
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        // Forward to cart.jsp
+        request.getRequestDispatcher("/buyer/cart.jsp").forward(request, response);
+    }
+
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
+        if (action == null) action = "";
         
-        // Check authentication
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            sendJsonResponse(response, false, "Chưa đăng nhập", 401);
+        HttpSession session = request.getSession();
+        List<CartItemDTO> cart = (List<CartItemDTO>) session.getAttribute("cart");
+        if (cart == null) {
+            cart = new ArrayList<>();
+            session.setAttribute("cart", cart);
+        }
+
+        try {
+            switch (action) {
+                case "add":
+                    addToCart(request, cart);
+                    break;
+                case "update":
+                    updateCart(request, cart);
+                    break;
+                case "remove":
+                    removeFromCart(request, cart);
+                    break;
+                case "clear":
+                    cart.clear();
+                    break;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        // Update cart size in session for header
+        int totalItems = 0;
+        for (CartItemDTO item : cart) {
+            totalItems += item.getQuantity();
+        }
+        session.setAttribute("cartSize", totalItems);
+
+        // Redirect back to cart or referer
+        String referer = request.getHeader("Referer");
+        if (action.equals("add") && referer != null && referer.contains("product")) {
+             // If added from product page, stay there with message
+             response.sendRedirect(referer + "&message=Added to cart");
+        } else {
+             response.sendRedirect(request.getContextPath() + "/cart");
+        }
+    }
+
+    private void addToCart(HttpServletRequest request, List<CartItemDTO> cart) throws Exception {
+        Long productId = Long.parseLong(request.getParameter("productId"));
+        int quantity = Integer.parseInt(request.getParameter("quantity"));
+        
+        // Check if item exists
+        boolean found = false;
+        for (CartItemDTO item : cart) {
+            if (item.getProduct().getProductId().equals(productId)) {
+                item.setQuantity(item.getQuantity() + quantity);
+                found = true;
+                break;
+            }
+        }
+        
+        if (!found) {
+            ProductDTO product = productService.getProductById(productId);
+            if (product != null) {
+                cart.add(new CartItemDTO(product, quantity));
+            }
+        }
+    }
+
+    private void updateCart(HttpServletRequest request, List<CartItemDTO> cart) {
+        Long productId = Long.parseLong(request.getParameter("productId"));
+        int quantity = Integer.parseInt(request.getParameter("quantity"));
+        
+        if (quantity <= 0) {
+            removeFromCart(request, cart);
             return;
         }
-        
-        String pathInfo = request.getPathInfo();
-        
-        if ("/update".equals(pathInfo)) {
-            updateCart(request, response, session);
-        } else if ("/add".equals(pathInfo)) {
-            addToCart(request, response, session);
-        } else {
-            sendJsonResponse(response, false, "Endpoint không hợp lệ", 404);
+
+        for (CartItemDTO item : cart) {
+            if (item.getProduct().getProductId().equals(productId)) {
+                item.setQuantity(quantity);
+                break;
+            }
         }
     }
-    
-    @Override
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
+
+    private void removeFromCart(HttpServletRequest request, List<CartItemDTO> cart) {
+        Long productId = Long.parseLong(request.getParameter("productId"));
         
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
-        
-        // Check authentication
-        HttpSession session = request.getSession(false);
-        if (session == null || session.getAttribute("user") == null) {
-            sendJsonResponse(response, false, "Chưa đăng nhập", 401);
-            return;
+        Iterator<CartItemDTO> iterator = cart.iterator();
+        while (iterator.hasNext()) {
+            CartItemDTO item = iterator.next();
+            if (item.getProduct().getProductId().equals(productId)) {
+                iterator.remove();
+                break;
+            }
         }
-        
-        String pathInfo = request.getPathInfo();
-        
-        if (pathInfo != null && pathInfo.startsWith("/remove/")) {
-            String productIdStr = pathInfo.substring("/remove/".length());
-            removeFromCart(request, response, session, productIdStr);
-        } else if ("/clear".equals(pathInfo)) {
-            clearCart(request, response, session);
-        } else {
-            sendJsonResponse(response, false, "Endpoint không hợp lệ", 404);
-        }
-    }
-    
-    private void addToCart(HttpServletRequest request, HttpServletResponse response, HttpSession session) 
-            throws IOException {
-        try {
-            JsonObject jsonRequest = gson.fromJson(request.getReader(), JsonObject.class);
-            Long productId = jsonRequest.get("productId").getAsLong();
-            int quantity = jsonRequest.has("quantity") ? jsonRequest.get("quantity").getAsInt() : 1;
-            
-            cartService.addToCart(session, productId, quantity);
-            
-            int cartCount = cartService.getCartCount(session);
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "Đã thêm vào giỏ hàng");
-            result.put("cartCount", cartCount);
-            
-            response.setStatus(200);
-            response.getWriter().write(gson.toJson(result));
-            
-        } catch (IllegalArgumentException e) {
-            sendJsonResponse(response, false, e.getMessage(), 400);
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, e.getMessage(), 500);
-        }
-    }
-    
-    private void updateCart(HttpServletRequest request, HttpServletResponse response, HttpSession session) 
-            throws IOException {
-        try {
-            JsonObject jsonRequest = gson.fromJson(request.getReader(), JsonObject.class);
-            Long productId = jsonRequest.get("productId").getAsLong();
-            int quantity = jsonRequest.get("quantity").getAsInt();
-            
-            cartService.updateCartItem(session, productId, quantity);
-            
-            int cartCount = cartService.getCartCount(session);
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "Đã cập nhật giỏ hàng");
-            result.put("cartCount", cartCount);
-            
-            response.setStatus(200);
-            response.getWriter().write(gson.toJson(result));
-            
-        } catch (IllegalArgumentException e) {
-            sendJsonResponse(response, false, e.getMessage(), 400);
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, e.getMessage(), 500);
-        }
-    }
-    
-    private void removeFromCart(HttpServletRequest request, HttpServletResponse response, 
-                                HttpSession session, String productIdStr) 
-            throws IOException {
-        try {
-            Long productId = Long.parseLong(productIdStr);
-            
-            cartService.removeFromCart(session, productId);
-            
-            int cartCount = cartService.getCartCount(session);
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "Đã xóa sản phẩm");
-            result.put("cartCount", cartCount);
-            
-            response.setStatus(200);
-            response.getWriter().write(gson.toJson(result));
-            
-        } catch (NumberFormatException e) {
-            sendJsonResponse(response, false, "Product ID không hợp lệ", 400);
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, e.getMessage(), 500);
-        }
-    }
-    
-    private void clearCart(HttpServletRequest request, HttpServletResponse response, HttpSession session) 
-            throws IOException {
-        try {
-            cartService.clearCart(session);
-            
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "Đã xóa giỏ hàng");
-            result.put("cartCount", 0);
-            
-            response.setStatus(200);
-            response.getWriter().write(gson.toJson(result));
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Lỗi xóa giỏ hàng", 500);
-        }
-    }
-    
-    private void sendJsonResponse(HttpServletResponse response, boolean success, String message, int status) 
-            throws IOException {
-        response.setStatus(status);
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", success);
-        result.put("message", message);
-        response.getWriter().write(gson.toJson(result));
     }
 }

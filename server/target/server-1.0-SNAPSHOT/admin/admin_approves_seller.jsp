@@ -109,18 +109,7 @@
                     </tbody>
                 </table>
             </div>
-            <c:if test="${totalPages > 1}">
-                <div class="pagination">
-                    <c:if test="${currentPage > 1}"><a href="${pageContext.request.contextPath}/admin/approveSeller?tab=${currentTab}&page=${currentPage - 1}" class="page-btn">&laquo; Trước</a></c:if>
-                    <c:forEach begin="1" end="${totalPages}" var="i">
-                        <c:choose>
-                            <c:when test="${i == currentPage}"><span class="page-btn active">${i}</span></c:when>
-                            <c:otherwise><a href="${pageContext.request.contextPath}/admin/approveSeller?tab=${currentTab}&page=${i}" class="page-btn">${i}</a></c:otherwise>
-                        </c:choose>
-                    </c:forEach>
-                    <c:if test="${currentPage < totalPages}"><a href="${pageContext.request.contextPath}/admin/approveSeller?tab=${currentTab}&page=${currentPage + 1}" class="page-btn">Sau &raquo;</a></c:if>
-                </div>
-            </c:if>
+
         </c:when>
         <c:otherwise><p class="no-data">Không có seller nào trong danh sách này</p></c:otherwise>
     </c:choose>

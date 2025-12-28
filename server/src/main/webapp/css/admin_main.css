@@ -10,14 +10,14 @@
 
 body {
     min-height: 100vh;
-    background-color: #f0f2f5;
+    background-color: #ffb300;
 }
 
 /* --- MAIN CONTENT AREA --- */
 .main-content {
     padding: 120px 30px 30px 30px; /* Top padding để tránh sidebar che */
     min-height: 100vh;
-    background-color: #ecf0f1;
+    background-color: #ffb300;
 }
 
 .content-box {

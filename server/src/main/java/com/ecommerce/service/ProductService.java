@@ -153,7 +153,7 @@ public class ProductService {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :st AND p.isVerified = true", Product.class);
+                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :st", Product.class);
             query.setParameter("st", ProductStatus.ACTIVE);
             return query.getResultList();
         } finally {
@@ -161,12 +161,12 @@ public class ProductService {
         }
     }
 
-    // 6. Lấy chi tiết 1 product nếu đang active và verified
+    // 6. Lấy chi tiết 1 product nếu đang active
     public Product getActiveProductById(Long productId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p WHERE p.productId = :id AND p.status = :st AND p.isVerified = true", Product.class);
+                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.productId = :id AND p.status = :st", Product.class);
             query.setParameter("id", productId);
             query.setParameter("st", ProductStatus.ACTIVE);
             return query.getResultStream().findFirst().orElse(null);
@@ -271,7 +271,7 @@ public class ProductService {
             }
         }
         
-        where.append(" AND p.status = :status AND p.isVerified = :verified");
+        where.append(" AND p.status = :status");
         
         return where.toString();
     }
@@ -323,7 +323,6 @@ public class ProductService {
         }
         
         query.setParameter("status", ProductStatus.ACTIVE);
-        query.setParameter("verified", true);
     }
 
     private ProductPageResponse buildPageResponse(List<ProductDTO> productDTOs, 
@@ -386,7 +385,7 @@ public class ProductService {
             TypedQuery<Product> query = em.createQuery(
                 "SELECT p FROM Product p LEFT JOIN FETCH p.seller " +
                 "WHERE (LOWER(p.name) LIKE :search OR LOWER(p.description) LIKE :search) " +
-                "AND p.status = :st AND p.isVerified = true", 
+                "AND p.status = :st", 
                 Product.class);
             query.setParameter("search", "%" + searchTerm.toLowerCase() + "%");
             query.setParameter("st", ProductStatus.ACTIVE);
@@ -405,7 +404,7 @@ public class ProductService {
             ProductCategory category = ProductCategory.valueOf(categoryStr.toUpperCase());
             TypedQuery<Product> query = em.createQuery(
                 "SELECT p FROM Product p LEFT JOIN FETCH p.seller " +
-                "WHERE p.category = :cat AND p.status = :st AND p.isVerified = true", 
+                "WHERE p.category = :cat AND p.status = :st", 
                 Product.class);
             query.setParameter("cat", category);
             query.setParameter("st", ProductStatus.ACTIVE);

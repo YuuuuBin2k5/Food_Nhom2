@@ -192,7 +192,7 @@
 /* Tabs */
 .tabs {
     display: flex;
-    border-bottom: 1px solid #eee;
+    border-bottom: none;
     background: #fafafa;
 }
 
@@ -202,7 +202,7 @@
     border: none;
     background: transparent;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 16px;
     color: #666;
     transition: all 0.2s;
     border-bottom: 3px solid transparent;
@@ -212,8 +212,10 @@
 
 .tab-btn:hover { background: #f0f0f0; }
 .tab-btn.active {
-    color: #2196F3;
-    border-bottom-color: #2196F3;
+    color: #ff9800;
+    font-size: 18px;
+    font-weight: 600;
+    border-bottom-color: #ff9800;
     background: white;
 }
 
@@ -250,11 +252,12 @@
     border-bottom: 1px solid #eee;
 }
 .seller-table th {
-    background: #000;
+    background: #593300;
     font-weight: 600;
     color: #fff;
     font-size: 15px;
     padding: 15px 12px;
+    border-top: none;
 }
 .seller-table tr:hover { background: #f9f9f9; }
 

@@ -164,18 +164,7 @@
                     </c:forEach>
                 </tbody>
             </table>
-            <c:if test="${totalPages > 1 && empty keyword && (filter == 'sellers' || filter == 'buyers' || filter == 'shippers')}">
-                <div class="pagination">
-                    <c:if test="${currentPage > 1}"><a href="${pageContext.request.contextPath}/admin/manageUser?filter=${filter}&page=${currentPage - 1}" class="page-btn">&laquo; Trước</a></c:if>
-                    <c:forEach begin="1" end="${totalPages}" var="i">
-                        <c:choose>
-                            <c:when test="${i == currentPage}"><span class="page-btn active">${i}</span></c:when>
-                            <c:otherwise><a href="${pageContext.request.contextPath}/admin/manageUser?filter=${filter}&page=${i}" class="page-btn">${i}</a></c:otherwise>
-                        </c:choose>
-                    </c:forEach>
-                    <c:if test="${currentPage < totalPages}"><a href="${pageContext.request.contextPath}/admin/manageUser?filter=${filter}&page=${currentPage + 1}" class="page-btn">Sau &raquo;</a></c:if>
-                </div>
-            </c:if>
+
         </c:if>
     </div>
 </section>

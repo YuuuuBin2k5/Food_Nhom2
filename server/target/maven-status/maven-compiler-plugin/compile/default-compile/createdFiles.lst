@@ -2,7 +2,6 @@ com\ecommerce\entity\Review.class
 com\ecommerce\servlet\AdminStatisticsServlet.class
 com\ecommerce\entity\ProductStatus.class
 com\ecommerce\util\MenuHelper.class
-com\ecommerce\servlet\CheckoutPageServlet.class
 com\ecommerce\entity\NotificationType.class
 com\ecommerce\service\AdminService.class
 com\ecommerce\servlet\CartServlet.class
@@ -33,19 +32,19 @@ com\ecommerce\servlet\HomePageServlet.class
 com\ecommerce\dto\ProductFilter.class
 com\ecommerce\servlet\ProductDetailServlet.class
 com\ecommerce\entity\Notification.class
+com\ecommerce\servlet\buyer\MyOrdersServlet.class
 com\ecommerce\servlet\LoginPageServlet.class
 com\ecommerce\servlet\OrderHistoryServlet.class
 com\ecommerce\entity\Order.class
+com\ecommerce\servlet\CartAPIServlet.class
 com\ecommerce\dto\SellerUpdateDTO.class
 com\ecommerce\dto\CartItemDTO.class
 com\ecommerce\entity\Admin.class
-com\ecommerce\servlet\CartPageServlet.class
 com\ecommerce\dto\CheckoutResponse.class
 com\ecommerce\entity\SellerStatus.class
 com\ecommerce\servlet\ResetPasswordPageServlet.class
 com\ecommerce\servlet\AddToCartServlet.class
 com\ecommerce\entity\Product.class
-com\ecommerce\servlet\BuyerOrderServlet.class
 com\ecommerce\dto\SellerDTO.class
 com\ecommerce\entity\PasswordResetToken.class
 com\ecommerce\service\AdminSellerService.class
@@ -59,6 +58,7 @@ com\ecommerce\servlet\SellerDashboardServlet.class
 com\ecommerce\entity\OrderDetail.class
 com\ecommerce\service\UserService.class
 com\ecommerce\servlet\SellerSettingsServlet.class
+com\ecommerce\servlet\CheckoutServlet.class
 com\ecommerce\dto\ProductPageResponse.class
 com\ecommerce\service\OrderService.class
 com\ecommerce\servlet\LogoutServlet.class
@@ -76,3 +76,4 @@ com\ecommerce\servlet\ShipperOrdersServlet.class
 com\ecommerce\entity\OrderStatus.class
 com\ecommerce\entity\User.class
 com\ecommerce\service\OtpService.class
+com\ecommerce\servlet\buyer\CancelOrderServlet.class

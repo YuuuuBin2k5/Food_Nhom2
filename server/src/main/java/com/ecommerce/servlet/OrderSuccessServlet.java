@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.ecommerce.entity.User;
+import com.ecommerce.util.MenuHelper;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -27,6 +28,10 @@ public class OrderSuccessServlet extends HttpServlet {
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
+        
+        // Set menu items for buyer
+        String role = (String) session.getAttribute("role");
+        MenuHelper.setMenuItems(request, role != null ? role : "BUYER", "/order-success");
         
         try {
             // Get parameters

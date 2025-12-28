@@ -4,22 +4,28 @@ import com.ecommerce.entity.Product;
 
 public class CartItemDTO {
     
-    private Product product;
+    private ProductDTO product;
     private int quantity;
     
     public CartItemDTO() {
     }
     
-    public CartItemDTO(Product product, int quantity) {
+    public CartItemDTO(ProductDTO product, int quantity) {
         this.product = product;
         this.quantity = quantity;
     }
     
-    public Product getProduct() {
+    // Constructor with Product entity (converts to DTO)
+    public CartItemDTO(Product product, int quantity) {
+        this.product = new ProductDTO(product);
+        this.quantity = quantity;
+    }
+    
+    public ProductDTO getProduct() {
         return product;
     }
     
-    public void setProduct(Product product) {
+    public void setProduct(ProductDTO product) {
         this.product = product;
     }
     
