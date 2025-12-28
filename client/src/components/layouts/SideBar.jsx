@@ -51,7 +51,6 @@ export default function Sidebar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const location = window.location;
-
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -65,10 +64,10 @@ export default function Sidebar() {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       // Check if at top
       setIsAtTop(currentScrollY < 10);
-      
+
       // Hide/show based on scroll direction
       if (currentScrollY > lastScrollY.current && currentScrollY > 100) {
         // Scrolling down & past threshold
@@ -77,12 +76,12 @@ export default function Sidebar() {
         // Scrolling up
         setIsVisible(true);
       }
-      
+
       lastScrollY.current = currentScrollY;
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   useEffect(() => {
@@ -121,38 +120,46 @@ export default function Sidebar() {
   const getMenuItems = () => {
     const role = user?.role || "BUYER";
     const roleItems = menuConfig[role] || menuConfig.BUYER;
-    
+
     // Admin không cần common menu (trang chủ buyer)
     if (role === "ADMIN") {
       return roleItems;
     }
-    
+
     return [...menuConfig.common, ...roleItems];
   };
 
   const navLinks = getMenuItems();
 
   return (
-    <header 
+    <header
       className={`fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-orange-50/90 via-amber-50/90 to-yellow-50/90 backdrop-blur-xl border-b border-orange-200/30 shadow-sm font-sans transition-all duration-300 ${
-        isVisible ? 'translate-y-0' : '-translate-y-full'
-      } ${
-        isAtTop ? 'h-24 shadow-md' : 'h-16 shadow-lg'
-      }`}
+        isVisible ? "translate-y-0" : "-translate-y-full"
+      } ${isAtTop ? "h-24 shadow-md" : "h-16 shadow-lg"}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
         <div className="flex items-center justify-between h-full">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-3 group">
-            <div className={`bg-gradient-to-br from-orange-400 via-amber-500 to-yellow-500 flex items-center justify-center relative overflow-hidden shadow-lg group-hover:shadow-xl transition-all rounded-xl ${
-              isAtTop ? 'w-14 h-14' : 'w-10 h-10'
-            }`}>
+            <div
+              className={`bg-gradient-to-br from-orange-400 via-amber-500 to-yellow-500 flex items-center justify-center relative overflow-hidden shadow-lg group-hover:shadow-xl transition-all rounded-xl ${
+                isAtTop ? "w-14 h-14" : "w-10 h-10"
+              }`}
+            >
               <div className="absolute inset-0 bg-gradient-to-t from-orange-600/20 to-transparent" />
-              <span className={`relative z-10 drop-shadow-sm transition-all ${
-                isAtTop ? 'text-2xl' : 'text-xl'
-              }`}>🍊</span>
+              <span
+                className={`relative z-10 drop-shadow-sm transition-all ${
+                  isAtTop ? "text-2xl" : "text-xl"
+                }`}
+              >
+                🍊
+              </span>
             </div>
-            <div className={`transition-all ${isAtTop ? 'opacity-100' : 'opacity-0 w-0 overflow-hidden'}`}>
+            <div
+              className={`transition-all ${
+                isAtTop ? "opacity-100" : "opacity-0 w-0 overflow-hidden"
+              }`}
+            >
               <span className="block font-black text-2xl tracking-tight bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 bg-clip-text text-transparent drop-shadow-sm whitespace-nowrap">
                 FreshSave
               </span>
@@ -189,8 +196,16 @@ export default function Sidebar() {
             {user && <NotificationBell userId={user.userId} />}
 
             {/* Cart Button */}
-            <Link to="/cart" className="relative p-3 hover:bg-orange-100/50 transition-colors rounded-lg">
-              <svg className="w-5 h-5 text-orange-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <Link
+              to="/cart"
+              className="relative p-3 hover:bg-orange-100/50 transition-colors rounded-lg"
+            >
+              <svg
+                className="w-5 h-5 text-orange-700"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <Icons.Cart />
               </svg>
               <span className="absolute top-1 right-1 w-5 h-5 bg-gradient-to-br from-orange-500 to-amber-600 text-white text-[10px] flex items-center justify-center font-bold rounded-full shadow-md">
@@ -216,8 +231,18 @@ export default function Sidebar() {
                       {user.role}
                     </span>
                   </div>
-                  <svg className="w-4 h-4 text-orange-700 hidden sm:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  <svg
+                    className="w-4 h-4 text-orange-700 hidden sm:block"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
                   </svg>
                 </button>
 
@@ -242,7 +267,12 @@ export default function Sidebar() {
                         className="flex items-center gap-3 px-5 py-3 text-sm font-medium text-gray-700 hover:bg-orange-50 hover:text-orange-600 transition-colors"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <svg
+                          className="w-5 h-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
                           <Icons.User />
                         </svg>
                         Tài khoản của tôi
@@ -256,7 +286,12 @@ export default function Sidebar() {
                         }}
                         className="w-full flex items-center gap-3 px-5 py-3 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
                       >
-                        <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                        <svg
+                          className="w-5 h-5"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                        >
                           <Icons.Logout />
                         </svg>
                         Đăng xuất
@@ -287,7 +322,12 @@ export default function Sidebar() {
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               className="md:hidden p-2 text-white hover:bg-white/10 rounded-lg transition-colors"
             >
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
                 {isMobileMenuOpen ? <Icons.Close /> : <Icons.Menu />}
               </svg>
             </button>
