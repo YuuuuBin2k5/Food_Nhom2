@@ -85,10 +85,19 @@
                             </div>
 
                             <div>
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Giá gốc
+                                    (VNĐ)</label>
+                                <input type="number" name="originalPrice" class="form-control" min="1000" required
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 0.25rem;"
+                                    placeholder="Giá gốc trước khi giảm">
+                            </div>
+
+                            <div>
                                 <label style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Giá bán
                                     (VNĐ)</label>
                                 <input type="number" name="price" class="form-control" min="1000" required
-                                    style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 0.25rem;">
+                                    style="width: 100%; padding: 0.5rem; border: 1px solid #cbd5e0; border-radius: 0.25rem;"
+                                    placeholder="Giá bán thực tế">
                             </div>
 
                             <div>
@@ -142,7 +151,8 @@
                                 <th style="padding: 1rem; text-align: left;">Ảnh</th>
                                 <th style="padding: 1rem; text-align: left;">Tên SP</th>
                                 <th style="padding: 1rem; text-align: left;">Danh mục</th>
-                                <th style="padding: 1rem; text-align: left;">Giá</th>
+                                <th style="padding: 1rem; text-align: left;">Giá gốc</th>
+                                <th style="padding: 1rem; text-align: left;">Giá bán</th>
                                 <th style="padding: 1rem; text-align: left;">Hết hạn</th>
                                 <th style="padding: 1rem; text-align: left;">Trạng thái</th>
                                 <th style="padding: 1rem; text-align: left;">Hành động</th>
@@ -162,8 +172,24 @@
                                         </span>
                                     </td>
                                     <td style="padding: 1rem;">
+                                        <span
+                                            style="text-decoration: line-through; color: #718096; font-size: 0.875rem;">
+                                            <fmt:formatNumber value="${p.originalPrice}" type="currency"
+                                                currencySymbol="₫" maxFractionDigits="0" />
+                                        </span>
+                                    </td>
+                                    <td style="padding: 1rem; font-weight: 600; color: #e53e3e;">
                                         <fmt:formatNumber value="${p.salePrice}" type="currency" currencySymbol="₫"
                                             maxFractionDigits="0" />
+                                        <c:if test="${p.originalPrice > p.salePrice}">
+                                            <span
+                                                style="background: #fed7d7; color: #c53030; padding: 0.125rem 0.25rem; border-radius: 0.125rem; font-size: 0.75rem; margin-left: 0.25rem;">
+                                                -
+                                                <fmt:formatNumber
+                                                    value="${(p.originalPrice - p.salePrice) / p.originalPrice * 100}"
+                                                    maxFractionDigits="0" />%
+                                            </span>
+                                        </c:if>
                                     </td>
                                     <td style="padding: 1rem;">
                                         <fmt:formatDate value="${p.expirationDate}" pattern="dd/MM/yyyy" />
@@ -206,6 +232,24 @@
                 <script src="${pageContext.request.contextPath}/js/main.js"></script>
                 <script>
                     document.getElementById('expDate').min = new Date().toISOString().split("T")[0];
+
+                    // Validation giá gốc và giá bán
+                    const originalPriceInput = document.querySelector('input[name="originalPrice"]');
+                    const salePriceInput = document.querySelector('input[name="price"]');
+
+                    function validatePrices() {
+                        const originalPrice = parseFloat(originalPriceInput.value) || 0;
+                        const salePrice = parseFloat(salePriceInput.value) || 0;
+
+                        if (salePrice > originalPrice && originalPrice > 0) {
+                            salePriceInput.setCustomValidity('Giá bán không được lớn hơn giá gốc');
+                        } else {
+                            salePriceInput.setCustomValidity('');
+                        }
+                    }
+
+                    originalPriceInput.addEventListener('input', validatePrices);
+                    salePriceInput.addEventListener('input', validatePrices);
                 </script>
             </body>
 
