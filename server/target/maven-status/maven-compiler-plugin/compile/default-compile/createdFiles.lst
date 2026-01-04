@@ -20,6 +20,7 @@ com\ecommerce\entity\Payment.class
 com\ecommerce\servlet\ProductListServlet.class
 com\ecommerce\dto\CheckoutRequest.class
 com\ecommerce\entity\ActionType.class
+com\ecommerce\servlet\NotificationServlet.class
 com\ecommerce\service\NotificationService.class
 com\ecommerce\servlet\ShipperOrderServlet$SuccessResponse.class
 com\ecommerce\util\DBUtil.class
@@ -60,6 +61,8 @@ com\ecommerce\entity\OrderDetail.class
 com\ecommerce\service\UserService.class
 com\ecommerce\servlet\SellerSettingsServlet.class
 com\ecommerce\servlet\CheckoutServlet.class
+com\ecommerce\servlet\VNPayServlet.class
+com\ecommerce\util\VNPayUtil.class
 com\ecommerce\dto\ProductPageResponse.class
 com\ecommerce\service\OrderService.class
 com\ecommerce\servlet\LogoutServlet.class

@@ -48,31 +48,35 @@ public class SellerProductsServlet extends HttpServlet {
 
         try {
             String sellerId = user.getUserId();
-            // Lấy tham số tab để lọc (active / pending / sold)
-            String tab = request.getParameter("tab");
+            // Lấy tham số status để lọc theo ProductStatus
+            String status = request.getParameter("status");
 
-            // Logic lọc sản phẩm theo tab (Bạn cần update ProductService để hỗ trợ lọc này,
-            // hiện tại mình lấy tất cả trước)
+            // Lấy tất cả sản phẩm của seller (tự động kiểm tra hết hạn)
             List<Product> products = productService.getProductsBySeller(sellerId);
 
-            // Lọc tạm thời bằng Java Stream nếu Service chưa hỗ trợ
-            if (tab == null || "active".equals(tab)) {
+            // Lọc theo status nếu có
+            if (status == null || status.trim().isEmpty()) {
+                // Mặc định hiển thị PENDING_APPROVAL
+                status = "PENDING_APPROVAL";
+            }
+
+            if (!"ALL".equals(status)) {
+                String finalStatus = status; // Biến final để dùng trong lambda
                 products = products.stream()
-                        .filter(p -> "ACTIVE".equals(p.getStatus().toString()))
-                        .toList();
-            } else if ("pending".equals(tab)) {
-                products = products.stream()
-                        .filter(p -> "PENDING_APPROVAL".equals(p.getStatus().toString())
-                                || "HIDDEN".equals(p.getStatus().toString()))
-                        .toList();
-            } else if ("sold".equals(tab)) {
-                products = products.stream()
-                        .filter(p -> "SOLD_OUT".equals(p.getStatus().toString())
-                                || "EXPIRED".equals(p.getStatus().toString()))
+                        .filter(p -> finalStatus.equals(p.getStatus().toString()))
                         .toList();
             }
 
             request.setAttribute("products", products);
+
+            // Thêm thông tin sản phẩm sắp hết hạn để hiển thị cảnh báo
+            try {
+                List<Product> expiringSoonProducts = productService.getExpiringSoonProducts(sellerId);
+                request.setAttribute("expiringSoonProducts", expiringSoonProducts);
+            } catch (Exception e) {
+                System.err.println("Error getting expiring soon products: " + e.getMessage());
+            }
+
             request.getRequestDispatcher("/seller/products.jsp").forward(request, response);
 
         } catch (Exception e) {
@@ -114,17 +118,27 @@ public class SellerProductsServlet extends HttpServlet {
                 }
 
                 createProduct(request, user.getUserId());
-                response.sendRedirect(request.getContextPath() + "/seller/products?tab=pending&message=created");
+                response.sendRedirect(
+                        request.getContextPath() + "/seller/products?status=PENDING_APPROVAL&message=created");
+
+            } else if ("update".equals(action)) {
+                updateProduct(request, user.getUserId());
+                response.sendRedirect(
+                        request.getContextPath() + "/seller/products?status=PENDING_APPROVAL&message=updated");
 
             } else if ("hide".equals(action) || "show".equals(action)) {
                 toggleProductStatus(request, user.getUserId(), action);
-                // Redirect lại đúng tab
-                String redirectTab = "show".equals(action) ? "pending" : "active"; // Nếu hiện lại -> về pending, Ẩn ->
-                                                                                   // vẫn ở list active (nhưng biến mất)
+                // Redirect lại đúng status
+                String redirectStatus = "show".equals(action) ? "PENDING_APPROVAL" : "ACTIVE";
                 if ("hide".equals(action))
-                    redirectTab = "active"; // Đứng ở active bấm ẩn
+                    redirectStatus = "HIDDEN"; // Sau khi ẩn -> chuyển đến tab HIDDEN
 
-                response.sendRedirect(request.getContextPath() + "/seller/products?tab=" + redirectTab);
+                response.sendRedirect(request.getContextPath() + "/seller/products?status=" + redirectStatus);
+            } else if ("restock".equals(action)) {
+                // Xử lý nhập thêm hàng (có thể redirect đến trang chỉnh sửa)
+                Long productId = Long.parseLong(request.getParameter("productId"));
+                response.sendRedirect(
+                        request.getContextPath() + "/seller/products/edit?id=" + productId + "&action=restock");
             }
 
         } catch (Exception e) {
@@ -212,5 +226,83 @@ public class SellerProductsServlet extends HttpServlet {
     private void toggleProductStatus(HttpServletRequest request, String sellerId, String action) throws Exception {
         Long productId = Long.parseLong(request.getParameter("productId"));
         productService.toggleProductStatus(sellerId, productId, action.toUpperCase());
+    }
+
+    // Hàm phụ: Xử lý cập nhật sản phẩm
+    private void updateProduct(HttpServletRequest request, String sellerId) throws Exception {
+        System.out.println("[DEBUG] Starting updateProduct for seller: " + sellerId);
+
+        String productIdStr = request.getParameter("productId");
+        String name = request.getParameter("name");
+        String desc = request.getParameter("description");
+        String originalPriceStr = request.getParameter("originalPrice");
+        String priceStr = request.getParameter("price");
+        String quantityStr = request.getParameter("quantity");
+        String imageUrl = request.getParameter("imageUrl");
+        String dateStr = request.getParameter("expirationDate");
+        String categoryStr = request.getParameter("category");
+
+        System.out.println("[DEBUG] Update product data - ID: " + productIdStr + ", Name: " + name + ", OriginalPrice: "
+                + originalPriceStr + ", Price: " + priceStr);
+
+        if (productIdStr == null || productIdStr.trim().isEmpty()) {
+            throw new Exception("ID sản phẩm không hợp lệ");
+        }
+        if (name == null || name.trim().isEmpty()) {
+            throw new Exception("Tên sản phẩm không được để trống");
+        }
+        if (originalPriceStr == null || originalPriceStr.trim().isEmpty()) {
+            throw new Exception("Giá gốc không được để trống");
+        }
+        if (priceStr == null || priceStr.trim().isEmpty()) {
+            throw new Exception("Giá bán không được để trống");
+        }
+        if (quantityStr == null || quantityStr.trim().isEmpty()) {
+            throw new Exception("Số lượng không được để trống");
+        }
+        if (dateStr == null || dateStr.trim().isEmpty()) {
+            throw new Exception("Ngày hết hạn không được để trống");
+        }
+
+        Long productId = Long.parseLong(productIdStr);
+        double originalPrice = Double.parseDouble(originalPriceStr);
+        double price = Double.parseDouble(priceStr);
+        int quantity = Integer.parseInt(quantityStr);
+
+        // Validate giá bán không được lớn hơn giá gốc
+        if (price > originalPrice) {
+            throw new Exception("Giá bán không được lớn hơn giá gốc");
+        }
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        Date expDate = sdf.parse(dateStr);
+
+        // Xử lý category
+        com.ecommerce.entity.ProductCategory category = com.ecommerce.entity.ProductCategory.OTHER;
+        if (categoryStr != null && !categoryStr.trim().isEmpty()) {
+            try {
+                category = com.ecommerce.entity.ProductCategory.valueOf(categoryStr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                System.out.println("[DEBUG] Invalid category: " + categoryStr + ", using OTHER as default");
+                category = com.ecommerce.entity.ProductCategory.OTHER;
+            }
+        }
+
+        // Tạo DTO
+        ProductDTO dto = new ProductDTO();
+        dto.setProductId(productId);
+        dto.setName(name);
+        dto.setDescription(desc);
+        dto.setOriginalPrice(originalPrice);
+        dto.setSalePrice(price);
+        dto.setQuantity(quantity);
+        dto.setImageUrl(imageUrl);
+        dto.setExpirationDate(expDate);
+        dto.setCategory(category);
+
+        System.out.println("[DEBUG] Calling productService.updateProduct...");
+        // Gọi Service để cập nhật sản phẩm
+        productService.updateProduct(sellerId, dto);
+        System.out.println("[DEBUG] Product updated successfully!");
     }
 }

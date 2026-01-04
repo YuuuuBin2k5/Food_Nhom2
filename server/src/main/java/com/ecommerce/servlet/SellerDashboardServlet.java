@@ -81,9 +81,8 @@ public class SellerDashboardServlet extends HttpServlet {
 
             long expiringSoon = 0;
             try {
-                expiringSoon = products.stream()
-                        .filter(p -> p.getStatus() == ProductStatus.ACTIVE && isExpiringSoon(p.getExpirationDate()))
-                        .count();
+                // Sử dụng method mới từ ProductService để đếm sản phẩm sắp hết hạn
+                expiringSoon = productService.countExpiringSoonProducts(sellerId);
             } catch (Exception e) {
                 System.err.println("[SellerDashboard] Error calculating expiring products: " + e.getMessage());
                 expiringSoon = 0;

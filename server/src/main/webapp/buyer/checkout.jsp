@@ -394,7 +394,7 @@
                                     <label class="form-label required" for="shippingAddress">Địa chỉ giao hàng</label>
                                     <textarea 
                                         id="shippingAddress" 
-                                        name="shippingAddress" 
+                                        name="address" 
                                         class="form-textarea ${not empty fieldErrors.shippingAddress ? 'error' : ''}"
                                         placeholder="Số nhà, tên đường, phường/xã, quận/huyện, tỉnh/thành phố"
                                         required
@@ -427,17 +427,17 @@
                                         </span>
                                     </label>
                                     
-                                    <label class="payment-option ${param.paymentMethod == 'BANK_TRANSFER' ? 'selected' : ''}">
+                                    <label class="payment-option ${param.paymentMethod == 'BANKING' ? 'selected' : ''}">
                                         <input 
                                             type="radio" 
                                             name="paymentMethod" 
-                                            value="BANK_TRANSFER"
-                                            ${param.paymentMethod == 'BANK_TRANSFER' ? 'checked' : ''}
+                                            value="BANKING"
+                                            ${param.paymentMethod == 'BANKING' ? 'checked' : ''}
                                             onchange="updatePaymentSelection(this)"
                                         >
                                         <span class="payment-label">
-                                            <span style="font-size: 1.5rem;">🏦</span>
-                                            <span>Chuyển khoản ngân hàng</span>
+                                            <span style="font-size: 1.5rem;">💳</span>
+                                            <span>Thanh toán VNPay</span>
                                         </span>
                                     </label>
                                 </div>
@@ -540,14 +540,16 @@
         }
         
         function handleSubmit(event) {
-            if (!validateForm('checkoutForm')) {
-                return false;
-            }
+            // Form validation is handled by HTML5 required attributes
             
             const btn = document.getElementById('submitBtn');
             btn.disabled = true;
             btn.textContent = 'Đang xử lý...';
-            Loading.show();
+            
+            // Show loading if available
+            if (typeof Loading !== 'undefined') {
+                Loading.show();
+            }
             
             return true;
         }

@@ -150,6 +150,9 @@ public class ProductService {
     public List<Product> getProductsBySeller(String sellerId) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
+            // Tự động cập nhật sản phẩm hết hạn trước khi lấy danh sách
+            updateExpiredProductsInTransaction(em);
+
             TypedQuery<Product> query = em.createQuery(
                     "SELECT p FROM Product p JOIN FETCH p.seller WHERE p.seller.userId = :sid", Product.class);
             query.setParameter("sid", sellerId);
@@ -189,6 +192,9 @@ public class ProductService {
     public List<Product> getActiveProducts() {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
+            // Tự động cập nhật sản phẩm hết hạn trước khi lấy danh sách
+            updateExpiredProductsInTransaction(em);
+
             TypedQuery<Product> query = em.createQuery(
                     "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :st",
                     Product.class);
@@ -421,6 +427,9 @@ public class ProductService {
     public List<Product> searchProducts(String searchTerm) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
+            // Tự động cập nhật sản phẩm hết hạn trước khi tìm kiếm
+            updateExpiredProductsInTransaction(em);
+
             TypedQuery<Product> query = em.createQuery(
                     "SELECT p FROM Product p LEFT JOIN FETCH p.seller " +
                             "WHERE (LOWER(p.name) LIKE :search OR LOWER(p.description) LIKE :search) " +
@@ -440,6 +449,9 @@ public class ProductService {
     public List<Product> getProductsByCategory(String categoryStr) {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
+            // Tự động cập nhật sản phẩm hết hạn trước khi lấy danh sách
+            updateExpiredProductsInTransaction(em);
+
             ProductCategory category = ProductCategory.valueOf(categoryStr.toUpperCase());
             TypedQuery<Product> query = em.createQuery(
                     "SELECT p FROM Product p LEFT JOIN FETCH p.seller " +
@@ -483,6 +495,153 @@ public class ProductService {
             if (trans.isActive())
                 trans.rollback();
             throw e;
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Kiểm tra và cập nhật trạng thái sản phẩm hết hạn trong cùng EntityManager
+     * Method này được gọi tự động trong các method khác
+     */
+    private void updateExpiredProductsInTransaction(EntityManager em) {
+        EntityTransaction trans = em.getTransaction();
+        boolean shouldCommit = false;
+
+        try {
+            if (!trans.isActive()) {
+                trans.begin();
+                shouldCommit = true;
+            }
+
+            // Tìm tất cả sản phẩm ACTIVE hoặc SOLD_OUT có ngày hết hạn < ngày hiện tại
+            TypedQuery<Product> query = em.createQuery(
+                    "SELECT p FROM Product p WHERE (p.status = :active OR p.status = :soldOut) " +
+                            "AND p.expirationDate < :currentDate",
+                    Product.class);
+            query.setParameter("active", ProductStatus.ACTIVE);
+            query.setParameter("soldOut", ProductStatus.SOLD_OUT);
+            query.setParameter("currentDate", new java.util.Date());
+
+            List<Product> expiredProducts = query.getResultList();
+
+            // Cập nhật trạng thái thành EXPIRED
+            for (Product product : expiredProducts) {
+                product.setStatus(ProductStatus.EXPIRED);
+                em.merge(product);
+            }
+
+            if (shouldCommit && !expiredProducts.isEmpty()) {
+                trans.commit();
+                System.out.println("[ProductService] Auto-updated " + expiredProducts.size() + " expired products");
+            }
+
+        } catch (Exception e) {
+            if (shouldCommit && trans.isActive()) {
+                trans.rollback();
+            }
+            System.err.println("Error auto-updating expired products: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Kiểm tra và cập nhật trạng thái sản phẩm hết hạn
+     * Method này sẽ được gọi định kỳ hoặc khi load danh sách sản phẩm
+     */
+    public void updateExpiredProducts() {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        EntityTransaction trans = em.getTransaction();
+        try {
+            trans.begin();
+
+            // Tìm tất cả sản phẩm ACTIVE hoặc SOLD_OUT có ngày hết hạn < ngày hiện tại
+            TypedQuery<Product> query = em.createQuery(
+                    "SELECT p FROM Product p WHERE (p.status = :active OR p.status = :soldOut) " +
+                            "AND p.expirationDate < :currentDate",
+                    Product.class);
+            query.setParameter("active", ProductStatus.ACTIVE);
+            query.setParameter("soldOut", ProductStatus.SOLD_OUT);
+            query.setParameter("currentDate", new java.util.Date());
+
+            List<Product> expiredProducts = query.getResultList();
+
+            // Cập nhật trạng thái thành EXPIRED
+            for (Product product : expiredProducts) {
+                product.setStatus(ProductStatus.EXPIRED);
+                em.merge(product);
+                System.out.println("[ProductService] Updated product #" + product.getProductId() +
+                        " (" + product.getName() + ") to EXPIRED status");
+            }
+
+            trans.commit();
+
+            if (!expiredProducts.isEmpty()) {
+                System.out.println("[ProductService] Updated " + expiredProducts.size() + " expired products");
+            }
+
+        } catch (Exception e) {
+            if (trans.isActive()) {
+                trans.rollback();
+            }
+            System.err.println("Error updating expired products: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy danh sách sản phẩm sắp hết hạn (trong vòng 3 ngày) của seller
+     */
+    public List<Product> getExpiringSoonProducts(String sellerId) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            // Tính ngày hiện tại + 3 ngày
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.add(java.util.Calendar.DAY_OF_MONTH, 3);
+            java.util.Date threeDaysLater = cal.getTime();
+
+            TypedQuery<Product> query = em.createQuery(
+                    "SELECT p FROM Product p WHERE p.seller.userId = :sellerId " +
+                            "AND (p.status = :active OR p.status = :soldOut) " +
+                            "AND p.expirationDate BETWEEN :currentDate AND :threeDaysLater " +
+                            "ORDER BY p.expirationDate ASC",
+                    Product.class);
+            query.setParameter("sellerId", sellerId);
+            query.setParameter("active", ProductStatus.ACTIVE);
+            query.setParameter("soldOut", ProductStatus.SOLD_OUT);
+            query.setParameter("currentDate", new java.util.Date());
+            query.setParameter("threeDaysLater", threeDaysLater);
+
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Đếm số lượng sản phẩm sắp hết hạn của seller
+     */
+    public long countExpiringSoonProducts(String sellerId) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            // Tính ngày hiện tại + 3 ngày
+            java.util.Calendar cal = java.util.Calendar.getInstance();
+            cal.add(java.util.Calendar.DAY_OF_MONTH, 3);
+            java.util.Date threeDaysLater = cal.getTime();
+
+            TypedQuery<Long> query = em.createQuery(
+                    "SELECT COUNT(p) FROM Product p WHERE p.seller.userId = :sellerId " +
+                            "AND (p.status = :active OR p.status = :soldOut) " +
+                            "AND p.expirationDate BETWEEN :currentDate AND :threeDaysLater",
+                    Long.class);
+            query.setParameter("sellerId", sellerId);
+            query.setParameter("active", ProductStatus.ACTIVE);
+            query.setParameter("soldOut", ProductStatus.SOLD_OUT);
+            query.setParameter("currentDate", new java.util.Date());
+            query.setParameter("threeDaysLater", threeDaysLater);
+
+            return query.getSingleResult();
         } finally {
             em.close();
         }

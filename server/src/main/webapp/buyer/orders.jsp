@@ -413,21 +413,19 @@
                                     <div class="order-date">
                                         📅 <fmt:formatDate value="${order.orderDate}" pattern="dd/MM/yyyy HH:mm"/>
                                     </div>
-                                    <c:if test="${not empty order.items && fn:length(order.items) > 0}">
-                                        <div class="shop-badge">
-                                            🏪 ${order.items[0].shopName}
-                                        </div>
-                                    </c:if>
+                                    <%-- Shop badge removed - order.items not available in entity --%>
                                 </div>
+                                <%-- Total amount removed - order.totalAmount not available
                                 <div class="order-total">
                                     <span class="total-label">Tổng tiền</span>
                                     <span class="total-value">
                                         <fmt:formatNumber value="${order.totalAmount}" type="currency" currencySymbol="₫" maxFractionDigits="0"/>
                                     </span>
                                 </div>
+                                --%>
                             </div>
                             
-                            <!-- Order Body -->
+                            <%-- Order Body - Removed because order.items not available
                             <div class="order-body">
                                 <div class="order-items">
                                     <c:forEach items="${order.items}" var="item" begin="0" end="1">
@@ -456,6 +454,7 @@
                                     </p>
                                 </c:if>
                             </div>
+                            --%>
                             
                             <!-- Order Footer -->
                             <div class="order-footer">

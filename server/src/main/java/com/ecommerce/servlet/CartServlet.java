@@ -30,13 +30,33 @@ public class CartServlet extends HttpServlet {
 
         // Authentication check
         HttpSession session = request.getSession(false);
+        
+        // ✅ DEBUG: Log session info
+        System.out.println("=== [CartServlet] ===");
+        if (session != null) {
+            System.out.println("Session ID: " + session.getId());
+            System.out.println("User: " + session.getAttribute("user"));
+        } else {
+            System.out.println("❌ No session found");
+        }
+        
         if (session == null || session.getAttribute("user") == null) {
+            System.out.println("❌ User not authenticated, redirecting to login");
             response.sendRedirect(request.getContextPath() + "/login");
             return;
         }
 
         // Initialize cart if not exists
         List<CartItemDTO> cart = getOrCreateCart(session);
+        
+        // ✅ DEBUG: Log cart info
+        System.out.println("Cart size: " + cart.size());
+        if (!cart.isEmpty()) {
+            System.out.println("Cart items:");
+            for (CartItemDTO item : cart) {
+                System.out.println("  - " + item.getProduct().getName() + " x" + item.getQuantity());
+            }
+        }
 
         // Calculate cart summary for display
         CartSummary summary = calculateCartSummary(cart);
@@ -52,6 +72,7 @@ public class CartServlet extends HttpServlet {
         MenuHelper.setMenuItems(request, "BUYER", "/cart");
 
         // Forward to cart.jsp
+        System.out.println("✅ Forwarding to cart.jsp");
         request.getRequestDispatcher("/buyer/cart.jsp").forward(request, response);
     }
 
