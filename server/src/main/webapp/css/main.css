@@ -1719,3 +1719,213 @@ textarea.form-control {
         min-width: auto;
     }
 }
+/* --- Order Status Badges --- */
+.badge {
+    display: inline-block;
+    padding: 0.35em 0.8em;
+    font-size: 0.85rem;
+    font-weight: 600;
+    border-radius: 999px; /* Bo tròn viên thuốc */
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Màu sắc theo logic nghiệp vụ */
+.badge-PENDING {
+    background-color: #fff7ed; /* Cam nhạt */
+    color: #c2410c;            /* Cam đậm */
+    border: 1px solid #ffedd5;
+}
+
+.badge-CONFIRMED {
+    background-color: #eff6ff; /* Xanh dương nhạt */
+    color: #1e40af;            /* Xanh dương đậm */
+    border: 1px solid #dbeafe;
+}
+
+.badge-SHIPPING {
+    background-color: #f3e8ff; /* Tím nhạt */
+    color: #6b21a8;            /* Tím đậm */
+    border: 1px solid #e9d5ff;
+}
+
+.badge-DELIVERED {
+    background-color: #ecfdf5; /* Xanh lá nhạt */
+    color: #047857;            /* Xanh lá đậm */
+    border: 1px solid #d1fae5;
+}
+
+.badge-CANCELLED {
+    background-color: #fef2f2; /* Đỏ nhạt */
+    color: #b91c1c;            /* Đỏ đậm */
+    border: 1px solid #fee2e2;
+}
+/* --- Seller Order Table --- */
+.seller-table-container {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background-color: #f8fafc;
+    color: #64748b;
+    font-weight: 600;
+    text-align: left;
+    padding: 16px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+td {
+    padding: 16px;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+    vertical-align: middle;
+}
+
+tr:hover {
+    background-color: #f8fafc;
+}
+
+/* Tabs style (giống Admin) */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 10px;
+}
+
+.tab {
+    padding: 8px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #64748b;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.tab:hover {
+    background-color: #f1f5f9;
+}
+
+.tab.active {
+    background-color: #fff7ed;
+    color: #ea580c; /* Màu cam chủ đạo */
+    font-weight: 700;
+}
+
+/* Action Buttons */
+.btn-success {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+    transition: background 0.2s;
+}
+
+.btn-success:hover {
+    background: #059669;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+/* --- Buyer Order List --- */
+.order-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.order-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.order-card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.order-header {
+    background-color: #f8fafc;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.order-body {
+    padding: 20px;
+}
+
+.order-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 0;
+    border-bottom: 1px dashed #e5e7eb;
+}
+
+.order-item:last-child {
+    border-bottom: none;
+}
+
+.order-footer {
+    padding: 15px 20px;
+    background-color: #fff;
+    border-top: 1px solid #e5e7eb;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.total-price strong {
+    font-size: 1.2rem;
+    color: #ea580c; /* Màu cam giá tiền */
+}
+
+/* Nút Hủy đơn (Outline style) */
+.btn-outline-danger {
+    background: transparent;
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-outline-danger:hover {
+    background: #ef4444;
+    color: white;
+}

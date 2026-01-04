@@ -2,6 +2,7 @@ package com.ecommerce.servlet.buyer;
 
 import com.ecommerce.entity.Order;
 import com.ecommerce.service.OrderService;
+import com.ecommerce.util.MenuHelper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -22,11 +23,13 @@ public class MyOrdersServlet extends HttpServlet {
         
         HttpSession session = request.getSession();
         String userId = (String) session.getAttribute("userId");
+        String role = (String) session.getAttribute("role");
         
         if (userId == null) {
             response.sendRedirect(request.getContextPath() + "/login?redirect=my-orders");
             return;
         }
+        MenuHelper.setMenuItems(request, role != null ? role : "BUYER", "/orders");
         
         // Check for cancellation message
         String message = request.getParameter("message");
