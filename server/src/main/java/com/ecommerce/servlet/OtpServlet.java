@@ -1,127 +1,94 @@
 package com.ecommerce.servlet;
 
 import com.ecommerce.service.OtpService;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
- * OTP operations servlet (returns JSON for AJAX)
- * Endpoints:
- * - POST /api/otp/send - Gửi OTP
- * - POST /api/otp/verify - Xác thực OTP
+ * OTP Servlet - Xử lý gửi OTP (Form-based, không dùng AJAX)
+ * 
+ * POST /otp/send - Gửi OTP đến email
  */
-@WebServlet("/api/otp/*")
+@WebServlet("/otp/send")
 public class OtpServlet extends HttpServlet {
     
     private final OtpService otpService = new OtpService();
-    private final Gson gson = new Gson();
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         
-        response.setContentType("application/json");
-        response.setCharacterEncoding("UTF-8");
+        HttpSession session = request.getSession();
         
-        String pathInfo = request.getPathInfo();
+        String email = request.getParameter("email");
+        String fullName = request.getParameter("fullName");
+        String phone = request.getParameter("phone");
+        String role = request.getParameter("role");
+        String shopName = request.getParameter("shopName");
         
-        if ("/send".equals(pathInfo)) {
-            sendOtp(request, response);
-        } else if ("/verify".equals(pathInfo)) {
-            verifyOtp(request, response);
-        } else {
-            sendJsonResponse(response, false, "Endpoint không hợp lệ", 404);
+        // Validate email
+        if (email == null || email.trim().isEmpty()) {
+            session.setAttribute("otpError", "Vui lòng nhập email");
+            redirectBackToRegister(response, request, fullName, phone, email, role, shopName);
+            return;
         }
-    }
-    
-    /**
-     * Send OTP to email
-     */
-    private void sendOtp(HttpServletRequest request, HttpServletResponse response) 
-            throws IOException {
+        
+        email = email.trim().toLowerCase();
+        
+        // Validate email format
+        if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
+            session.setAttribute("otpError", "Định dạng email không hợp lệ");
+            redirectBackToRegister(response, request, fullName, phone, email, role, shopName);
+            return;
+        }
+        
         try {
-            JsonObject jsonRequest = gson.fromJson(request.getReader(), JsonObject.class);
-            String email = jsonRequest.get("email").getAsString();
-            
-            // Validate email
-            if (email == null || email.trim().isEmpty()) {
-                sendJsonResponse(response, false, "Email không hợp lệ", 400);
-                return;
-            }
-            
-            // Validate email format
-            email = email.trim().toLowerCase();
-            if (!email.matches("^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$")) {
-                sendJsonResponse(response, false, "Định dạng email không hợp lệ", 400);
-                return;
-            }
-            
             // Generate and send OTP
             String otp = otpService.generateOtp(email);
             
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "Mã OTP đã được gửi đến email " + email);
-            // For development only - remove in production
-            result.put("otp", otp);
+            // Store in session that OTP was sent
+            session.setAttribute("otpSent", true);
+            session.setAttribute("otpEmail", email);
+            session.setAttribute("otpSuccess", "Mã OTP đã được gửi đến " + email + ". Kiểm tra hộp thư spam nếu không thấy.");
             
-            response.setStatus(200);
-            response.getWriter().write(gson.toJson(result));
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            sendJsonResponse(response, false, "Lỗi gửi OTP: " + e.getMessage(), 500);
-        }
-    }
-    
-    /**
-     * Verify OTP
-     */
-    private void verifyOtp(HttpServletRequest request, HttpServletResponse response) 
-            throws IOException {
-        try {
-            JsonObject jsonRequest = gson.fromJson(request.getReader(), JsonObject.class);
-            String email = jsonRequest.get("email").getAsString();
-            String otp = jsonRequest.get("otp").getAsString();
-            
-            // Validate inputs
-            if (email == null || email.trim().isEmpty() || 
-                otp == null || otp.trim().isEmpty()) {
-                sendJsonResponse(response, false, "Thông tin không hợp lệ", 400);
-                return;
-            }
-            
-            email = email.trim().toLowerCase();
-            
-            // Verify OTP
-            boolean isValid = otpService.verifyOtp(email, otp);
-            
-            if (isValid) {
-                sendJsonResponse(response, true, "Xác thực thành công", 200);
-            } else {
-                sendJsonResponse(response, false, "Mã OTP không đúng hoặc đã hết hạn", 400);
-            }
+            // For development - show OTP (remove in production)
+            session.setAttribute("devOtp", otp);
             
         } catch (Exception e) {
             e.printStackTrace();
-            sendJsonResponse(response, false, "Lỗi xác thực OTP: " + e.getMessage(), 500);
+            session.setAttribute("otpError", "Lỗi gửi OTP: " + e.getMessage());
         }
+        
+        // Redirect back to register with form data preserved
+        redirectBackToRegister(response, request, fullName, phone, email, role, shopName);
     }
     
-    private void sendJsonResponse(HttpServletResponse response, boolean success, String message, int status) 
-            throws IOException {
-        response.setStatus(status);
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", success);
-        result.put("message", message);
-        response.getWriter().write(gson.toJson(result));
+    private void redirectBackToRegister(HttpServletResponse response, HttpServletRequest request,
+            String fullName, String phone, String email, String role, String shopName) throws IOException {
+        
+        StringBuilder url = new StringBuilder(request.getContextPath() + "/register?");
+        
+        if (fullName != null && !fullName.isEmpty()) {
+            url.append("fullName=").append(java.net.URLEncoder.encode(fullName, "UTF-8")).append("&");
+        }
+        if (phone != null && !phone.isEmpty()) {
+            url.append("phone=").append(java.net.URLEncoder.encode(phone, "UTF-8")).append("&");
+        }
+        if (email != null && !email.isEmpty()) {
+            url.append("email=").append(java.net.URLEncoder.encode(email, "UTF-8")).append("&");
+        }
+        if (role != null && !role.isEmpty()) {
+            url.append("role=").append(java.net.URLEncoder.encode(role, "UTF-8")).append("&");
+        }
+        if (shopName != null && !shopName.isEmpty()) {
+            url.append("shopName=").append(java.net.URLEncoder.encode(shopName, "UTF-8")).append("&");
+        }
+        
+        response.sendRedirect(url.toString());
     }
 }
