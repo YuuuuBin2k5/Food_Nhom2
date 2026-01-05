@@ -14,8 +14,10 @@ public class AdminUserService {
         return DBUtil.getEmFactory().createEntityManager();
     }
 
+    // ==================== SEARCH METHODS ====================
+
     /**
-     * Tìm kiếm Seller theo tên hoặc email
+     * Tìm kiếm Seller theo tên, email hoặc shop
      */
     public List<Seller> searchSellers(String keyword) {
         EntityManager em = getEntityManager();
@@ -56,7 +58,29 @@ public class AdminUserService {
     }
 
     /**
-     * Lấy danh sách tất cả Seller
+     * Tìm kiếm Shipper theo tên hoặc email
+     */
+    public List<Shipper> searchShippers(String keyword) {
+        EntityManager em = getEntityManager();
+        try {
+            String jpql = "SELECT s FROM Shipper s WHERE " +
+                          "LOWER(s.fullName) LIKE :keyword OR " +
+                          "LOWER(s.email) LIKE :keyword";
+            TypedQuery<Shipper> query = em.createQuery(jpql, Shipper.class);
+            query.setParameter("keyword", "%" + keyword.toLowerCase() + "%");
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        } finally {
+            em.close();
+        }
+    }
+
+    // ==================== GET ALL METHODS ====================
+
+    /**
+     * Lấy tất cả Seller (sắp xếp theo tên)
      */
     public List<Seller> getAllSellers() {
         EntityManager em = getEntityManager();
@@ -72,7 +96,7 @@ public class AdminUserService {
     }
 
     /**
-     * Lấy danh sách tất cả Buyer
+     * Lấy tất cả Buyer (sắp xếp theo tên)
      */
     public List<Buyer> getAllBuyers() {
         EntityManager em = getEntityManager();
@@ -88,12 +112,12 @@ public class AdminUserService {
     }
 
     /**
-     * Lấy danh sách user đã bị ban
+     * Lấy tất cả Shipper (sắp xếp theo tên)
      */
-    public List<Seller> getBannedSellers() {
+    public List<Shipper> getAllShippers() {
         EntityManager em = getEntityManager();
         try {
-            return em.createQuery("SELECT s FROM Seller s WHERE s.isBanned = true", Seller.class)
+            return em.createQuery("SELECT s FROM Shipper s ORDER BY s.fullName", Shipper.class)
                      .getResultList();
         } catch (Exception e) {
             e.printStackTrace();
@@ -103,10 +127,15 @@ public class AdminUserService {
         }
     }
 
-    public List<Buyer> getBannedBuyers() {
+    // ==================== GET BANNED METHODS ====================
+
+    /**
+     * Lấy tất cả Seller đã bị ban
+     */
+    public List<Seller> getBannedSellers() {
         EntityManager em = getEntityManager();
         try {
-            return em.createQuery("SELECT b FROM Buyer b WHERE b.isBanned = true", Buyer.class)
+            return em.createQuery("SELECT s FROM Seller s WHERE s.isBanned = true ORDER BY s.fullName", Seller.class)
                      .getResultList();
         } catch (Exception e) {
             e.printStackTrace();
@@ -115,6 +144,94 @@ public class AdminUserService {
             em.close();
         }
     }
+
+    /**
+     * Lấy tất cả Buyer đã bị ban
+     */
+    public List<Buyer> getBannedBuyers() {
+        EntityManager em = getEntityManager();
+        try {
+            return em.createQuery("SELECT b FROM Buyer b WHERE b.isBanned = true ORDER BY b.fullName", Buyer.class)
+                     .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy tất cả Shipper đã bị ban
+     */
+    public List<Shipper> getBannedShippers() {
+        EntityManager em = getEntityManager();
+        try {
+            return em.createQuery("SELECT s FROM Shipper s WHERE s.isBanned = true ORDER BY s.fullName", Shipper.class)
+                     .getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        } finally {
+            em.close();
+        }
+    }
+
+    // ==================== SORT METHODS ====================
+
+    /**
+     * Lấy tất cả Seller sắp xếp theo email A-Z
+     */
+    public List<Seller> getAllSellersSortByEmail() {
+        EntityManager em = getEntityManager();
+        try {
+            return em.createQuery("SELECT s FROM Seller s ORDER BY s.email ASC", Seller.class)
+                     .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy tất cả Seller sắp xếp theo shop A-Z
+     */
+    public List<Seller> getAllSellersSortByShop() {
+        EntityManager em = getEntityManager();
+        try {
+            return em.createQuery("SELECT s FROM Seller s ORDER BY s.shopName ASC", Seller.class)
+                     .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy tất cả Buyer sắp xếp theo email A-Z
+     */
+    public List<Buyer> getAllBuyersSortByEmail() {
+        EntityManager em = getEntityManager();
+        try {
+            return em.createQuery("SELECT b FROM Buyer b ORDER BY b.email ASC", Buyer.class)
+                     .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy tất cả Shipper sắp xếp theo email A-Z
+     */
+    public List<Shipper> getAllShippersSortByEmail() {
+        EntityManager em = getEntityManager();
+        try {
+            return em.createQuery("SELECT s FROM Shipper s ORDER BY s.email ASC", Shipper.class)
+                     .getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    // ==================== BAN/UNBAN METHODS ====================
 
     /**
      * Ban Seller
@@ -133,17 +250,34 @@ public class AdminUserService {
     /**
      * Ban Buyer
      */
-    public boolean banBuyer(String visitorId) {
-        return updateBuyerBanStatus(visitorId, true);
+    public boolean banBuyer(String buyerId) {
+        return updateBuyerBanStatus(buyerId, true);
     }
 
     /**
      * Unban Buyer
      */
-    public boolean unbanBuyer(String visitorId) {
-        return updateBuyerBanStatus(visitorId, false);
+    public boolean unbanBuyer(String buyerId) {
+        return updateBuyerBanStatus(buyerId, false);
     }
 
+    /**
+     * Ban Shipper
+     */
+    public boolean banShipper(String shipperId) {
+        return updateShipperBanStatus(shipperId, true);
+    }
+
+    /**
+     * Unban Shipper
+     */
+    public boolean unbanShipper(String shipperId) {
+        return updateShipperBanStatus(shipperId, false);
+    }
+
+    /**
+     * Cập nhật trạng thái ban của Seller
+     */
     private boolean updateSellerBanStatus(String sellerId, boolean banned) {
         EntityManager em = getEntityManager();
         EntityTransaction tx = em.getTransaction();
@@ -167,12 +301,15 @@ public class AdminUserService {
         }
     }
 
-    private boolean updateBuyerBanStatus(String visitorId, boolean banned) {
+    /**
+     * Cập nhật trạng thái ban của Buyer
+     */
+    private boolean updateBuyerBanStatus(String buyerId, boolean banned) {
         EntityManager em = getEntityManager();
         EntityTransaction tx = em.getTransaction();
         try {
             tx.begin();
-            Buyer buyer = em.find(Buyer.class, visitorId);
+            Buyer buyer = em.find(Buyer.class, buyerId);
             if (buyer != null) {
                 buyer.setBanned(banned);
                 em.merge(buyer);
@@ -190,59 +327,9 @@ public class AdminUserService {
         }
     }
 
-    // ========== SHIPPER ==========
-
-    public List<Shipper> searchShippers(String keyword) {
-        EntityManager em = getEntityManager();
-        try {
-            String jpql = "SELECT s FROM Shipper s WHERE " +
-                          "LOWER(s.fullName) LIKE :keyword OR " +
-                          "LOWER(s.email) LIKE :keyword";
-            TypedQuery<Shipper> query = em.createQuery(jpql, Shipper.class);
-            query.setParameter("keyword", "%" + keyword.toLowerCase() + "%");
-            return query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        } finally {
-            em.close();
-        }
-    }
-
-    public List<Shipper> getAllShippers() {
-        EntityManager em = getEntityManager();
-        try {
-            return em.createQuery("SELECT s FROM Shipper s ORDER BY s.fullName", Shipper.class)
-                     .getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        } finally {
-            em.close();
-        }
-    }
-
-    public List<Shipper> getBannedShippers() {
-        EntityManager em = getEntityManager();
-        try {
-            return em.createQuery("SELECT s FROM Shipper s WHERE s.isBanned = true", Shipper.class)
-                     .getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        } finally {
-            em.close();
-        }
-    }
-
-    public boolean banShipper(String shipperId) {
-        return updateShipperBanStatus(shipperId, true);
-    }
-
-    public boolean unbanShipper(String shipperId) {
-        return updateShipperBanStatus(shipperId, false);
-    }
-
+    /**
+     * Cập nhật trạng thái ban của Shipper
+     */
     private boolean updateShipperBanStatus(String shipperId, boolean banned) {
         EntityManager em = getEntityManager();
         EntityTransaction tx = em.getTransaction();
@@ -261,155 +348,6 @@ public class AdminUserService {
             if (tx.isActive()) tx.rollback();
             e.printStackTrace();
             return false;
-        } finally {
-            em.close();
-        }
-    }
-
-    // ==================== PHÂN TRANG ====================
-
-    /**
-     * Đếm tổng số user theo loại và filter
-     */
-    public long countUsers(String filter) {
-        EntityManager em = getEntityManager();
-        try {
-            long count = 0;
-            if ("sellers".equals(filter)) {
-                count = em.createQuery("SELECT COUNT(s) FROM Seller s", Long.class).getSingleResult();
-            } else if ("buyers".equals(filter)) {
-                count = em.createQuery("SELECT COUNT(b) FROM Buyer b", Long.class).getSingleResult();
-            } else if ("shippers".equals(filter)) {
-                count = em.createQuery("SELECT COUNT(s) FROM Shipper s", Long.class).getSingleResult();
-            } else if ("banned".equals(filter)) {
-                long sellers = em.createQuery("SELECT COUNT(s) FROM Seller s WHERE s.isBanned = true", Long.class).getSingleResult();
-                long buyers = em.createQuery("SELECT COUNT(b) FROM Buyer b WHERE b.isBanned = true", Long.class).getSingleResult();
-                long shippers = em.createQuery("SELECT COUNT(s) FROM Shipper s WHERE s.isBanned = true", Long.class).getSingleResult();
-                count = sellers + buyers + shippers;
-            } else { // all
-                long sellers = em.createQuery("SELECT COUNT(s) FROM Seller s", Long.class).getSingleResult();
-                long buyers = em.createQuery("SELECT COUNT(b) FROM Buyer b", Long.class).getSingleResult();
-                long shippers = em.createQuery("SELECT COUNT(s) FROM Shipper s", Long.class).getSingleResult();
-                count = sellers + buyers + shippers;
-            }
-            return count;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy danh sách Seller có phân trang
-     */
-    public List<Seller> getAllSellers(int page, int pageSize) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s ORDER BY s.fullName", Seller.class);
-            query.setFirstResult((page - 1) * pageSize);
-            query.setMaxResults(pageSize);
-            return query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy danh sách Buyer có phân trang
-     */
-    public List<Buyer> getAllBuyers(int page, int pageSize) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Buyer> query = em.createQuery(
-                "SELECT b FROM Buyer b ORDER BY b.fullName", Buyer.class);
-            query.setFirstResult((page - 1) * pageSize);
-            query.setMaxResults(pageSize);
-            return query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy danh sách Shipper có phân trang
-     */
-    public List<Shipper> getAllShippers(int page, int pageSize) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Shipper> query = em.createQuery(
-                "SELECT s FROM Shipper s ORDER BY s.fullName", Shipper.class);
-            query.setFirstResult((page - 1) * pageSize);
-            query.setMaxResults(pageSize);
-            return query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy danh sách Seller đã bị ban có phân trang
-     */
-    public List<Seller> getBannedSellers(int page, int pageSize) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s WHERE s.isBanned = true ORDER BY s.fullName", Seller.class);
-            query.setFirstResult((page - 1) * pageSize);
-            query.setMaxResults(pageSize);
-            return query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy danh sách Buyer đã bị ban có phân trang
-     */
-    public List<Buyer> getBannedBuyers(int page, int pageSize) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Buyer> query = em.createQuery(
-                "SELECT b FROM Buyer b WHERE b.isBanned = true ORDER BY b.fullName", Buyer.class);
-            query.setFirstResult((page - 1) * pageSize);
-            query.setMaxResults(pageSize);
-            return query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy danh sách Shipper đã bị ban có phân trang
-     */
-    public List<Shipper> getBannedShippers(int page, int pageSize) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Shipper> query = em.createQuery(
-                "SELECT s FROM Shipper s WHERE s.isBanned = true ORDER BY s.fullName", Shipper.class);
-            query.setFirstResult((page - 1) * pageSize);
-            query.setMaxResults(pageSize);
-            return query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
         } finally {
             em.close();
         }

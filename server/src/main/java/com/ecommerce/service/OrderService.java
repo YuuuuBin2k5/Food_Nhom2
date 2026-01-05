@@ -5,6 +5,7 @@ import com.ecommerce.dto.CheckoutRequest;
 import com.ecommerce.entity.*;
 import com.ecommerce.util.DBUtil;
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import jakarta.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.Date;
@@ -31,22 +32,24 @@ public class OrderService {
                 throw new Exception("Buyer not found: " + request.getUserId());
             }
             
-            // Load tất cả products một lần để tránh N+1 query
+            // ⚠️ QUAN TRỌNG: Load products với PESSIMISTIC_WRITE lock để tránh race condition
+            // Khi 2 người cùng mua sản phẩm cuối cùng, database sẽ KHÓA dòng product đó
+            // cho đến khi transaction đầu tiên hoàn thành, đảm bảo tồn kho không bị âm
+            
             List<Long> productIds = request.getItems().stream()
                 .map(item -> item.getProduct().getProductId())
                 .toList();
             
-            TypedQuery<Product> productQuery = em.createQuery(
-                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.productId IN :ids",
-                Product.class
-            );
-            productQuery.setParameter("ids", productIds);
-            List<Product> products = productQuery.getResultList();
-            
-            // Map products by ID for quick lookup
             Map<Long, Product> productMap = new HashMap<>();
-            for (Product p : products) {
-                productMap.put(p.getProductId(), p);
+            
+            for (Long productId : productIds) {
+                // Lock từng product một để tránh deadlock khi order nhiều sản phẩm
+                Product product = em.find(Product.class, productId, LockModeType.PESSIMISTIC_WRITE);
+                if (product != null) {
+                    // Trigger lazy loading của seller ngay trong transaction
+                    product.getSeller().getUserId(); // Force load seller
+                    productMap.put(productId, product);
+                }
             }
             
             // TÁCH GIỎ HÀNG THEO SELLER
@@ -189,7 +192,7 @@ public class OrderService {
             
             // If no products, return empty list
             if (productCount == 0) {
-                return List.of();
+                return new ArrayList<>();
             }
             
             TypedQuery<Order> query = em.createQuery(
@@ -208,7 +211,7 @@ public class OrderService {
         } catch (Exception e) {
             System.err.println("Error in getOrdersBySellerProducts: " + e.getMessage());
             e.printStackTrace();
-            return List.of(); // Return empty list on error
+            return new ArrayList<>(); // Return empty list on error
         } finally {
             em.close();
         }

@@ -69,11 +69,17 @@ public class ShipperOrdersServlet extends HttpServlet {
                 .mapToDouble(o -> 15000.0) // Fixed shipping fee
                 .sum();
             
-            request.setAttribute("orders", orders);
+            // Filter only CONFIRMED orders for the new orders page
+            List<Order> availableOrdersList = orders.stream()
+                .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
+                .toList();
+            
+            request.setAttribute("orders", availableOrdersList);
             request.setAttribute("availableOrders", availableOrders);
             request.setAttribute("shippingOrders", shippingOrders);
             request.setAttribute("deliveredOrders", deliveredOrders);
             request.setAttribute("totalEarnings", totalEarnings);
+            request.setAttribute("user", user);
             
             request.getRequestDispatcher("/shipper/orders.jsp").forward(request, response);
             

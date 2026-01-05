@@ -1,7 +1,6 @@
 package com.ecommerce.servlet;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -22,25 +21,12 @@ import com.ecommerce.entity.Role;
 @WebServlet("/admin/approveProduct")
 public class AdminProductServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
-    // Bỏ phân trang - load tất cả để scroll
-    // private static final int PAGE_SIZE = 6;
     
     private AdminProductService productService = new AdminProductService();
     private UserLogService userLogService = new UserLogService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
-            throws ServletException, IOException {
-        processRequest(request, response);
-    }
-
-    private void processRequest(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
         request.setCharacterEncoding("UTF-8");
         
@@ -58,71 +44,58 @@ public class AdminProductServlet extends HttpServlet {
         }
         
         String action = request.getParameter("action");
-        if (action == null) action = "list";
-        
-        switch (action) {
-            case "detail":
-                viewProductDetail(request, response);
-                break;
-            case "approve":
-                approveProduct(request, response);
-                break;
-            case "reject":
-                rejectProduct(request, response);
-                break;
-            default:
-                loadProducts(request, response);
-                break;
+        if ("detail".equals(action)) {
+            viewProductDetail(request, response);
+        } else {
+            loadFirstPendingProduct(request, response);
         }
     }
 
-
-    private void loadProducts(HttpServletRequest request, HttpServletResponse response) 
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Set menu items
-        MenuHelper.setMenuItems(request, "ADMIN", "/admin/approveProduct");
+        request.setCharacterEncoding("UTF-8");
         
-        String tab = request.getParameter("tab");
-        if (tab == null) tab = "pending";
-        
-        Product product = productService.getFirstPendingProduct();
-        
-        long pendingCount = productService.countByStatus(ProductStatus.PENDING_APPROVAL);
-        long activeCount = productService.countByStatus(ProductStatus.ACTIVE);
-        long rejectedCount = productService.countByStatus(ProductStatus.REJECTED);
-        long allCount = productService.countAll();
-        
-        List<Product> productList = new ArrayList<>();
-        
-        // Load tất cả sản phẩm theo tab - không phân trang
-        switch (tab) {
-            case "active":
-                productList = productService.getProductsByStatus(ProductStatus.ACTIVE);
-                break;
-            case "rejected":
-                productList = productService.getProductsByStatus(ProductStatus.REJECTED);
-                break;
-            case "all":
-                productList = productService.getAllProducts();
-                break;
-            default:
-                tab = "pending";
-                productList = productService.getProductsByStatus(ProductStatus.PENDING_APPROVAL);
-                break;
+        HttpSession session = request.getSession(false);
+        if (session == null || session.getAttribute("user") == null) {
+            response.sendRedirect(request.getContextPath() + "/login");
+            return;
         }
         
-        setAttributes(request, product, productList, tab, pendingCount, activeCount, rejectedCount, allCount);
-        request.getRequestDispatcher("/admin/admin_approves_product.jsp").forward(request, response);
+        // Kiểm tra role ADMIN
+        String role = (String) session.getAttribute("role");
+        if (!"ADMIN".equals(role)) {
+            response.sendRedirect(request.getContextPath() + "/home");
+            return;
+        }
+
+        String action = request.getParameter("action");
+        if ("approve".equals(action)) {
+            approveProduct(request, response);
+        } else if ("reject".equals(action)) {
+            rejectProduct(request, response);
+        } else {
+            loadFirstPendingProduct(request, response);
+        }
     }
 
+    /**
+     * Load trang với product pending đầu tiên (ai đăng trước sẽ được duyệt trước)
+     */
+    private void loadFirstPendingProduct(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        // Lấy product đầu tiên cần duyệt (FIFO - First In First Out)
+        Product product = productService.getFirstPendingProduct();
+        processProductRequest(request, response, product);
+    }
+
+    /**
+     * Xem chi tiết product được chọn từ danh sách
+     */
     private void viewProductDetail(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        // Set menu items
-        MenuHelper.setMenuItems(request, "ADMIN", "/admin/approveProduct");
-        
+        // Lấy product theo ID được chọn từ table
         String productIdStr = request.getParameter("productId");
-        String tab = request.getParameter("tab");
-        
         Product product = null;
         if (productIdStr != null) {
             try {
@@ -132,37 +105,95 @@ public class AdminProductServlet extends HttpServlet {
                 // ignore
             }
         }
+        processProductRequest(request, response, product);
+    }
+
+    /**
+     * Xử lý chung cho cả loadFirstPendingProduct và viewProductDetail
+     */
+    private void processProductRequest(HttpServletRequest request, HttpServletResponse response, Product product) 
+            throws ServletException, IOException {
+        MenuHelper.setMenuItems(request, "ADMIN", "/admin/approveProduct");
+        HttpSession session = request.getSession();
         
+        String tab = request.getParameter("tab");
+        String sort = request.getParameter("sort");
+        
+        // Đọc từ session nếu không có param
+        if (tab == null) {
+            tab = (String) session.getAttribute("adminProductTab");
+        }
+        if (sort == null) {
+            sort = (String) session.getAttribute("adminProductSort");
+        }
         if (tab == null) tab = "pending";
+        if (sort == null) sort = "newest";
+        
+        // Lưu vào session
+        session.setAttribute("adminProductTab", tab);
+        session.setAttribute("adminProductSort", sort);
         
         long pendingCount = productService.countByStatus(ProductStatus.PENDING_APPROVAL);
         long activeCount = productService.countByStatus(ProductStatus.ACTIVE);
         long rejectedCount = productService.countByStatus(ProductStatus.REJECTED);
+        long hiddenCount = productService.countByStatus(ProductStatus.HIDDEN);
         long allCount = productService.countAll();
         
-        List<Product> productList = new ArrayList<>();
-        
-        // Load tất cả sản phẩm theo tab - không phân trang
+        List<Product> productList;
         switch (tab) {
             case "active":
-                productList = productService.getProductsByStatus(ProductStatus.ACTIVE);
+                productList = getProductListWithSort(ProductStatus.ACTIVE, sort);
                 break;
             case "rejected":
-                productList = productService.getProductsByStatus(ProductStatus.REJECTED);
+                productList = getProductListWithSort(ProductStatus.REJECTED, sort);
+                break;
+            case "hidden":
+                productList = getProductListWithSort(ProductStatus.HIDDEN, sort);
                 break;
             case "all":
-                productList = productService.getAllProducts();
+                productList = getAllProductsWithSort(sort);
                 break;
             default:
                 tab = "pending";
-                productList = productService.getProductsByStatus(ProductStatus.PENDING_APPROVAL);
+                productList = getProductListWithSort(ProductStatus.PENDING_APPROVAL, sort);
                 break;
         }
         
-        setAttributes(request, product, productList, tab, pendingCount, activeCount, rejectedCount, allCount);
+        setAttributes(request, product, productList, tab, sort, pendingCount, activeCount, rejectedCount, hiddenCount, allCount);
         request.getRequestDispatcher("/admin/admin_approves_product.jsp").forward(request, response);
     }
 
+    /**
+     * Lấy danh sách product theo status với sort từ service
+     */
+    private List<Product> getProductListWithSort(ProductStatus status, String sort) {
+        switch (sort) {
+            case "oldest":
+                return productService.getProductsByStatusSortOldest(status);
+            case "name":
+                return productService.getProductsByStatusSortByName(status);
+            case "shop":
+                return productService.getProductsByStatusSortByShop(status);
+            default: // newest
+                return productService.getProductsByStatusSortNewest(status);
+        }
+    }
+
+    /**
+     * Lấy tất cả product với sort từ service
+     */
+    private List<Product> getAllProductsWithSort(String sort) {
+        switch (sort) {
+            case "oldest":
+                return productService.getAllProductsSortOldest();
+            case "name":
+                return productService.getAllProductsSortByName();
+            case "shop":
+                return productService.getAllProductsSortByShop();
+            default: // newest
+                return productService.getAllProductsSortNewest();
+        }
+    }
 
     private void approveProduct(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -170,36 +201,40 @@ public class AdminProductServlet extends HttpServlet {
         String productName = request.getParameter("productName");
         HttpSession session = request.getSession();
         Admin admin = (Admin) session.getAttribute("user");
-        String adminId = admin != null ? admin.getUserId() : "unknown";
+        String adminId = admin.getUserId();
         
         try {
             Long productId = Long.parseLong(productIdStr);
             Product product = productService.findById(productId);
             
+            // Lưu sellerId vào session để xem log sau
+            if (product != null && product.getSeller() != null) {
+                session.setAttribute("lastViewedUserId", product.getSeller().getUserId());
+                session.setAttribute("lastViewedUserName", product.getSeller().getFullName());
+                session.setAttribute("lastViewedUserType", "seller");
+            }
+            
             int result = productService.approveProduct(productId);
-            switch (result) {
-                case 0: // Thành công
-                    String sellerId = (product != null && product.getSeller() != null) 
-                        ? product.getSeller().getUserId() : null;
-                    String sellerName = (product != null && product.getSeller() != null) 
-                        ? product.getSeller().getShopName() : "Unknown";
-                    
-                    UserLog log = new UserLog(sellerId, Role.SELLER, ActionType.PRODUCT_APPROVED,
-                        "Sản phẩm \"" + productName + "\" của seller \"" + sellerName + "\" được duyệt bởi admin " + adminId,
-                        productIdStr, "PRODUCT", adminId);
-                    userLogService.save(log);
-                    request.setAttribute("message", "Đã duyệt sản phẩm \"" + productName + "\" thành công!");
-                    break;
-                case 2: // Đã được xử lý bởi admin khác
-                    request.setAttribute("error", "Sản phẩm \"" + productName + "\" đã được xử lý bởi admin khác.");
-                    break;
-                default: // Lỗi khác
-                    request.setAttribute("error", "Không thể duyệt sản phẩm. Vui lòng thử lại.");
+            if (result == 0) {
+                String sellerId = (product != null && product.getSeller() != null) 
+                    ? product.getSeller().getUserId() : null;
+                String sellerName = (product != null && product.getSeller() != null) 
+                    ? product.getSeller().getShopName() : "Unknown";
+                
+                UserLog log = new UserLog(sellerId, Role.SELLER, ActionType.PRODUCT_APPROVED,
+                    "Sản phẩm \"" + productName + "\" của seller \"" + sellerName + "\" được duyệt bởi admin " + adminId,
+                    productIdStr, "PRODUCT", adminId);
+                userLogService.save(log);
+                request.setAttribute("message", "Đã duyệt sản phẩm \"" + productName + "\" thành công!");
+            } else if (result == 2) {
+                request.setAttribute("error", "Sản phẩm \"" + productName + "\" đã được xử lý bởi admin khác.");
+            } else {
+                request.setAttribute("error", "Không thể duyệt sản phẩm. Vui lòng thử lại.");
             }
         } catch (NumberFormatException e) {
             request.setAttribute("error", "ID sản phẩm không hợp lệ.");
         }
-        loadProducts(request, response);
+        loadFirstPendingProduct(request, response);
     }
 
     private void rejectProduct(HttpServletRequest request, HttpServletResponse response) 
@@ -208,46 +243,52 @@ public class AdminProductServlet extends HttpServlet {
         String productName = request.getParameter("productName");
         HttpSession session = request.getSession();
         Admin admin = (Admin) session.getAttribute("user");
-        String adminId = admin != null ? admin.getUserId() : "unknown";
+        String adminId = admin.getUserId();
         
         try {
             Long productId = Long.parseLong(productIdStr);
             Product product = productService.findById(productId);
             
+            // Lưu sellerId vào session để xem log sau
+            if (product != null && product.getSeller() != null) {
+                session.setAttribute("lastViewedUserId", product.getSeller().getUserId());
+                session.setAttribute("lastViewedUserName", product.getSeller().getFullName());
+                session.setAttribute("lastViewedUserType", "seller");
+            }
+            
             int result = productService.rejectProduct(productId);
-            switch (result) {
-                case 0: // Thành công
-                    String sellerId = (product != null && product.getSeller() != null) 
-                        ? product.getSeller().getUserId() : null;
-                    String sellerName = (product != null && product.getSeller() != null) 
-                        ? product.getSeller().getShopName() : "Unknown";
-                    
-                    UserLog log = new UserLog(sellerId, Role.SELLER, ActionType.PRODUCT_REJECTED,
-                        "Sản phẩm \"" + productName + "\" của seller \"" + sellerName + "\" bị từ chối bởi admin " + adminId,
-                        productIdStr, "PRODUCT", adminId);
-                    userLogService.save(log);
-                    request.setAttribute("message", "Đã từ chối sản phẩm \"" + productName + "\".");
-                    break;
-                case 2: // Đã được xử lý bởi admin khác
-                    request.setAttribute("error", "Sản phẩm \"" + productName + "\" đã được xử lý bởi admin khác.");
-                    break;
-                default: // Lỗi khác
-                    request.setAttribute("error", "Không thể từ chối sản phẩm. Vui lòng thử lại.");
+            if (result == 0) {
+                String sellerId = (product != null && product.getSeller() != null) 
+                    ? product.getSeller().getUserId() : null;
+                String sellerName = (product != null && product.getSeller() != null) 
+                    ? product.getSeller().getShopName() : "Unknown";
+                
+                UserLog log = new UserLog(sellerId, Role.SELLER, ActionType.PRODUCT_REJECTED,
+                    "Sản phẩm \"" + productName + "\" của seller \"" + sellerName + "\" bị từ chối bởi admin " + adminId,
+                    productIdStr, "PRODUCT", adminId);
+                userLogService.save(log);
+                request.setAttribute("message", "Đã từ chối sản phẩm \"" + productName + "\".");
+            } else if (result == 2) {
+                request.setAttribute("error", "Sản phẩm \"" + productName + "\" đã được xử lý bởi admin khác.");
+            } else {
+                request.setAttribute("error", "Không thể từ chối sản phẩm. Vui lòng thử lại.");
             }
         } catch (NumberFormatException e) {
             request.setAttribute("error", "ID sản phẩm không hợp lệ.");
         }
-        loadProducts(request, response);
+        loadFirstPendingProduct(request, response);
     }
 
     private void setAttributes(HttpServletRequest request, Product product, List<Product> productList,
-            String tab, long pendingCount, long activeCount, long rejectedCount, long allCount) {
+            String tab, String sort, long pendingCount, long activeCount, long rejectedCount, long hiddenCount, long allCount) {
         request.setAttribute("product", product);
         request.setAttribute("productList", productList);
         request.setAttribute("currentTab", tab);
+        request.setAttribute("currentSort", sort);
         request.setAttribute("pendingCount", pendingCount);
         request.setAttribute("activeCount", activeCount);
         request.setAttribute("rejectedCount", rejectedCount);
+        request.setAttribute("hiddenCount", hiddenCount);
         request.setAttribute("allCount", allCount);
         request.setAttribute("activePage", "product");
     }

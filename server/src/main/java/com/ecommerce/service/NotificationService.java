@@ -3,47 +3,38 @@ package com.ecommerce.service;
 import com.ecommerce.dto.NotificationDTO;
 import com.ecommerce.entity.Notification;
 import com.ecommerce.entity.NotificationType;
+import com.ecommerce.util.DBUtil; // Import công cụ kết nối của em
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class NotificationService {
-    
-    private static final EntityManagerFactory emf = Persistence.createEntityManagerFactory("FoodRescuePU");
-    
+
     /**
-     * Create and send a notification (using provided EntityManager - no separate transaction)
+     * 1. Tạo thông báo (Dùng chung EntityManager - Thường dùng khi đặt hàng)
+     * Servlet/Service khác sẽ mở Transaction và truyền EntityManager vào đây.
      */
     public NotificationDTO createNotification(EntityManager em, String userId, NotificationType type, String title, String message, Long referenceId) {
         try {
-            // Create notification entity
             Notification notification = new Notification(userId, type, title, message, referenceId);
             em.persist(notification);
             
-            // Flush to get the ID
-            em.flush();
+            // Đẩy dữ liệu xuống DB ngay để lấy ID tự động cho DTO
+            em.flush(); 
             
-            // Convert to DTO
-            NotificationDTO dto = convertToDTO(notification);
-            
-            // WebSocket removed - notifications stored in DB only
-            // Users can check notifications via polling or page refresh
-            
-            return dto;
+            return convertToDTO(notification);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to create notification", e);
+            throw new RuntimeException("Lỗi khi tạo thông báo: " + e.getMessage(), e);
         }
     }
-    
-    
+
     /**
-     * Create and send a notification (convenience method - creates own EntityManager)
+     * 2. Tạo thông báo đơn lẻ (Tự quản lý Transaction - Dùng cho các vụ việc riêng lẻ)
      */
     public NotificationDTO createNotification(String userId, NotificationType type, String title, String message, Long referenceId) {
-        EntityManager em = emf.createEntityManager();
+        // Lấy EntityManager từ kho tổng DBUtil
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             em.getTransaction().begin();
             NotificationDTO dto = createNotification(em, userId, type, title, message, referenceId);
@@ -53,24 +44,17 @@ public class NotificationService {
             if (em.getTransaction().isActive()) {
                 em.getTransaction().rollback();
             }
-            throw new RuntimeException("Failed to create notification", e);
+            throw new RuntimeException("Lỗi Transaction thông báo", e);
         } finally {
-            em.close();
+            em.close(); // Luôn luôn đóng để tránh rò rỉ bộ nhớ
         }
     }
-    
+
     /**
-     * Create and send a notification (overload without referenceId)
-     */
-    public NotificationDTO createNotification(String userId, NotificationType type, String title, String message) {
-        return createNotification(userId, type, title, message, null);
-    }
-    
-    /**
-     * Get all notifications for a user
+     * 3. Lấy danh sách thông báo của User (Có phân trang)
      */
     public List<NotificationDTO> getNotificationsByUserId(String userId, int limit, int offset) {
-        EntityManager em = emf.createEntityManager();
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             TypedQuery<Notification> query = em.createQuery(
                 "SELECT n FROM Notification n WHERE n.userId = :userId ORDER BY n.createdAt DESC",
@@ -80,20 +64,19 @@ public class NotificationService {
             query.setMaxResults(limit);
             query.setFirstResult(offset);
             
-            List<Notification> notifications = query.getResultList();
-            return notifications.stream()
+            return query.getResultList().stream()
                     .map(this::convertToDTO)
                     .collect(Collectors.toList());
         } finally {
             em.close();
         }
     }
-    
+
     /**
-     * Get unread notifications count
+     * 4. Đếm số thông báo chưa đọc (Để hiện số trên icon quả chuông 🔔)
      */
     public long getUnreadCount(String userId) {
-        EntityManager em = emf.createEntityManager();
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             TypedQuery<Long> query = em.createQuery(
                 "SELECT COUNT(n) FROM Notification n WHERE n.userId = :userId AND n.isRead = false",
@@ -105,16 +88,17 @@ public class NotificationService {
             em.close();
         }
     }
-    
+
     /**
-     * Mark notification as read
+     * 5. Đánh dấu đã đọc một thông báo
      */
     public void markAsRead(Long notificationId, String userId) {
-        EntityManager em = emf.createEntityManager();
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             em.getTransaction().begin();
-            
             Notification notification = em.find(Notification.class, notificationId);
+            
+            // Bảo mật: Kiểm tra xem thông báo có đúng của User này không
             if (notification != null && notification.getUserId().equals(userId)) {
                 notification.setIsRead(true);
                 em.merge(notification);
@@ -122,64 +106,34 @@ public class NotificationService {
             
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw new RuntimeException("Failed to mark notification as read", e);
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            throw new RuntimeException(e);
         } finally {
             em.close();
         }
     }
-    
+
     /**
-     * Mark all notifications as read for a user
+     * 6. Đánh dấu tất cả là đã đọc
      */
     public void markAllAsRead(String userId) {
-        EntityManager em = emf.createEntityManager();
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
             em.getTransaction().begin();
-            
             em.createQuery("UPDATE Notification n SET n.isRead = true WHERE n.userId = :userId AND n.isRead = false")
                 .setParameter("userId", userId)
                 .executeUpdate();
-            
             em.getTransaction().commit();
         } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw new RuntimeException("Failed to mark all notifications as read", e);
+            if (em.getTransaction().isActive()) em.getTransaction().rollback();
+            throw new RuntimeException(e);
         } finally {
             em.close();
         }
     }
-    
+
     /**
-     * Delete a notification
-     */
-    public void deleteNotification(Long notificationId, String userId) {
-        EntityManager em = emf.createEntityManager();
-        try {
-            em.getTransaction().begin();
-            
-            Notification notification = em.find(Notification.class, notificationId);
-            if (notification != null && notification.getUserId().equals(userId)) {
-                em.remove(notification);
-            }
-            
-            em.getTransaction().commit();
-        } catch (Exception e) {
-            if (em.getTransaction().isActive()) {
-                em.getTransaction().rollback();
-            }
-            throw new RuntimeException("Failed to delete notification", e);
-        } finally {
-            em.close();
-        }
-    }
-    
-    /**
-     * Convert entity to DTO
+     * Chuyển đổi từ Entity sang DTO (Bảo mật & Tối ưu dữ liệu)
      */
     private NotificationDTO convertToDTO(Notification notification) {
         return new NotificationDTO(

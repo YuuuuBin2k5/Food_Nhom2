@@ -13,7 +13,7 @@ public class AdminProductService {
     }
 
     /**
-     * Lấy Product đầu tiên cần duyệt
+     * Lấy Product đầu tiên cần duyệt (đăng trước duyệt trước - FIFO)
      */
     public Product getFirstPendingProduct() {
         EntityManager em = getEntityManager();
@@ -28,24 +28,6 @@ public class AdminProductService {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Đếm số lượng Product đang chờ duyệt
-     */
-    public long countPendingProducts() {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Long> query = em.createQuery(
-                "SELECT COUNT(p) FROM Product p WHERE p.status = :status", Long.class);
-            query.setParameter("status", ProductStatus.PENDING_APPROVAL);
-            return query.getSingleResult();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
         } finally {
             em.close();
         }
@@ -109,11 +91,8 @@ public class AdminProductService {
             }
             
             product.setStatus(newStatus);
-            if (newStatus == ProductStatus.ACTIVE) {
-                product.setApprovedDate(new java.util.Date());
-            } else {
-                product.setApprovedDate(null);
-            }
+            // Lưu ngày kiểm duyệt cho cả duyệt và từ chối
+            product.setApprovedDate(new java.util.Date());
             em.merge(product);
             tx.commit();
             return 0; // Thành công
@@ -142,9 +121,35 @@ public class AdminProductService {
     }
 
     /**
-     * Lấy danh sách Product theo trạng thái (sắp xếp cũ nhất trước - ai đăng trước duyệt trước)
+     * Lấy danh sách Product theo trạng thái (sắp xếp cũ nhất trước - FIFO cho pending)
      */
     public List<Product> getProductsByStatus(ProductStatus status) {
+        EntityManager em = getEntityManager();
+        try {
+            // Pending: cũ nhất trước (FIFO), Others: mới nhất trước
+            String orderBy = (status == ProductStatus.PENDING_APPROVAL) ? 
+                "ORDER BY p.createdDate ASC" : 
+                "ORDER BY p.createdDate DESC";
+                
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status " + orderBy, 
+                Product.class);
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new java.util.ArrayList<>();
+        } finally {
+            em.close();
+        }
+    }
+
+    // ==================== SORT METHODS ====================
+
+    /**
+     * Lấy products theo trạng thái, sắp xếp theo ngày cũ nhất trước
+     */
+    public List<Product> getProductsByStatusSortOldest(ProductStatus status) {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
@@ -161,27 +166,123 @@ public class AdminProductService {
     }
 
     /**
-     * Lấy product đang chờ duyệt
+     * Lấy products theo trạng thái, sắp xếp theo ngày mới nhất trước
      */
-    public List<Product> getPendingProducts() {
-        return getProductsByStatus(ProductStatus.PENDING_APPROVAL);
+    public List<Product> getProductsByStatusSortNewest(ProductStatus status) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.createdDate DESC", 
+                Product.class);
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new java.util.ArrayList<>();
+        } finally {
+            em.close();
+        }
     }
 
     /**
-     * Lấy product bị từ chối
+     * Lấy products theo trạng thái, sắp xếp theo tên sản phẩm A-Z
      */
-    public List<Product> getRejectedProducts() {
-        return getProductsByStatus(ProductStatus.REJECTED);
+    public List<Product> getProductsByStatusSortByName(ProductStatus status) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.name ASC", 
+                Product.class);
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new java.util.ArrayList<>();
+        } finally {
+            em.close();
+        }
     }
 
     /**
-     * Lấy product đã duyệt (ACTIVE)
+     * Lấy products theo trạng thái, sắp xếp theo tên shop A-Z
      */
-    public List<Product> getActiveProducts() {
-        return getProductsByStatus(ProductStatus.ACTIVE);
+    public List<Product> getProductsByStatusSortByShop(ProductStatus status) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.seller.shopName ASC", 
+                Product.class);
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new java.util.ArrayList<>();
+        } finally {
+            em.close();
+        }
     }
 
-    // ==================== PHÂN TRANG ====================
+    /**
+     * Lấy tất cả products, sắp xếp theo ngày cũ nhất trước
+     */
+    public List<Product> getAllProductsSortOldest() {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.createdDate ASC", 
+                Product.class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy tất cả products, sắp xếp theo ngày mới nhất trước
+     */
+    public List<Product> getAllProductsSortNewest() {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.createdDate DESC", 
+                Product.class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy tất cả products, sắp xếp theo tên sản phẩm A-Z
+     */
+    public List<Product> getAllProductsSortByName() {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.name ASC", 
+                Product.class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy tất cả products, sắp xếp theo tên shop A-Z
+     */
+    public List<Product> getAllProductsSortByShop() {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Product> query = em.createQuery(
+                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.seller.shopName ASC", 
+                Product.class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    // ==================== THỐNG KÊ ====================
 
     /**
      * Đếm tổng số product theo trạng thái
@@ -211,47 +312,6 @@ public class AdminProductService {
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy danh sách Product theo trạng thái có phân trang
-     */
-    public List<Product> getProductsByStatus(ProductStatus status, int page, int pageSize) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.createdDate ASC", 
-                Product.class);
-            query.setParameter("status", status);
-            query.setFirstResult((page - 1) * pageSize);
-            query.setMaxResults(pageSize);
-            return query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new java.util.ArrayList<>();
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy tất cả Product có phân trang
-     */
-    public List<Product> getAllProducts(int page, int pageSize) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.createdDate DESC", 
-                Product.class);
-            query.setFirstResult((page - 1) * pageSize);
-            query.setMaxResults(pageSize);
-            return query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new java.util.ArrayList<>();
         } finally {
             em.close();
         }

@@ -31,10 +31,26 @@ public class CheckoutServlet extends HttpServlet {
         }
         
         List<CartItemDTO> cart = (List<CartItemDTO>) session.getAttribute("cart");
+        
         if (cart == null || cart.isEmpty()) {
             response.sendRedirect(request.getContextPath() + "/cart");
             return;
         }
+        
+        // Set cart items and calculate totals for JSP
+        request.setAttribute("cartItems", cart);
+        
+        // Calculate subtotal
+        double subtotal = cart.stream()
+            .mapToDouble(item -> item.getProduct().getSalePrice() * item.getQuantity())
+            .sum();
+        
+        double shippingFee = 30000; // Fixed shipping fee
+        double total = subtotal + shippingFee;
+        
+        request.setAttribute("subtotal", subtotal);
+        request.setAttribute("shippingFee", shippingFee);
+        request.setAttribute("total", total);
         
         // Set menu items for buyer
         MenuHelper.setMenuItems(request, "BUYER", "/checkout");
@@ -76,6 +92,17 @@ public class CheckoutServlet extends HttpServlet {
             checkoutRequest.setPaymentMethod(paymentMethod);
             checkoutRequest.setItems(cart);
             
+            // Check if payment method is BANKING (VNPay uses BANKING in DB)
+            if ("BANKING".equals(paymentMethod)) {
+                // Store checkout request in session for VNPayServlet
+                session.setAttribute("checkoutRequest", checkoutRequest);
+                
+                // Redirect to VNPay payment
+                response.sendRedirect(request.getContextPath() + "/vnpay");
+                return;
+            }
+            
+            // ✅ COD payment - Process normally
             List<String> orderIds = orderService.placeOrder(checkoutRequest);
             
             // Clear cart
