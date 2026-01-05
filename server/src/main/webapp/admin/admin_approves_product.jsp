@@ -3,12 +3,13 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Duyệt Product - Admin</title>
-    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/admin_main.css">
-    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/admin_approves_product.css">
+    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/admin_css/admin_main.css">
+    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/admin_css/admin_approves_product.css">
 </head>
 <body>
 
@@ -50,23 +51,36 @@
                         </div>
                         <div class="info-row">
                             <div class="info-item"><span class="label">Ngày đăng</span><span class="value"><fmt:formatDate value="${product.createdDate}" pattern="dd/MM/yyyy HH:mm"/></span></div>
-                            <div class="info-item"><span class="label">Ngày duyệt</span><span class="value"><fmt:formatDate value="${product.approvedDate}" pattern="dd/MM/yyyy HH:mm"/></span></div>
+                            <div class="info-item"><span class="label">Ngày kiểm duyệt</span><span class="value"><fmt:formatDate value="${product.approvedDate}" pattern="dd/MM/yyyy HH:mm"/></span></div>
                         </div>
-                        <div class="info-item"><span class="label">Trạng thái</span><span class="value status-${product.status.toString().toLowerCase()}">${product.status}</span></div>
+                        <div class="info-item">
+                            <span class="label">Trạng thái</span>
+                            <span class="value status-${product.status.toString().toLowerCase()}">
+                                <c:choose>
+                                    <c:when test="${product.status.name() == 'ACTIVE'}">Đã duyệt</c:when>
+                                    <c:when test="${product.status.name() == 'PENDING_APPROVAL'}">Chờ duyệt</c:when>
+                                    <c:when test="${product.status.name() == 'REJECTED'}">Từ chối</c:when>
+                                    <c:when test="${product.status.name() == 'HIDDEN'}">Đã ẩn</c:when>
+                                    <c:otherwise>${product.status}</c:otherwise>
+                                </c:choose>
+                            </span>
+                        </div>
                     </div>
                     <div class="approval-actions">
+                    <c:if test="${product.status.name() == 'PENDING_APPROVAL'}">
                         <form action="${pageContext.request.contextPath}/admin/approveProduct" method="post">
                             <input type="hidden" name="action" value="approve">
                             <input type="hidden" name="productId" value="${product.productId}">
                             <input type="hidden" name="productName" value="${product.name}">
-                            <button type="submit" class="btn btn-approve">Duyệt</button>
+                            <button type="submit" class="btn btn-approve"><span>Duyệt</span></button>
                         </form>
                         <form action="${pageContext.request.contextPath}/admin/approveProduct" method="post">
                             <input type="hidden" name="action" value="reject">
                             <input type="hidden" name="productId" value="${product.productId}">
                             <input type="hidden" name="productName" value="${product.name}">
-                            <button type="submit" class="btn btn-reject">Từ chối</button>
+                            <button type="submit" class="btn btn-reject"><span>Từ chối</span></button>
                         </form>
+                    </c:if>
                     </div>
                 </div>
                 <div class="approval-image">
@@ -86,21 +100,49 @@
 
 
 <section class="product-list-section">
-    <div class="tabs">
-        <a href="${pageContext.request.contextPath}/admin/approveProduct?tab=pending" class="tab-btn ${currentTab == 'pending' ? 'active' : ''}">Chờ duyệt (${pendingCount})</a>
-        <a href="${pageContext.request.contextPath}/admin/approveProduct?tab=rejected" class="tab-btn ${currentTab == 'rejected' ? 'active' : ''}">Từ chối (${rejectedCount})</a>
-        <a href="${pageContext.request.contextPath}/admin/approveProduct?tab=active" class="tab-btn ${currentTab == 'active' ? 'active' : ''}">Đã duyệt (${activeCount})</a>
-        <a href="${pageContext.request.contextPath}/admin/approveProduct?tab=all" class="tab-btn ${currentTab == 'all' ? 'active' : ''}">Tất cả (${allCount})</a>
-    </div>
+    <form action="${pageContext.request.contextPath}/admin/approveProduct" method="get" class="filter-bar">
+        <div class="filter-group">
+            <label for="tab">Trạng thái:</label>
+            <select id="tab" name="tab" onchange="this.form.submit()">
+                <option value="pending" ${currentTab == 'pending' ? 'selected' : ''}>Chờ duyệt</option>
+                <option value="rejected" ${currentTab == 'rejected' ? 'selected' : ''}>Từ chối</option>
+                <option value="active" ${currentTab == 'active' ? 'selected' : ''}>Đã duyệt</option>
+                <option value="hidden" ${currentTab == 'hidden' ? 'selected' : ''}>Đã ẩn</option>
+                <option value="all" ${currentTab == 'all' ? 'selected' : ''}>Tất cả</option>
+            </select>   
+        </div>
+        <div class="filter-group">
+            <label for="sort">Sắp xếp:</label>
+            <select id="sort" name="sort" onchange="this.form.submit()">
+                <option value="newest" ${currentSort == 'newest' ? 'selected' : ''}>Mới nhất</option>
+                <option value="oldest" ${currentSort == 'oldest' ? 'selected' : ''}>Cũ nhất</option>
+                <option value="name" ${currentSort == 'name' ? 'selected' : ''}>Theo tên sản phẩm</option>
+                <option value="shop" ${currentSort == 'shop' ? 'selected' : ''}>Theo tên shop</option>
+            </select>
+        </div>
+        <div class="filter-count">
+            <strong>${productList.size()}</strong>
+        </div>
+    </form>
     
     <c:choose>
         <c:when test="${not empty productList}">
             <div class="table-wrapper">
                 <table class="product-table">
-                    <thead><tr><th>Sản phẩm</th><th>Shop</th><th>Chủ shop</th><th>Giá bán</th><th>Ngày đăng</th><th>Ngày duyệt</th><th>Trạng thái</th></tr></thead>
+                    <thead>
+                        <tr>
+                            <th>Sản phẩm</th>
+                            <th>Shop</th>
+                            <th>Chủ shop</th>
+                            <th>Giá bán</th>
+                            <th>Ngày đăng</th>
+                            <th>Ngày kiểm duyệt</th>
+                            <th>Trạng thái</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         <c:forEach var="p" items="${productList}">
-                            <tr onclick="window.location='${pageContext.request.contextPath}/admin/approveProduct?action=detail&productId=${p.productId}&tab=${currentTab}'" class="clickable-row">
+                            <tr onclick="window.location='${pageContext.request.contextPath}/admin/approveProduct?action=detail&productId=${p.productId}&tab=${currentTab}&sort=${currentSort}'" class="clickable-row">
                                 <td>${p.name}</td>
                                 <td>${p.seller.shopName}</td>
                                 <td>${p.seller.fullName}</td>
@@ -112,6 +154,7 @@
                                         <c:when test="${p.status.name() == 'ACTIVE'}"><span class="status-badge status-active">Đã duyệt</span></c:when>
                                         <c:when test="${p.status.name() == 'PENDING_APPROVAL'}"><span class="status-badge status-pending_approval">Chờ duyệt</span></c:when>
                                         <c:when test="${p.status.name() == 'REJECTED'}"><span class="status-badge status-rejected">Từ chối</span></c:when>
+                                        <c:when test="${p.status.name() == 'HIDDEN'}"><span class="status-badge status-hidden">Đã ẩn</span></c:when>
                                         <c:otherwise><span class="status-badge">${p.status}</span></c:otherwise>
                                     </c:choose>
                                 </td>
@@ -129,12 +172,35 @@
 </div>
 
 <script>
+/* Lightbox for image zoom */
 let zoomLevel = 1;
-function openLightbox(src) { zoomLevel = 1; document.getElementById('lightbox-img').src = src; document.getElementById('lightbox-img').style.transform = 'scale(1)'; document.getElementById('lightbox').style.display = 'flex'; }
-function closeLightbox() { document.getElementById('lightbox').style.display = 'none'; zoomLevel = 1; }
-document.getElementById('lightbox-img').addEventListener('click', function(e) { e.stopPropagation(); });
-document.getElementById('lightbox').addEventListener('wheel', function(e) { e.preventDefault(); zoomLevel = e.deltaY < 0 ? Math.min(4, zoomLevel + 0.2) : Math.max(0.5, zoomLevel - 0.2); document.getElementById('lightbox-img').style.transform = 'scale(' + zoomLevel + ')'; });
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeLightbox(); });
+
+function openLightbox(src) {
+    zoomLevel = 1;
+    const img = document.getElementById('lightbox-img');
+    img.src = src;
+    img.style.transform = 'scale(1)';
+    document.getElementById('lightbox').style.display = 'flex';
+}
+
+function closeLightbox() {
+    document.getElementById('lightbox').style.display = 'none';
+    zoomLevel = 1;
+}
+
+document.getElementById('lightbox-img').addEventListener('click', function(e) {
+    e.stopPropagation();
+});
+
+document.getElementById('lightbox').addEventListener('wheel', function(e) {
+    e.preventDefault();
+    zoomLevel = e.deltaY < 0 ? Math.min(4, zoomLevel + 0.2) : Math.max(0.5, zoomLevel - 0.2);
+    document.getElementById('lightbox-img').style.transform = 'scale(' + zoomLevel + ')';
+});
+
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+});
 </script>
 </body>
 </html>

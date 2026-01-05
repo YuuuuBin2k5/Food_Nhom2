@@ -1,12 +1,16 @@
 package com.ecommerce.util;
 
+import com.ecommerce.service.CartService;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpSession;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MenuHelper {
+    
+    private static final CartService cartService = new CartService();
     
     public static void setMenuItems(HttpServletRequest request, String role, String currentPath) {
         List<Map<String, String>> menuItems = new ArrayList<>();
@@ -16,6 +20,12 @@ public class MenuHelper {
                 menuItems.add(createMenuItem("/home", "Trang chủ", "🏠"));
                 menuItems.add(createMenuItem("/products", "Sản phẩm", "🛍️"));
                 menuItems.add(createMenuItem("/orders", "Đơn hàng", "📦"));
+                // Set cart count for buyer
+                HttpSession session = request.getSession(false);
+                if (session != null) {
+                    int cartCount = cartService.getCartCount(session);
+                    request.setAttribute("cartCount", cartCount);
+                }
                 break;
                 
             case "SELLER":
@@ -26,7 +36,9 @@ public class MenuHelper {
                 break;
                 
             case "SHIPPER":
-                menuItems.add(createMenuItem("/shipper/orders", "Đơn giao hàng", "🚚"));
+                menuItems.add(createMenuItem("/shipper/orders", "Đơn có sẵn", "📦"));
+                menuItems.add(createMenuItem("/shipper/delivering", "Đang giao", "🚚"));
+                menuItems.add(createMenuItem("/shipper/history", "Lịch sử", "📋"));
                 break;
                 
             case "ADMIN":

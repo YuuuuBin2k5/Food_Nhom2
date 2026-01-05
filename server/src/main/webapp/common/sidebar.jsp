@@ -320,14 +320,26 @@
             }
 
             .mobile-menu-btn {
-                display: block;
+                display: flex;
+                align-items: center;
+                justify-content: center;
                 padding: 0.5rem;
-                color: white;
+                color: #c2410c;
                 border-radius: 0.5rem;
-                transition: background-color 0.2s;
+                transition: all 0.2s;
                 border: none;
-                background: transparent;
+                background: rgba(254, 215, 170, 0.5);
                 cursor: pointer;
+                width: 40px;
+                height: 40px;
+            }
+
+            .mobile-menu-btn:hover {
+                background: rgba(254, 215, 170, 0.8);
+            }
+
+            .mobile-menu-btn:active {
+                transform: scale(0.95);
             }
 
             @media (min-width: 768px) {
@@ -337,15 +349,33 @@
             }
 
             .mobile-menu {
-                display: block;
+                display: none;
                 padding: 1rem 0;
-                border-top: 1px solid rgba(251, 146, 60, 0.5);
-                background: linear-gradient(to bottom, rgba(255, 247, 237, 0.5), rgba(254, 243, 199, 0.5));
+                border-top: 1px solid rgba(251, 146, 60, 0.3);
+                background: linear-gradient(to bottom, rgba(255, 247, 237, 0.98), rgba(254, 243, 199, 0.98));
+                max-height: calc(100vh - 96px);
+                overflow-y: auto;
+                animation: slideDown 0.3s ease-out;
+            }
+
+            .mobile-menu.show {
+                display: block;
+            }
+
+            @keyframes slideDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
 
             @media (min-width: 768px) {
                 .mobile-menu {
-                    display: none;
+                    display: none !important;
                 }
             }
 
@@ -353,19 +383,29 @@
                 display: flex;
                 align-items: center;
                 gap: 0.75rem;
-                padding: 0.75rem 1rem;
-                margin: 0 0.5rem;
+                padding: 1rem 1.25rem;
+                margin: 0.25rem 0.75rem;
                 color: #374151;
                 text-decoration: none;
-                border-radius: 0.5rem;
+                border-radius: 0.75rem;
                 transition: all 0.2s;
-                font-weight: 500;
+                font-weight: 600;
+                font-size: 1rem;
             }
 
             .mobile-nav-link:hover,
             .mobile-nav-link.active {
                 color: #ea580c;
-                background-color: rgba(254, 215, 170, 0.5);
+                background-color: rgba(254, 215, 170, 0.6);
+            }
+
+            .mobile-nav-link.active {
+                background-color: rgba(254, 215, 170, 0.8);
+                box-shadow: 0 2px 4px rgba(251, 146, 60, 0.2);
+            }
+
+            .mobile-nav-link span {
+                font-size: 1.25rem;
             }
         </style>
 
@@ -472,10 +512,10 @@
                     </c:if>
 
                     <!-- Mobile Menu Button -->
-                    <button class="mobile-menu-btn" onclick="toggleMobileMenu()">
-                        <svg style="width: 1.5rem; height: 1.5rem;" fill="none" viewBox="0 0 24 24"
+                    <button class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Menu">
+                        <svg style="width: 1.5rem; height: 1.5rem; color: #c2410c;" fill="none" viewBox="0 0 24 24"
                             stroke="currentColor">
-                            <path id="menuIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            <path id="menuIcon" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
                                 d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
                     </button>
@@ -483,11 +523,11 @@
             </div>
 
             <!-- Mobile Menu -->
-            <div class="mobile-menu" id="mobileMenu" style="display: none;">
+            <div class="mobile-menu" id="mobileMenu">
                 <c:forEach items="${menuItems}" var="item">
                     <a href="${pageContext.request.contextPath}${item.path}"
                         class="mobile-nav-link ${currentPath == item.path ? 'active' : ''}">
-                        <span style="font-size: 1.125rem;">${item.icon}</span>
+                        <span>${item.icon}</span>
                         ${item.label}
                     </a>
                 </c:forEach>
@@ -546,13 +586,40 @@
             function toggleMobileMenu() {
                 const mobileMenu = document.getElementById('mobileMenu');
                 const menuIcon = document.getElementById('menuIcon');
+                const isOpen = mobileMenu.classList.contains('show');
 
-                if (mobileMenu.style.display === 'none' || mobileMenu.style.display === '') {
-                    mobileMenu.style.display = 'block';
+                if (!isOpen) {
+                    mobileMenu.classList.add('show');
                     menuIcon.setAttribute('d', 'M6 18L18 6M6 6l12 12');
                 } else {
-                    mobileMenu.style.display = 'none';
+                    mobileMenu.classList.remove('show');
                     menuIcon.setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
                 }
             }
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', (e) => {
+                const mobileMenu = document.getElementById('mobileMenu');
+                const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+                const sidebar = document.getElementById('sidebar');
+
+                if (mobileMenu && mobileMenuBtn && 
+                    !mobileMenuBtn.contains(e.target) && 
+                    !mobileMenu.contains(e.target) &&
+                    mobileMenu.classList.contains('show')) {
+                    mobileMenu.classList.remove('show');
+                    document.getElementById('menuIcon').setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+                }
+            });
+
+            // Close mobile menu on window resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth >= 768) {
+                    const mobileMenu = document.getElementById('mobileMenu');
+                    if (mobileMenu) {
+                        mobileMenu.classList.remove('show');
+                        document.getElementById('menuIcon').setAttribute('d', 'M4 6h16M4 12h16M4 18h16');
+                    }
+                }
+            });
         </script>

@@ -34,24 +34,6 @@ public class AdminSellerService {
     }
 
     /**
-     * Đếm số lượng Seller đang chờ duyệt
-     */
-    public long countPendingSellers() {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Long> query = em.createQuery(
-                "SELECT COUNT(s) FROM Seller s WHERE s.verificationStatus = :status", Long.class);
-            query.setParameter("status", SellerStatus.PENDING);
-            return query.getSingleResult();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0;
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
      * Tìm Seller theo ID
      */
     public Seller findById(String sellerId) {
@@ -104,11 +86,8 @@ public class AdminSellerService {
             }
             
             seller.setVerificationStatus(newStatus);
-            if (newStatus == SellerStatus.APPROVED) {
-                seller.setLicenseApprovedDate(new java.util.Date());
-            } else {
-                seller.setLicenseApprovedDate(null);
-            }
+            // Lưu ngày kiểm duyệt cho cả duyệt và từ chối
+            seller.setLicenseApprovedDate(new java.util.Date());
             em.merge(seller);
             tx.commit();
             return 0; // Thành công
@@ -137,9 +116,35 @@ public class AdminSellerService {
     }
 
     /**
-     * Lấy danh sách Seller theo trạng thái (sắp xếp cũ nhất trước - ai đến trước duyệt trước)
+     * Lấy tất cả Seller theo trạng thái (sắp xếp cũ nhất trước - FIFO cho pending)
      */
-    public List<Seller> getSellersByStatus(SellerStatus status) {
+    public List<Seller> getAllSellersByStatus(SellerStatus status) {
+        EntityManager em = getEntityManager();
+        try {
+            // Pending: cũ nhất trước (FIFO), Others: mới nhất trước
+            String orderBy = (status == SellerStatus.PENDING) ? 
+                "ORDER BY s.licenseSubmittedDate ASC" : 
+                "ORDER BY s.licenseSubmittedDate DESC";
+                
+            TypedQuery<Seller> query = em.createQuery(
+                "SELECT s FROM Seller s WHERE s.verificationStatus = :status " + orderBy, 
+                Seller.class);
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new java.util.ArrayList<>();
+        } finally {
+            em.close();
+        }
+    }
+
+    // ==================== SORT METHODS ====================
+
+    /**
+     * Lấy sellers theo trạng thái, sắp xếp theo ngày cũ nhất trước
+     */
+    public List<Seller> getAllSellersByStatusSortOldest(SellerStatus status) {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Seller> query = em.createQuery(
@@ -156,34 +161,123 @@ public class AdminSellerService {
     }
 
     /**
-     * Lấy seller đã duyệt
+     * Lấy sellers theo trạng thái, sắp xếp theo ngày mới nhất trước
      */
-    public List<Seller> getApprovedSellers() {
-        return getSellersByStatus(SellerStatus.APPROVED);
+    public List<Seller> getAllSellersByStatusSortNewest(SellerStatus status) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Seller> query = em.createQuery(
+                "SELECT s FROM Seller s WHERE s.verificationStatus = :status ORDER BY s.licenseSubmittedDate DESC", 
+                Seller.class);
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new java.util.ArrayList<>();
+        } finally {
+            em.close();
+        }
     }
 
     /**
-     * Lấy seller đang chờ duyệt
+     * Lấy sellers theo trạng thái, sắp xếp theo tên chủ shop A-Z
      */
-    public List<Seller> getPendingSellers() {
-        return getSellersByStatus(SellerStatus.PENDING);
+    public List<Seller> getAllSellersByStatusSortByName(SellerStatus status) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Seller> query = em.createQuery(
+                "SELECT s FROM Seller s WHERE s.verificationStatus = :status ORDER BY s.fullName ASC", 
+                Seller.class);
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new java.util.ArrayList<>();
+        } finally {
+            em.close();
+        }
     }
 
     /**
-     * Lấy seller bị từ chối
+     * Lấy sellers theo trạng thái, sắp xếp theo tên shop A-Z
      */
-    public List<Seller> getRejectedSellers() {
-        return getSellersByStatus(SellerStatus.REJECTED);
+    public List<Seller> getAllSellersByStatusSortByShop(SellerStatus status) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Seller> query = em.createQuery(
+                "SELECT s FROM Seller s WHERE s.verificationStatus = :status ORDER BY s.shopName ASC", 
+                Seller.class);
+            query.setParameter("status", status);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new java.util.ArrayList<>();
+        } finally {
+            em.close();
+        }
     }
 
     /**
-     * Lấy seller chưa đăng giấy phép
+     * Lấy tất cả sellers, sắp xếp theo ngày cũ nhất trước
      */
-    public List<Seller> getUnverifiedSellers() {
-        return getSellersByStatus(SellerStatus.UNVERIFIED);
+    public List<Seller> getAllSellersSortOldest() {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Seller> query = em.createQuery(
+                "SELECT s FROM Seller s ORDER BY s.licenseSubmittedDate ASC", 
+                Seller.class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
     }
 
-    // ==================== PHÂN TRANG ====================
+    /**
+     * Lấy tất cả sellers, sắp xếp theo ngày mới nhất trước
+     */
+    public List<Seller> getAllSellersSortNewest() {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Seller> query = em.createQuery(
+                "SELECT s FROM Seller s ORDER BY s.licenseSubmittedDate DESC", 
+                Seller.class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy tất cả sellers, sắp xếp theo tên chủ shop A-Z
+     */
+    public List<Seller> getAllSellersSortByName() {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Seller> query = em.createQuery(
+                "SELECT s FROM Seller s ORDER BY s.fullName ASC", 
+                Seller.class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy tất cả sellers, sắp xếp theo tên shop A-Z
+     */
+    public List<Seller> getAllSellersSortByShop() {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<Seller> query = em.createQuery(
+                "SELECT s FROM Seller s ORDER BY s.shopName ASC", 
+                Seller.class);
+            return query.getResultList();
+        } finally {
+            em.close();
+        }
+    }
+
+    // ==================== THỐNG KÊ ====================
 
     /**
      * Đếm tổng số seller theo trạng thái
@@ -213,47 +307,6 @@ public class AdminSellerService {
         } catch (Exception e) {
             e.printStackTrace();
             return 0;
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy danh sách Seller theo trạng thái có phân trang
-     */
-    public List<Seller> getSellersByStatus(SellerStatus status, int page, int pageSize) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s WHERE s.verificationStatus = :status ORDER BY s.licenseSubmittedDate ASC", 
-                Seller.class);
-            query.setParameter("status", status);
-            query.setFirstResult((page - 1) * pageSize);
-            query.setMaxResults(pageSize);
-            return query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new java.util.ArrayList<>();
-        } finally {
-            em.close();
-        }
-    }
-
-    /**
-     * Lấy tất cả Seller có phân trang
-     */
-    public List<Seller> getAllSellers(int page, int pageSize) {
-        EntityManager em = getEntityManager();
-        try {
-            TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s ORDER BY s.licenseSubmittedDate DESC", 
-                Seller.class);
-            query.setFirstResult((page - 1) * pageSize);
-            query.setMaxResults(pageSize);
-            return query.getResultList();
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new java.util.ArrayList<>();
         } finally {
             em.close();
         }

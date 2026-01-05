@@ -434,7 +434,6 @@ h6 { font-size: 1rem; font-weight: 600; line-height: 1.5; }
 
 /* Main Content Area */
 .main-content {
-    padding-top: 96px;
     min-height: 100vh;
     background: linear-gradient(to bottom right, #fff7ed, #fef3c7, #fef9c3);
 }
@@ -1660,9 +1659,6 @@ textarea.form-control {
 
 /* Responsive */
 @media (max-width: 768px) {
-    .main-content {
-        padding-top: 80px;
-    }
     
     .header-banner {
         padding: 1.5rem 0;

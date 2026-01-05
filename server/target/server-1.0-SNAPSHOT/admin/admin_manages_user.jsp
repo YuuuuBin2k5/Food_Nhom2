@@ -3,12 +3,13 @@
 <%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản lí User - Admin</title>
-    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/admin_main.css">
-    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/admin_manages_user.css">
+    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/admin_css/admin_main.css">
+    <link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/css/admin_css/admin_manages_user.css">
 </head>
 <body>
 
@@ -60,20 +61,26 @@
 </section>
 
 <section class="user-list-section">
-    <div class="search-bar">
-        <form action="${pageContext.request.contextPath}/admin/manageUser" method="get" class="search-form">
+    <form action="${pageContext.request.contextPath}/admin/manageUser" method="get" class="filter-bar">
+        <div class="search-group">
             <input type="hidden" name="action" value="search">
             <input type="text" name="keyword" class="search-input" placeholder="Tìm theo tên, email..." value="${keyword}">
             <button type="submit" class="btn btn-search">Tìm kiếm</button>
-        </form>
-        <div class="filter-buttons">
-            <a href="${pageContext.request.contextPath}/admin/manageUser?filter=all" class="filter-btn ${filter == 'all' || empty filter ? 'active' : ''}">Tất cả</a>
-            <a href="${pageContext.request.contextPath}/admin/manageUser?filter=sellers" class="filter-btn ${filter == 'sellers' ? 'active' : ''}">Sellers</a>
-            <a href="${pageContext.request.contextPath}/admin/manageUser?filter=buyers" class="filter-btn ${filter == 'buyers' ? 'active' : ''}">Buyers</a>
-            <a href="${pageContext.request.contextPath}/admin/manageUser?filter=shippers" class="filter-btn ${filter == 'shippers' ? 'active' : ''}">Shippers</a>
-            <a href="${pageContext.request.contextPath}/admin/manageUser?filter=banned" class="filter-btn ${filter == 'banned' ? 'active' : ''}">Đã ban</a>
         </div>
-    </div>
+        <div class="filter-group">
+            <label for="filter">Loại:</label>
+            <select id="filter" name="filter" onchange="this.form.submit()">
+                <option value="all" ${filter == 'all' || empty filter ? 'selected' : ''}>Tất cả</option>
+                <option value="sellers" ${filter == 'sellers' ? 'selected' : ''}>Sellers</option>
+                <option value="buyers" ${filter == 'buyers' ? 'selected' : ''}>Buyers</option>
+                <option value="shippers" ${filter == 'shippers' ? 'selected' : ''}>Shippers</option>
+                <option value="banned" ${filter == 'banned' ? 'selected' : ''}>Đã ban</option>
+            </select>
+        </div>
+        <div class="filter-count">
+            <strong>${sellers.size() + buyers.size() + shippers.size()}</strong>
+        </div>
+    </form>
 
     <div class="table-wrapper">
         <c:if test="${empty sellers && empty buyers && empty shippers}">
@@ -82,7 +89,15 @@
         
         <c:if test="${not empty sellers || not empty buyers || not empty shippers}">
             <table class="user-table">
-                <thead><tr><th>Tên</th><th>Role</th><th>Email</th><th>SĐT</th><th>Trạng thái</th><th>Hành động</th></tr></thead>
+                <thead>
+                    <tr><th>Tên</th>
+                        <th>Role</th>
+                        <th>Email</th>
+                        <th>SĐT</th>
+                        <th>Trạng thái</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
                 <tbody>
                     <c:forEach var="s" items="${sellers}">
                         <tr class="${s.banned ? 'banned-row' : ''} ${s.userId == selectedUserId ? 'selected-row' : ''}"
@@ -170,5 +185,6 @@
 </section>
 
 </div>
+
 </body>
 </html>
