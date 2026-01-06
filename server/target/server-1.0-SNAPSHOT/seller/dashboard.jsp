@@ -116,11 +116,6 @@
                             </div>
                             <div class="stat-label">Tổng doanh thu</div>
                         </div>
-
-                        <div class="stat-card">
-                            <div class="stat-number">${todayOrders}</div>
-                            <div class="stat-label">Đơn hôm nay</div>
-                        </div>
                     </div>
 
                     <!-- Warning for expiring products -->

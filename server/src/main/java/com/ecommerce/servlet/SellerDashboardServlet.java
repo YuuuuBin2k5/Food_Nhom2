@@ -12,6 +12,7 @@ import com.ecommerce.entity.Product;
 import com.ecommerce.entity.ProductStatus;
 import com.ecommerce.entity.User;
 import com.ecommerce.service.ProductService;
+import com.ecommerce.service.OrderService;
 import com.ecommerce.util.MenuHelper;
 
 import jakarta.servlet.ServletException;
@@ -25,6 +26,7 @@ import jakarta.servlet.http.HttpSession;
 public class SellerDashboardServlet extends HttpServlet {
 
     private ProductService productService = new ProductService();
+    private OrderService orderService = new OrderService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -90,8 +92,16 @@ public class SellerDashboardServlet extends HttpServlet {
 
             // Set safe defaults for order-related stats
             long pendingOrders = 0;
-            long todayOrders = 0;
             double totalRevenue = 0.0;
+
+            // Tính tổng doanh thu từ các đơn hàng DELIVERED
+            try {
+                totalRevenue = orderService.calculateSellerRevenue(sellerId);
+                System.out.println("[SellerDashboard] Total revenue calculated: " + totalRevenue);
+            } catch (Exception e) {
+                System.err.println("[SellerDashboard] Error calculating revenue: " + e.getMessage());
+                totalRevenue = 0.0;
+            }
 
             // Get recent products safely
             List<Product> recentProducts = products.stream()
@@ -104,13 +114,13 @@ public class SellerDashboardServlet extends HttpServlet {
             System.out.println("  - Total products: " + totalProducts);
             System.out.println("  - Active products: " + activeProducts);
             System.out.println("  - Expiring soon: " + expiringSoon);
+            System.out.println("  - Total revenue: " + totalRevenue);
 
             // Set attributes
             request.setAttribute("totalProducts", totalProducts);
             request.setAttribute("activeProducts", activeProducts);
             request.setAttribute("expiringSoon", expiringSoon);
             request.setAttribute("pendingOrders", pendingOrders);
-            request.setAttribute("todayOrders", todayOrders);
             request.setAttribute("totalRevenue", totalRevenue);
             request.setAttribute("recentProducts", recentProducts);
             request.setAttribute("recentOrders", recentOrders);
@@ -127,7 +137,6 @@ public class SellerDashboardServlet extends HttpServlet {
             request.setAttribute("activeProducts", 0L);
             request.setAttribute("expiringSoon", 0L);
             request.setAttribute("pendingOrders", 0L);
-            request.setAttribute("todayOrders", 0L);
             request.setAttribute("totalRevenue", 0.0);
             request.setAttribute("recentProducts", new ArrayList<>());
             request.setAttribute("recentOrders", new ArrayList<>());
