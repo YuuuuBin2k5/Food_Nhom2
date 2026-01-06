@@ -2,7 +2,11 @@ package com.ecommerce.servlet.buyer;
 
 import com.ecommerce.entity.Order;
 import com.ecommerce.entity.OrderStatus;
+import com.ecommerce.entity.UserLog;
+import com.ecommerce.entity.ActionType;
+import com.ecommerce.entity.Role;
 import com.ecommerce.service.OrderService;
+import com.ecommerce.service.UserLogService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -15,6 +19,7 @@ import java.io.IOException;
 public class CancelOrderServlet extends HttpServlet {
 
     private final OrderService orderService = new OrderService();
+    private final UserLogService userLogService = new UserLogService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -50,6 +55,12 @@ public class CancelOrderServlet extends HttpServlet {
             }
             
             orderService.updateOrderStatus(orderId, OrderStatus.CANCELLED);
+            
+            // Tạo log cho BUYER_CANCEL_ORDER
+            UserLog log = new UserLog(userId, Role.BUYER, ActionType.BUYER_CANCEL_ORDER,
+                "Buyer hủy đơn hàng #" + orderId, orderId.toString(), "ORDER", null);
+            userLogService.save(log);
+            
             response.sendRedirect(request.getContextPath() + "/my-orders?message=Order cancelled successfully");
             
         } catch (Exception e) {

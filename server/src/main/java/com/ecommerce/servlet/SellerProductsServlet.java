@@ -8,7 +8,11 @@ import java.util.List;
 import com.ecommerce.dto.ProductDTO;
 import com.ecommerce.entity.Product;
 import com.ecommerce.entity.User;
+import com.ecommerce.entity.UserLog;
+import com.ecommerce.entity.ActionType;
+import com.ecommerce.entity.Role;
 import com.ecommerce.service.ProductService;
+import com.ecommerce.service.UserLogService;
 import com.ecommerce.util.MenuHelper;
 
 import jakarta.servlet.ServletException;
@@ -23,6 +27,7 @@ public class SellerProductsServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     private ProductService productService = new ProductService();
+    private UserLogService userLogService = new UserLogService();
 
     // --- XỬ LÝ GET: HIỂN THỊ DANH SÁCH ---
     @Override
@@ -118,6 +123,13 @@ public class SellerProductsServlet extends HttpServlet {
                 }
 
                 createProduct(request, user.getUserId());
+                
+                // Tạo log cho SELLER_CREATE_PRODUCT
+                UserLog log = new UserLog(user.getUserId(), Role.SELLER, ActionType.SELLER_CREATE_PRODUCT,
+                    "Seller đăng sản phẩm mới: \"" + request.getParameter("name") + "\"", 
+                    null, "PRODUCT", null);
+                userLogService.save(log);
+                
                 response.sendRedirect(
                         request.getContextPath() + "/seller/products?status=PENDING_APPROVAL&message=created");
 

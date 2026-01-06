@@ -2,7 +2,11 @@ package com.ecommerce.servlet;
 
 import com.ecommerce.dto.CartItemDTO;
 import com.ecommerce.dto.CheckoutRequest;
+import com.ecommerce.entity.UserLog;
+import com.ecommerce.entity.ActionType;
+import com.ecommerce.entity.Role;
 import com.ecommerce.service.OrderService;
+import com.ecommerce.service.UserLogService;
 import com.ecommerce.util.MenuHelper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,6 +21,7 @@ import java.util.List;
 public class CheckoutServlet extends HttpServlet {
 
     private final OrderService orderService = new OrderService();
+    private final UserLogService userLogService = new UserLogService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -104,6 +109,13 @@ public class CheckoutServlet extends HttpServlet {
             
             // ✅ COD payment - Process normally
             List<String> orderIds = orderService.placeOrder(checkoutRequest);
+            
+            // Tạo log cho BUYER_PLACE_ORDER
+            String orderIdsStr = String.join(", ", orderIds);
+            UserLog log = new UserLog(userId, Role.BUYER, ActionType.BUYER_PLACE_ORDER,
+                "Buyer đặt hàng: " + orderIdsStr + " (Phương thức: " + paymentMethod + ")", 
+                orderIdsStr, "ORDER", null);
+            userLogService.save(log);
             
             // Clear cart
             session.removeAttribute("cart");

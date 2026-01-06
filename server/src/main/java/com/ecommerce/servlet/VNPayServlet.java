@@ -2,7 +2,11 @@ package com.ecommerce.servlet;
 
 import com.ecommerce.dto.CartItemDTO;
 import com.ecommerce.dto.CheckoutRequest;
+import com.ecommerce.entity.UserLog;
+import com.ecommerce.entity.ActionType;
+import com.ecommerce.entity.Role;
 import com.ecommerce.service.OrderService;
+import com.ecommerce.service.UserLogService;
 import com.ecommerce.util.VNPayUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -20,6 +24,7 @@ import java.util.Map;
 public class VNPayServlet extends HttpServlet {
 
     private final OrderService orderService = new OrderService();
+    private final UserLogService userLogService = new UserLogService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -145,6 +150,13 @@ public class VNPayServlet extends HttpServlet {
 
                 // Place order
                 List<String> orderIds = orderService.placeOrder(checkoutRequest);
+                
+                // Tạo log cho BUYER_PAY_ORDER
+                String orderIdsStr = String.join(", ", orderIds);
+                UserLog log = new UserLog(userId, Role.BUYER, ActionType.BUYER_PAY_ORDER,
+                    "Buyer thanh toán VNPay thành công cho đơn hàng: " + orderIdsStr + " (Mã GD: " + transactionNo + ")", 
+                    orderIdsStr, "ORDER", null);
+                userLogService.save(log);
 
                 // Clear cart and checkout data
                 session.removeAttribute("cart");

@@ -6,7 +6,11 @@ import java.util.List;
 import com.ecommerce.entity.Order;
 import com.ecommerce.entity.OrderStatus;
 import com.ecommerce.entity.User;
+import com.ecommerce.entity.UserLog;
+import com.ecommerce.entity.ActionType;
+import com.ecommerce.entity.Role;
 import com.ecommerce.service.OrderService;
+import com.ecommerce.service.UserLogService;
 import com.ecommerce.util.MenuHelper;
 
 import jakarta.servlet.ServletException;
@@ -20,6 +24,7 @@ import jakarta.servlet.http.HttpSession;
 public class SellerOrdersServlet extends HttpServlet {
 
     private OrderService orderService = new OrderService();
+    private UserLogService userLogService = new UserLogService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -99,21 +104,28 @@ public class SellerOrdersServlet extends HttpServlet {
             // 1. Lấy dữ liệu dạng String
             String orderIdStr = request.getParameter("orderId");
             String action = request.getParameter("action"); // Ví dụ: "CONFIRM", "CANCEL", "SHIP"
+            User user = (User) session.getAttribute("user");
 
             if (orderIdStr != null && action != null) {
                 Long orderId = Long.parseLong(orderIdStr);
                 OrderStatus newStatus = null;
+                ActionType logAction = null;
+                String logDescription = null;
 
                 // Logic chuyển đổi từ nút bấm sang Trạng thái
                 switch (action) {
                     case "CONFIRM": // Duyệt đơn
                         newStatus = OrderStatus.CONFIRMED;
+                        logAction = ActionType.SELLER_ACCEPT_ORDER;
+                        logDescription = "Seller chấp nhận đơn hàng #" + orderId;
                         break;
                     case "SHIP": // Giao hàng
                         newStatus = OrderStatus.SHIPPING;
                         break;
                     case "CANCEL": // Hủy đơn
                         newStatus = OrderStatus.CANCELLED;
+                        logAction = ActionType.SELLER_REJECT_ORDER;
+                        logDescription = "Seller từ chối đơn hàng #" + orderId;
                         break;
                     case "DELIVER": // Đánh dấu đã giao (nếu cần)
                         newStatus = OrderStatus.DELIVERED;
@@ -124,6 +136,13 @@ public class SellerOrdersServlet extends HttpServlet {
                 if (newStatus != null) {
                     // Gọi Service xử lý (Code Service bạn đã viết rồi)
                     orderService.updateOrderStatus(orderId, newStatus);
+                    
+                    // Tạo log nếu là accept hoặc reject
+                    if (logAction != null && logDescription != null) {
+                        UserLog log = new UserLog(user.getUserId(), Role.SELLER, logAction,
+                            logDescription, orderId.toString(), "ORDER", null);
+                        userLogService.save(log);
+                    }
                 }
             }
 

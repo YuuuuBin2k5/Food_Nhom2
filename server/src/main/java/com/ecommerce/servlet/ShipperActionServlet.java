@@ -4,7 +4,11 @@ import java.io.IOException;
 
 import com.ecommerce.entity.OrderStatus;
 import com.ecommerce.entity.User;
+import com.ecommerce.entity.UserLog;
+import com.ecommerce.entity.ActionType;
+import com.ecommerce.entity.Role;
 import com.ecommerce.service.OrderService;
+import com.ecommerce.service.UserLogService;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -23,6 +27,7 @@ import jakarta.servlet.http.HttpSession;
 public class ShipperActionServlet extends HttpServlet {
     
     private final OrderService orderService = new OrderService();
+    private final UserLogService userLogService = new UserLogService();
     
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) 
@@ -85,6 +90,12 @@ public class ShipperActionServlet extends HttpServlet {
             HttpServletResponse response, HttpServletRequest request) throws Exception, IOException {
         
         orderService.updateOrderStatus(orderId, OrderStatus.SHIPPING, shipperId);
+        
+        // Tạo log cho SHIPPER_ACCEPT_ORDER
+        UserLog log = new UserLog(shipperId, Role.SHIPPER, ActionType.SHIPPER_ACCEPT_ORDER,
+            "Shipper nhận đơn hàng #" + orderId, orderId.toString(), "ORDER", null);
+        userLogService.save(log);
+        
         session.setAttribute("successMessage", "Nhận đơn thành công! Bắt đầu giao hàng.");
         response.sendRedirect(request.getContextPath() + "/shipper/delivering");
     }
@@ -93,6 +104,12 @@ public class ShipperActionServlet extends HttpServlet {
             HttpServletResponse response, HttpServletRequest request) throws Exception, IOException {
         
         orderService.updateOrderStatus(orderId, OrderStatus.DELIVERED, shipperId);
+        
+        // Tạo log cho SHIPPER_COMPLETE_ORDER
+        UserLog log = new UserLog(shipperId, Role.SHIPPER, ActionType.SHIPPER_COMPLETE_ORDER,
+            "Shipper hoàn thành giao hàng #" + orderId, orderId.toString(), "ORDER", null);
+        userLogService.save(log);
+        
         session.setAttribute("successMessage", "Giao hàng thành công! 🎉");
         response.sendRedirect(request.getContextPath() + "/shipper/orders");
     }

@@ -153,15 +153,77 @@ public class UserLogService {
     }
 
     /**
-     * Lấy log theo targetId (đối tượng bị tác động)
+     * Lấy log theo relatedId (đối tượng liên quan)
      */
-    public List<UserLog> getLogsByTargetId(String targetId, int limit) {
+    public List<UserLog> getLogsByRelatedId(String relatedId, int limit) {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<UserLog> query = em.createQuery(
-                "SELECT l FROM UserLog l WHERE l.targetId = :targetId ORDER BY l.createdAt DESC",
+                "SELECT l FROM UserLog l WHERE l.relatedId = :relatedId ORDER BY l.createdAt DESC",
                 UserLog.class);
-            query.setParameter("targetId", targetId);
+            query.setParameter("relatedId", relatedId);
+            query.setMaxResults(limit);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy log theo relatedType (loại đối tượng liên quan)
+     */
+    public List<UserLog> getLogsByRelatedType(String relatedType, int limit) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<UserLog> query = em.createQuery(
+                "SELECT l FROM UserLog l WHERE l.relatedType = :relatedType ORDER BY l.createdAt DESC",
+                UserLog.class);
+            query.setParameter("relatedType", relatedType);
+            query.setMaxResults(limit);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy log theo userId và action type
+     */
+    public List<UserLog> getLogsByUserIdAndAction(String userId, ActionType action, int limit) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<UserLog> query = em.createQuery(
+                "SELECT l FROM UserLog l WHERE l.userId = :userId AND l.action = :action ORDER BY l.createdAt DESC",
+                UserLog.class);
+            query.setParameter("userId", userId);
+            query.setParameter("action", action);
+            query.setMaxResults(limit);
+            return query.getResultList();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        } finally {
+            em.close();
+        }
+    }
+
+    /**
+     * Lấy log theo khoảng thời gian
+     */
+    public List<UserLog> getLogsByDateRange(java.util.Date startDate, java.util.Date endDate, int limit) {
+        EntityManager em = getEntityManager();
+        try {
+            TypedQuery<UserLog> query = em.createQuery(
+                "SELECT l FROM UserLog l WHERE l.createdAt BETWEEN :startDate AND :endDate ORDER BY l.createdAt DESC",
+                UserLog.class);
+            query.setParameter("startDate", startDate);
+            query.setParameter("endDate", endDate);
             query.setMaxResults(limit);
             return query.getResultList();
         } catch (Exception e) {
