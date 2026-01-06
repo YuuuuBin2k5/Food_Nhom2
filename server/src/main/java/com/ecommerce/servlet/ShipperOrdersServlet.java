@@ -74,11 +74,15 @@ public class ShipperOrdersServlet extends HttpServlet {
                 .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
                 .toList();
             
+            // Kiểm tra shipper có đơn đang giao không
+            boolean hasActiveDelivery = orderService.shipperHasActiveDelivery(shipperId);
+            
             request.setAttribute("orders", availableOrdersList);
             request.setAttribute("availableOrders", availableOrders);
             request.setAttribute("shippingOrders", shippingOrders);
             request.setAttribute("deliveredOrders", deliveredOrders);
             request.setAttribute("totalEarnings", totalEarnings);
+            request.setAttribute("hasActiveDelivery", hasActiveDelivery);
             request.setAttribute("user", user);
             
             request.getRequestDispatcher("/shipper/orders.jsp").forward(request, response);

@@ -8,6 +8,11 @@
     <title>Đăng nhập - FreshSave</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/auth/login.css">
+    <style>
+        body {
+            background-image: url('${pageContext.request.contextPath}/images/backgroundLogin.png');
+        }
+    </style>
 </head>
 <body>
     <div class="auth-container">
@@ -120,12 +125,48 @@
                 eyeIcon.innerHTML = '<path d="M10.5 8a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z"/><path d="M0 8s3-5.5 8-5.5S16 8 16 8s-3 5.5-8 5.5S0 8 0 8zm8 3.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>';
             }
         });
-           
-        // Handle form submit
-        document.getElementById('loginForm').addEventListener('submit', function() {
-            const btn = document.getElementById('submitBtn');
+        
+        // Tạo overlay loading
+        function createLoadingOverlay() {
+            var overlay = document.createElement('div');
+            overlay.id = 'loadingOverlay';
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;';
+            overlay.innerHTML = '<div style="background:white;padding:24px 48px;border-radius:12px;text-align:center;box-shadow:0 10px 40px rgba(0,0,0,0.2);"><div style="width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #FF6B6B;border-radius:50%;animation:spin 1s linear infinite;margin:0 auto 16px;"></div><p style="margin:0;color:#333;font-weight:600;">Đang xác thực...</p></div><style>@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}</style>';
+            document.body.appendChild(overlay);
+        }
+        
+        // Handle form submit - Block tất cả thao tác
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            var btn = document.getElementById('submitBtn');
+            var form = this;
+            
+            // Disable button
             btn.disabled = true;
             btn.textContent = 'Đang xác thực...';
+            
+            // Chỉ disable button và links, KHÔNG disable input fields
+            // Vì input bị disabled sẽ không gửi giá trị trong form
+            var buttons = form.querySelectorAll('button');
+            buttons.forEach(function(el) {
+                el.disabled = true;
+            });
+            
+            // Disable các link bên ngoài form
+            var allLinks = document.querySelectorAll('a');
+            allLinks.forEach(function(link) {
+                link.style.pointerEvents = 'none';
+                link.style.opacity = '0.5';
+            });
+            
+            // Set input thành readonly thay vì disabled để vẫn gửi được giá trị
+            var inputs = form.querySelectorAll('input');
+            inputs.forEach(function(el) {
+                el.readOnly = true;
+                el.style.opacity = '0.7';
+            });
+            
+            // Hiển thị overlay loading
+            createLoadingOverlay();
         });
     </script>
     

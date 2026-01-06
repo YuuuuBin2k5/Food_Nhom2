@@ -15,7 +15,6 @@
         <class>com.ecommerce.entity.Shipper</class>
         <class>com.ecommerce.entity.Admin</class>
         <class>com.ecommerce.entity.PasswordResetToken</class>
-        <class>com.ecommerce.entity.Notification</class>
 
         <properties>
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>

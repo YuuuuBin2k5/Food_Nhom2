@@ -72,6 +72,20 @@
             <span>Sắp xếp: Mới nhất</span>
         </div>
 
+        <!-- Thông báo khi đang có đơn giao -->
+        <c:if test="${hasActiveDelivery}">
+            <div class="alert-warning-modern">
+                <span class="alert-icon">⚠️</span>
+                <div class="alert-content">
+                    <strong>Bạn đang có đơn hàng chưa hoàn thành!</strong>
+                    <p>Vui lòng hoàn thành đơn hiện tại trước khi nhận đơn mới.</p>
+                    <a href="${pageContext.request.contextPath}/shipper/delivering" class="alert-link">
+                        Xem đơn đang giao →
+                    </a>
+                </div>
+            </div>
+        </c:if>
+
         <c:choose>
             <c:when test="${empty orders}">
                 <div class="empty-state-modern">
@@ -136,20 +150,34 @@
 
                                 <!-- Actions - Form based -->
                                 <div class="order-card-actions">
-                                    <form action="${pageContext.request.contextPath}/shipper/action" method="post" 
-                                          onsubmit="return confirm('Bạn có chắc muốn nhận đơn này?');">
-                                        <input type="hidden" name="action" value="accept">
-                                        <input type="hidden" name="orderId" value="${order.orderId}">
-                                        <button type="submit" class="btn-accept-modern">
-                                            <div class="btn-accept-inner">
-                                                <span class="btn-accept-text">Nhận đơn này</span>
-                                                <div class="btn-accept-hint">
-                                                    <span>Bấm để nhận</span>
-                                                    <div class="btn-accept-arrow">→</div>
+                                    <c:choose>
+                                        <c:when test="${hasActiveDelivery}">
+                                            <button type="button" class="btn-accept-modern disabled" disabled>
+                                                <div class="btn-accept-inner">
+                                                    <span class="btn-accept-text">Đang có đơn</span>
+                                                    <div class="btn-accept-hint">
+                                                        <span>Hoàn thành đơn hiện tại</span>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </button>
-                                    </form>
+                                            </button>
+                                        </c:when>
+                                        <c:otherwise>
+                                            <form action="${pageContext.request.contextPath}/shipper/action" method="post" 
+                                                  onsubmit="return confirm('Bạn có chắc muốn nhận đơn này?');">
+                                                <input type="hidden" name="action" value="accept">
+                                                <input type="hidden" name="orderId" value="${order.orderId}">
+                                                <button type="submit" class="btn-accept-modern">
+                                                    <div class="btn-accept-inner">
+                                                        <span class="btn-accept-text">Nhận đơn này</span>
+                                                        <div class="btn-accept-hint">
+                                                            <span>Bấm để nhận</span>
+                                                            <div class="btn-accept-arrow">→</div>
+                                                        </div>
+                                                    </div>
+                                                </button>
+                                            </form>
+                                        </c:otherwise>
+                                    </c:choose>
                                     
                                     <div class="order-secondary-actions">
                                         <button type="button" class="btn-secondary-modern" 

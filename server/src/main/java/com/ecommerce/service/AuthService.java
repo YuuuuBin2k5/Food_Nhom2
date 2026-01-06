@@ -1,7 +1,6 @@
 package com.ecommerce.service;
 
 import java.util.Date;
-import java.util.List;
 import java.util.UUID;
 
 import com.ecommerce.entity.*;
@@ -12,7 +11,6 @@ import com.ecommerce.util.PasswordUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.NoResultException;
-import jakarta.persistence.TypedQuery;
 
 /**
  * Service xử lý authentication & authorization
@@ -22,19 +20,25 @@ import jakarta.persistence.TypedQuery;
  */
 public class AuthService {
 
-    private final NotificationService notificationService = new NotificationService();
-
     /* =========================
        LOGIN
        ========================= */
     public User login(String email, String password) throws Exception {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
+            // Debug log
+            System.out.println("=== LOGIN ATTEMPT ===");
+            System.out.println("Email nhập vào: [" + email + "]");
+            System.out.println("Email length: " + (email != null ? email.length() : "null"));
+            
             User user = findUserByEmail(em, email);
 
             if (user == null) {
+                System.out.println(">>> KHÔNG TÌM THẤY USER VỚI EMAIL: " + email);
                 throw new Exception("Email không tồn tại");
             }
+            
+            System.out.println(">>> TÌM THẤY USER: " + user.getFullName() + " - Role: " + user.getRole());
 
             if (!PasswordUtil.verify(password, user.getPassword())) {
                 throw new Exception("Sai mật khẩu");
@@ -100,29 +104,6 @@ public class AuthService {
 
             trans.begin();
             em.persist(newUser);
-            em.flush();
-            
-            // Gửi notification cho admin nếu là seller mới
-            if (enumRole == Role.SELLER) {
-                TypedQuery<Admin> adminQuery = em.createQuery("SELECT a FROM Admin a", Admin.class);
-                List<Admin> admins = adminQuery.getResultList();
-                
-                for (Admin admin : admins) {
-                    try {
-                        notificationService.createNotification(
-                            em,
-                            admin.getUserId(),
-                            NotificationType.NEW_SELLER_REGISTRATION,
-                            "Seller mới đăng ký",
-                            "Seller '" + shopName + "' vừa đăng ký và chờ duyệt.",
-                            null
-                        );
-                    } catch (Exception e) {
-                        System.err.println("Lỗi gửi notification: " + e.getMessage());
-                    }
-                }
-            }
-            
             trans.commit();
 
         } catch (Exception e) {
@@ -220,6 +201,35 @@ public class AuthService {
     /* =========================
        HELPER METHODS
        ========================= */
+    
+    /**
+     * Lấy user theo ID (tìm trong tất cả các bảng role)
+     */
+    public User getUserById(Long userId) {
+        if (userId == null) return null;
+        
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            String id = String.valueOf(userId);
+            
+            Buyer buyer = em.find(Buyer.class, id);
+            if (buyer != null) return buyer;
+            
+            Seller seller = em.find(Seller.class, id);
+            if (seller != null) return seller;
+            
+            Shipper shipper = em.find(Shipper.class, id);
+            if (shipper != null) return shipper;
+            
+            Admin admin = em.find(Admin.class, id);
+            if (admin != null) return admin;
+            
+            return null;
+        } finally {
+            em.close();
+        }
+    }
+    
     private User findUserByEmail(EntityManager em, String email) {
         try {
             return em.createQuery("SELECT s FROM Seller s WHERE s.email = :email", Seller.class)

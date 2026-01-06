@@ -15,8 +15,6 @@ import java.util.*;
 
 public class OrderService {
     
-    private final NotificationService notificationService = new NotificationService();
-    
     // Tạo đơn hàng mới (Checkout)
     public List<String> placeOrder(CheckoutRequest request) throws Exception {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
@@ -71,7 +69,6 @@ public class OrderService {
             
             // TẠO ĐƠN HÀNG RIÊNG CHO TỪNG SELLER
             for (Map.Entry<String, List<CartItemDTO>> entry : itemsBySeller.entrySet()) {
-                String sellerId = entry.getKey();
                 List<CartItemDTO> sellerItems = entry.getValue();
 
                 Order order = new Order();
@@ -115,20 +112,6 @@ public class OrderService {
                 em.flush();
 
                 createdOrderIds.add(String.valueOf(order.getOrderId()));
-
-                // Gửi thông báo (async để không block)
-                try {
-                    notificationService.createNotification(
-                        em,
-                        sellerId,
-                        NotificationType.NEW_ORDER,
-                        "Đơn hàng mới #" + order.getOrderId(),
-                        "Bạn có đơn hàng mới trị giá " + finalAmount,
-                        order.getOrderId()
-                    );
-                } catch (Exception ex) {
-                    System.err.println("Lỗi gửi thông báo: " + ex.getMessage());
-                }
             }
             
             em.getTransaction().commit();
@@ -314,65 +297,8 @@ public class OrderService {
                 }
             }
             
-            OrderStatus oldStatus = order.getStatus();
             order.setStatus(newStatus);
             em.merge(order);
-            
-            // Flush để đảm bảo order được update
-            em.flush();
-            
-            // Tạo notification cho buyer khi trạng thái thay đổi
-            String buyerId = order.getBuyer().getUserId();
-            NotificationType notificationType = null;
-            String title = null;
-            String message = null;
-            
-            switch (newStatus) {
-                case CONFIRMED:
-                    notificationType = NotificationType.ORDER_CONFIRMED;
-                    title = "Đơn hàng đã được xác nhận";
-                    message = "Đơn hàng #" + orderId + " đã được xác nhận và đang được chuẩn bị.";
-                    break;
-                case SHIPPING:
-                    notificationType = NotificationType.ORDER_SHIPPING;
-                    title = "Đơn hàng đang được giao";
-                    message = "Đơn hàng #" + orderId + " đang trên đường giao đến bạn.";
-                    
-                    // Gửi notification cho shipper nếu có
-                    if (order.getShipper() != null) {
-                        notificationService.createNotification(
-                            em,
-                            order.getShipper().getUserId(),
-                            NotificationType.NEW_DELIVERY,
-                            "Đơn hàng mới cần giao #" + orderId,
-                            "Bạn có đơn hàng mới cần giao đến " + order.getShippingAddress(),
-                            orderId
-                        );
-                    }
-                    break;
-                case DELIVERED:
-                    notificationType = NotificationType.ORDER_DELIVERED;
-                    title = "Đơn hàng đã được giao";
-                    message = "Đơn hàng #" + orderId + " đã được giao thành công. Cảm ơn bạn đã mua hàng!";
-                    break;
-                case CANCELLED:
-                    notificationType = NotificationType.ORDER_CANCELLED;
-                    title = "Đơn hàng đã bị hủy";
-                    message = "Đơn hàng #" + orderId + " đã bị hủy.";
-                    break;
-            }
-            
-            // Gửi notification cho buyer
-            if (notificationType != null) {
-                notificationService.createNotification(
-                    em,
-                    buyerId,
-                    notificationType,
-                    title,
-                    message,
-                    orderId
-                );
-            }
             
             em.getTransaction().commit();
         } catch (Exception e) {
@@ -395,51 +321,45 @@ public class OrderService {
             
             // Set shipper khi accept order (CONFIRMED -> SHIPPING)
             if (newStatus == OrderStatus.SHIPPING && order.getStatus() == OrderStatus.CONFIRMED) {
+                // Kiểm tra shipper đã có đơn đang giao chưa
+                if (hasActiveDelivery(em, shipperId)) {
+                    throw new Exception("Bạn đang có đơn hàng chưa hoàn thành. Vui lòng hoàn thành đơn hiện tại trước khi nhận đơn mới!");
+                }
+                
                 Shipper shipper = em.find(Shipper.class, shipperId);
                 if (shipper == null) throw new Exception("Shipper not found: " + shipperId);
                 order.setShipper(shipper);
             }
             
-            OrderStatus oldStatus = order.getStatus();
             order.setStatus(newStatus);
             em.merge(order);
-            em.flush();
-            
-            // Tạo notification cho buyer
-            String buyerId = order.getBuyer().getUserId();
-            NotificationType notificationType = null;
-            String title = null;
-            String message = null;
-            
-            switch (newStatus) {
-                case SHIPPING:
-                    notificationType = NotificationType.ORDER_SHIPPING;
-                    title = "Đơn hàng đang được giao";
-                    message = "Đơn hàng #" + orderId + " đang trên đường giao đến bạn.";
-                    break;
-                case DELIVERED:
-                    notificationType = NotificationType.ORDER_DELIVERED;
-                    title = "Đơn hàng đã được giao";
-                    message = "Đơn hàng #" + orderId + " đã được giao thành công.";
-                    break;
-            }
-            
-            if (notificationType != null) {
-                notificationService.createNotification(
-                    em,
-                    buyerId,
-                    notificationType,
-                    title,
-                    message,
-                    orderId
-                );
-            }
             
             em.getTransaction().commit();
         } catch (Exception e) {
             if (em.getTransaction().isActive()) 
                 em.getTransaction().rollback();
             throw e;
+        } finally {
+            em.close();
+        }
+    }
+    
+    // Kiểm tra shipper có đơn đang giao (SHIPPING) không
+    private boolean hasActiveDelivery(EntityManager em, String shipperId) {
+        TypedQuery<Long> query = em.createQuery(
+            "SELECT COUNT(o) FROM Order o WHERE o.shipper.userId = :shipperId AND o.status = :status",
+            Long.class
+        );
+        query.setParameter("shipperId", shipperId);
+        query.setParameter("status", OrderStatus.SHIPPING);
+        return query.getSingleResult() > 0;
+    }
+    
+    // Public method để check từ servlet/JSP
+    public boolean shipperHasActiveDelivery(String shipperId) {
+        EntityManager em = DBUtil.getEmFactory().createEntityManager();
+        try {
+            return hasActiveDelivery(em, shipperId);
         } finally {
             em.close();
         }
@@ -463,28 +383,6 @@ public class OrderService {
             
             order.setShipper(shipper);
             em.merge(order);
-            
-            // Flush để đảm bảo order được update
-            em.flush();
-            
-            // Gửi notification cho shipper khi được gán
-            System.out.println("=== [OrderService] Shipper assigned to order, creating notification");
-            System.out.println("=== [OrderService] Shipper: " + shipper.getEmail() + ", Order: " + orderId);
-            
-            try {
-                notificationService.createNotification(
-                    em,
-                    shipperId,
-                    NotificationType.NEW_DELIVERY,
-                    "Đơn hàng mới được gán #" + orderId,
-                    "Bạn được gán giao đơn hàng #" + orderId + " đến " + order.getShippingAddress(),
-                    orderId
-                );
-                System.out.println("=== [OrderService] ✅ Notification created successfully");
-            } catch (Exception e) {
-                System.err.println("=== [OrderService] ❌ Failed to create notification: " + e.getMessage());
-                e.printStackTrace();
-            }
             
             em.getTransaction().commit();
         } catch (Exception e) {

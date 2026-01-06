@@ -1232,3 +1232,84 @@
         font-size: 0.8rem;
     }
 }
+
+
+/* ========================================
+   ALERT WARNING - Shipper has active delivery
+   ======================================== */
+.alert-warning-modern {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    background: linear-gradient(135deg, #fef3c7, #fde68a);
+    border: 1px solid #f59e0b;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.15);
+}
+
+.alert-warning-modern .alert-icon {
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.alert-warning-modern .alert-content {
+    flex: 1;
+}
+
+.alert-warning-modern .alert-content strong {
+    display: block;
+    color: #92400e;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.alert-warning-modern .alert-content p {
+    color: #a16207;
+    font-size: 13px;
+    margin: 0 0 8px 0;
+}
+
+.alert-warning-modern .alert-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #d97706;
+    font-size: 13px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.alert-warning-modern .alert-link:hover {
+    color: #b45309;
+    text-decoration: underline;
+}
+
+/* ========================================
+   BUTTON DISABLED STATE
+   ======================================== */
+.btn-accept-modern.disabled {
+    background: #e5e7eb;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.btn-accept-modern.disabled .btn-accept-inner {
+    background: #d1d5db;
+}
+
+.btn-accept-modern.disabled .btn-accept-text {
+    color: #6b7280;
+}
+
+.btn-accept-modern.disabled .btn-accept-hint {
+    color: #9ca3af;
+}
+
+.btn-accept-modern.disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
