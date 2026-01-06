@@ -2,7 +2,6 @@ com\ecommerce\entity\Review.class
 com\ecommerce\servlet\AdminStatisticsServlet.class
 com\ecommerce\entity\ProductStatus.class
 com\ecommerce\util\MenuHelper.class
-com\ecommerce\entity\NotificationType.class
 com\ecommerce\service\AdminService.class
 com\ecommerce\servlet\CartServlet.class
 com\ecommerce\servlet\SellerOrdersServlet.class
@@ -10,7 +9,6 @@ com\ecommerce\service\AuthService.class
 com\ecommerce\util\MailUtil$1.class
 com\ecommerce\service\CartService.class
 com\ecommerce\service\SellerService.class
-com\ecommerce\service\OrderService$1.class
 com\ecommerce\entity\PaymentMethod.class
 com\ecommerce\service\UserLogService.class
 com\ecommerce\service\AdminUserService.class
@@ -19,20 +17,16 @@ com\ecommerce\entity\Payment.class
 com\ecommerce\servlet\ProductListServlet.class
 com\ecommerce\dto\CheckoutRequest.class
 com\ecommerce\entity\ActionType.class
-com\ecommerce\servlet\NotificationServlet.class
-com\ecommerce\service\NotificationService.class
 com\ecommerce\util\DBUtil.class
 com\ecommerce\servlet\OrderSuccessServlet.class
 com\ecommerce\servlet\ShipperHistoryServlet.class
 com\ecommerce\service\OtpService$OtpData.class
 com\ecommerce\servlet\SellerProductsServlet.class
-com\ecommerce\dto\NotificationDTO.class
 com\ecommerce\dto\ProductDTO.class
 com\ecommerce\servlet\OtpServlet.class
 com\ecommerce\servlet\HomePageServlet.class
 com\ecommerce\dto\ProductFilter.class
 com\ecommerce\servlet\ProductDetailServlet.class
-com\ecommerce\entity\Notification.class
 com\ecommerce\servlet\buyer\MyOrdersServlet.class
 com\ecommerce\servlet\LoginPageServlet.class
 com\ecommerce\servlet\OrderHistoryServlet.class
@@ -45,7 +39,6 @@ com\ecommerce\dto\CheckoutResponse.class
 com\ecommerce\entity\SellerStatus.class
 com\ecommerce\servlet\ResetPasswordPageServlet.class
 com\ecommerce\servlet\AddToCartServlet.class
-com\ecommerce\servlet\ShipperAPIServlet.class
 com\ecommerce\entity\Product.class
 com\ecommerce\dto\SellerDTO.class
 com\ecommerce\entity\PasswordResetToken.class
@@ -68,6 +61,7 @@ com\ecommerce\service\OrderService.class
 com\ecommerce\servlet\ShipperDeliveringServlet.class
 com\ecommerce\servlet\LogoutServlet.class
 com\ecommerce\util\PasswordUtil.class
+com\ecommerce\servlet\ShipperActionServlet.class
 com\ecommerce\servlet\AdminSellerServlet.class
 com\ecommerce\entity\Role.class
 com\ecommerce\service\AdminProductService.class
@@ -82,5 +76,4 @@ com\ecommerce\servlet\ShipperOrdersServlet.class
 com\ecommerce\entity\OrderStatus.class
 com\ecommerce\entity\User.class
 com\ecommerce\service\OtpService.class
-com\ecommerce\servlet\ShipperEarningsServlet.class
 com\ecommerce\servlet\buyer\CancelOrderServlet.class

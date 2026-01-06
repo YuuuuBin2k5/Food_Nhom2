@@ -1,7 +1,6 @@
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\dto\CartItemDTO.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\dto\CheckoutRequest.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\dto\CheckoutResponse.java
-C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\dto\NotificationDTO.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\dto\ProductDTO.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\dto\ProductFilter.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\dto\ProductPageResponse.java
@@ -11,8 +10,6 @@ C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Acti
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Admin.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Buyer.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\InsertDB.java
-C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Notification.java
-C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\NotificationType.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\Order.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\OrderDetail.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\entity\OrderStatus.java
@@ -35,7 +32,6 @@ C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\service\Adm
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\service\AdminUserService.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\service\AuthService.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\service\CartService.java
-C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\service\NotificationService.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\service\OrderService.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\service\OtpService.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\service\ProductService.java
@@ -56,7 +52,6 @@ C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\Hom
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\LoginPageServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\LogoutServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\MyOrdersServlet.java
-C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\NotificationServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\OrderHistoryServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\OrderSuccessServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\OtpServlet.java
@@ -68,9 +63,8 @@ C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\Sel
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerOrdersServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerProductsServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\SellerSettingsServlet.java
-C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ShipperAPIServlet.java
+C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ShipperActionServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ShipperDeliveringServlet.java
-C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ShipperEarningsServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ShipperHistoryServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\ShipperOrdersServlet.java
 C:\Users\Admin\Desktop\Food_Nhom2\server\src\main\java\com\ecommerce\servlet\VNPayServlet.java
