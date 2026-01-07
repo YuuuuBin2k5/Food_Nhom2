@@ -58,6 +58,28 @@ public class InsertDB {
             }
             System.out.println("Inserted " + products.size() + " products");
 
+            // Flush để có ID cho products
+            em.flush();
+
+            // Lọc products đã ACTIVE
+            List<Product> activeProducts = products.stream()
+                    .filter(p -> p.getStatus() == ProductStatus.ACTIVE)
+                    .toList();
+
+            // Insert Orders với OrderDetails và Payments
+            List<Order> orders = createOrders(buyers, shippers, activeProducts);
+            for (Order order : orders) {
+                em.persist(order);
+            }
+            System.out.println("Inserted " + orders.size() + " orders");
+
+            // Insert UserLogs
+            List<UserLog> logs = createUserLogs(admins, sellers, buyers, shippers, orders);
+            for (UserLog log : logs) {
+                em.persist(log);
+            }
+            System.out.println("Inserted " + logs.size() + " user logs");
+
             em.getTransaction().commit();
             System.out.println("=== Data insertion completed successfully! ===");
 
@@ -402,5 +424,221 @@ public class InsertDB {
         Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DAY_OF_MONTH, daysFromNow);
         return cal.getTime();
+    }
+
+    // ==================== ORDERS ====================
+    private static List<Order> createOrders(List<Buyer> buyers, List<Shipper> shippers, List<Product> activeProducts) {
+        List<Order> orders = new ArrayList<>();
+        String[] districts = {"Q1", "Q3", "Q5", "Q7", "Q10", "Bình Thạnh", "Gò Vấp", "Tân Bình", "Phú Nhuận", "Thủ Đức"};
+
+        // Tạo 100 đơn hàng với các trạng thái khác nhau
+        for (int i = 0; i < 100; i++) {
+            Buyer buyer = buyers.get(random.nextInt(buyers.size()));
+            String address = (random.nextInt(200) + 1) + " Đường " + (random.nextInt(50) + 1) + ", " +
+                             districts[random.nextInt(districts.length)] + ", TP.HCM";
+
+            Order order = new Order(buyer, address);
+            order.setOrderDate(getRandomPastDate(60));
+
+            // Phân bổ trạng thái: 20 PENDING, 15 CONFIRMED, 25 SHIPPING, 30 DELIVERED, 10 CANCELLED
+            if (i < 20) {
+                order.setStatus(OrderStatus.PENDING);
+            } else if (i < 35) {
+                order.setStatus(OrderStatus.CONFIRMED);
+            } else if (i < 60) {
+                order.setStatus(OrderStatus.SHIPPING);
+                // Gán shipper cho đơn đang giao
+                Shipper shipper = shippers.get(random.nextInt(shippers.size()));
+                order.setShipper(shipper);
+            } else if (i < 90) {
+                order.setStatus(OrderStatus.DELIVERED);
+                // Gán shipper cho đơn đã giao
+                Shipper shipper = shippers.get(random.nextInt(shippers.size()));
+                order.setShipper(shipper);
+            } else {
+                order.setStatus(OrderStatus.CANCELLED);
+            }
+
+            // Tạo OrderDetails (1-5 sản phẩm mỗi đơn)
+            List<OrderDetail> orderDetails = new ArrayList<>();
+            int numProducts = 1 + random.nextInt(5);
+            double totalAmount = 0;
+
+            for (int j = 0; j < numProducts; j++) {
+                Product product = activeProducts.get(random.nextInt(activeProducts.size()));
+                int quantity = 1 + random.nextInt(3);
+                double price = product.getSalePrice();
+
+                OrderDetail detail = new OrderDetail(order, product, quantity, price);
+                orderDetails.add(detail);
+                totalAmount += price * quantity;
+            }
+            order.setOrderDetails(orderDetails);
+
+            // Tạo Payment
+            PaymentMethod method = random.nextBoolean() ? PaymentMethod.COD : PaymentMethod.BANKING;
+            Payment payment = new Payment(totalAmount, method);
+            order.setPayment(payment);
+
+            orders.add(order);
+        }
+        return orders;
+    }
+
+    // ==================== USER LOGS ====================
+    private static List<UserLog> createUserLogs(List<Admin> admins, List<Seller> sellers, 
+                                                 List<Buyer> buyers, List<Shipper> shippers,
+                                                 List<Order> orders) {
+        List<UserLog> logs = new ArrayList<>();
+
+        // Logs đặt hàng của buyers
+        for (int i = 0; i < Math.min(50, orders.size()); i++) {
+            Order order = orders.get(i);
+            UserLog log = new UserLog(
+                order.getBuyer().getUserId().toString(),
+                Role.BUYER,
+                ActionType.BUYER_PLACE_ORDER,
+                "Đặt đơn hàng #" + (i + 1),
+                String.valueOf(i + 1),
+                "Order"
+            );
+            log.setCreatedAt(order.getOrderDate());
+            logs.add(log);
+        }
+
+        // Logs thanh toán
+        for (int i = 0; i < 30; i++) {
+            Order order = orders.get(random.nextInt(orders.size()));
+            if (order.getPayment() != null && order.getPayment().getMethod() == PaymentMethod.BANKING) {
+                UserLog log = new UserLog(
+                    order.getBuyer().getUserId().toString(),
+                    Role.BUYER,
+                    ActionType.BUYER_PAY_ORDER,
+                    "Thanh toán đơn hàng qua Banking",
+                    String.valueOf(order.getOrderId()),
+                    "Order"
+                );
+                log.setCreatedAt(getRandomPastDate(30));
+                logs.add(log);
+            }
+        }
+
+        // Logs hủy đơn
+        for (Order order : orders) {
+            if (order.getStatus() == OrderStatus.CANCELLED) {
+                UserLog log = new UserLog(
+                    order.getBuyer().getUserId().toString(),
+                    Role.BUYER,
+                    ActionType.BUYER_CANCEL_ORDER,
+                    "Hủy đơn hàng #" + order.getOrderId(),
+                    String.valueOf(order.getOrderId()),
+                    "Order"
+                );
+                log.setCreatedAt(getRandomPastDate(20));
+                logs.add(log);
+            }
+        }
+
+        // Logs duyệt seller
+        Admin admin = admins.get(0);
+        for (Seller seller : sellers) {
+            if (seller.getVerificationStatus() == SellerStatus.APPROVED) {
+                UserLog log = new UserLog(
+                    seller.getUserId().toString(),
+                    Role.SELLER,
+                    ActionType.SELLER_APPROVED,
+                    "Seller " + seller.getShopName() + " được duyệt",
+                    seller.getUserId().toString(),
+                    "Seller",
+                    admin.getUserId().toString()
+                );
+                log.setCreatedAt(seller.getLicenseApprovedDate());
+                logs.add(log);
+            }
+        }
+
+        // Logs seller tạo sản phẩm
+        for (int i = 0; i < 30; i++) {
+            Seller seller = sellers.stream()
+                    .filter(s -> s.getVerificationStatus() == SellerStatus.APPROVED)
+                    .toList().get(random.nextInt(8));
+            UserLog log = new UserLog(
+                seller.getUserId().toString(),
+                Role.SELLER,
+                ActionType.SELLER_CREATE_PRODUCT,
+                "Seller " + seller.getShopName() + " đăng sản phẩm mới",
+                String.valueOf(random.nextInt(100) + 1),
+                "Product"
+            );
+            log.setCreatedAt(getRandomPastDate(45));
+            logs.add(log);
+        }
+
+        // Logs duyệt sản phẩm
+        for (int i = 0; i < 25; i++) {
+            UserLog log = new UserLog(
+                admin.getUserId().toString(),
+                Role.ADMIN,
+                ActionType.PRODUCT_APPROVED,
+                "Admin duyệt sản phẩm #" + (i + 1),
+                String.valueOf(i + 1),
+                "Product",
+                admin.getUserId().toString()
+            );
+            log.setCreatedAt(getRandomPastDate(30));
+            logs.add(log);
+        }
+
+        // Logs shipper nhận đơn
+        for (Order order : orders) {
+            if (order.getShipper() != null && 
+                (order.getStatus() == OrderStatus.SHIPPING || order.getStatus() == OrderStatus.DELIVERED)) {
+                UserLog log = new UserLog(
+                    order.getShipper().getUserId().toString(),
+                    Role.SHIPPER,
+                    ActionType.SHIPPER_ACCEPT_ORDER,
+                    "Shipper nhận đơn hàng #" + order.getOrderId(),
+                    String.valueOf(order.getOrderId()),
+                    "Order"
+                );
+                log.setCreatedAt(getRandomPastDate(20));
+                logs.add(log);
+            }
+        }
+
+        // Logs giao hàng thành công
+        for (Order order : orders) {
+            if (order.getStatus() == OrderStatus.DELIVERED && order.getShipper() != null) {
+                UserLog log = new UserLog(
+                    order.getShipper().getUserId().toString(),
+                    Role.SHIPPER,
+                    ActionType.SHIPPER_COMPLETE_ORDER,
+                    "Giao hàng thành công đơn #" + order.getOrderId(),
+                    String.valueOf(order.getOrderId()),
+                    "Order"
+                );
+                log.setCreatedAt(getRandomPastDate(15));
+                logs.add(log);
+            }
+        }
+
+        // Logs seller chấp nhận đơn
+        for (int i = 0; i < 40; i++) {
+            Seller seller = sellers.stream()
+                    .filter(s -> s.getVerificationStatus() == SellerStatus.APPROVED)
+                    .toList().get(random.nextInt(8));
+            UserLog log = new UserLog(
+                seller.getUserId().toString(),
+                Role.SELLER,
+                ActionType.SELLER_ACCEPT_ORDER,
+                "Seller chấp nhận đơn hàng",
+                String.valueOf(random.nextInt(100) + 1),
+                "Order"
+            );
+            log.setCreatedAt(getRandomPastDate(25));
+            logs.add(log);
+        }
+
+        return logs;
     }
 }

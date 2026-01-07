@@ -22,24 +22,18 @@ public class Buyer extends User implements Serializable {
     @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Order> orders;
 
-    // Quan hệ 1-n với Review (Các đánh giá đã viết)
-    @OneToMany(mappedBy = "buyer", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    private List<Review> reviews;
-
     public Buyer() {
         super();
         this.role = Role.BUYER;
         
         this.savedAddresses = new ArrayList<>();
         this.orders = new ArrayList<>();
-        this.reviews = new ArrayList<>();
     }
 
     public Buyer(String fullName, String email, String password, String phoneNumber, String address) {
         super(fullName, email, password, phoneNumber, address, Role.BUYER);
         this.savedAddresses = new ArrayList<>();
         this.orders = new ArrayList<>();
-        this.reviews = new ArrayList<>();
 
         if (address != null && !address.isEmpty()) {
             this.savedAddresses.add(address);
@@ -60,13 +54,5 @@ public class Buyer extends User implements Serializable {
 
     public void setOrders(List<Order> orders) {
         this.orders = orders;
-    }
-
-    public List<Review> getReviews() {
-        return reviews;
-    }
-
-    public void setReviews(List<Review> reviews) {
-        this.reviews = reviews;
     }
 }

@@ -26,19 +26,12 @@ public class AuthService {
     public User login(String email, String password) throws Exception {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
         try {
-            // Debug log
-            System.out.println("=== LOGIN ATTEMPT ===");
-            System.out.println("Email nhập vào: [" + email + "]");
-            System.out.println("Email length: " + (email != null ? email.length() : "null"));
-            
             User user = findUserByEmail(em, email);
 
             if (user == null) {
                 System.out.println(">>> KHÔNG TÌM THẤY USER VỚI EMAIL: " + email);
                 throw new Exception("Email không tồn tại");
-            }
-            
-            System.out.println(">>> TÌM THẤY USER: " + user.getFullName() + " - Role: " + user.getRole());
+            }    
 
             if (!PasswordUtil.verify(password, user.getPassword())) {
                 throw new Exception("Sai mật khẩu");
@@ -231,24 +224,31 @@ public class AuthService {
     }
     
     private User findUserByEmail(EntityManager em, String email) {
+        // Tìm tuần tự, return ngay khi tìm thấy - Buyer đông nhất nên tìm trước
+        User user = null;
+        
         try {
-            return em.createQuery("SELECT s FROM Seller s WHERE s.email = :email", Seller.class)
-                    .setParameter("email", email).getSingleResult();
+            user = em.createQuery("SELECT b FROM Buyer b WHERE b.email = :email", Buyer.class)
+                    .setParameter("email", email).setMaxResults(1).getSingleResult();
+            if (user != null) return user;
         } catch (NoResultException ignored) {}
 
         try {
-            return em.createQuery("SELECT b FROM Buyer b WHERE b.email = :email", Buyer.class)
-                    .setParameter("email", email).getSingleResult();
+            user = em.createQuery("SELECT s FROM Seller s WHERE s.email = :email", Seller.class)
+                    .setParameter("email", email).setMaxResults(1).getSingleResult();
+            if (user != null) return user;
         } catch (NoResultException ignored) {}
 
         try {
-            return em.createQuery("SELECT sh FROM Shipper sh WHERE sh.email = :email", Shipper.class)
-                    .setParameter("email", email).getSingleResult();
+            user = em.createQuery("SELECT sh FROM Shipper sh WHERE sh.email = :email", Shipper.class)
+                    .setParameter("email", email).setMaxResults(1).getSingleResult();
+            if (user != null) return user;
         } catch (NoResultException ignored) {}
 
         try {
-            return em.createQuery("SELECT a FROM Admin a WHERE a.email = :email", Admin.class)
-                    .setParameter("email", email).getSingleResult();
+            user = em.createQuery("SELECT a FROM Admin a WHERE a.email = :email", Admin.class)
+                    .setParameter("email", email).setMaxResults(1).getSingleResult();
+            if (user != null) return user;
         } catch (NoResultException ignored) {}
 
         return null;

@@ -17,14 +17,18 @@
         <class>com.ecommerce.entity.PasswordResetToken</class>
 
         <properties>
+            <!-- Render PostgreSQL Database - Singapore (gần VN) -->
             <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://aws-1-ap-northeast-2.pooler.supabase.com:6543/postgres?sslmode=require&amp;prepareThreshold=0"/>
-            <property name="jakarta.persistence.jdbc.user" value="postgres.uqjtqcmsdifkwnekxawq"/>
-            <property name="jakarta.persistence.jdbc.password" value="pr&amp;dx&amp;EZt?@dR6B"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://dpg-d5f6l6hr0fns73e6u910-a.singapore-postgres.render.com:5432/server_foodsave_zbtw?sslmode=require"/>
+            <property name="jakarta.persistence.jdbc.user" value="server_foodsave_zbtw_user"/>
+            <property name="jakarta.persistence.jdbc.password" value="66IupWS6pLo8NpDrIRQq5fG7P79DsGix"/>
 
             <property name="hibernate.hbm2ddl.auto" value="update"/>
-            <property name="hibernate.show_sql" value="true"/>
-            <property name="hibernate.format_sql" value="true"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.format_sql" value="false"/>
+            
+            <!-- Connection pool -->
+            <property name="hibernate.connection.pool_size" value="10"/>
         </properties>
     </persistence-unit>
 </persistence>

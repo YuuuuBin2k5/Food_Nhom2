@@ -17,7 +17,6 @@ public class MailUtil {
     private static final String FROM_NAME = "Food Rescue";
     
     public static void send(String to, String subject, String content) {
-
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
