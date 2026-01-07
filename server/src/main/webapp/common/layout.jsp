@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#4CAF50">
-    <title>${param.title != null ? param.title : 'FreshSave'}</title>
+    <title>${param.title != null ? param.title : 'FoodRescue'}</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
     <link rel="manifest" href="${pageContext.request.contextPath}/manifest.json">
     <link rel="apple-touch-icon" href="${pageContext.request.contextPath}/images/icon-192.png">

@@ -1,7 +1,7 @@
 {
-  "name": "FreshSave Shipper",
+  "name": "FoodRescue Shipper",
   "short_name": "Shipper",
-  "description": "Ung dung giao hang FreshSave",
+  "description": "Ứng dụng giao hàng FoodRescue",
   "start_url": "./shipper/orders",
   "scope": "./",
   "display": "standalone",

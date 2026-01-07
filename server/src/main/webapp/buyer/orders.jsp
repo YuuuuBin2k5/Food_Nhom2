@@ -6,7 +6,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Lịch sử đơn hàng - FreshSave</title>
+    <title>Lịch sử đơn hàng - FoodRescue</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
     <style>
         body { padding-top: 96px; background: #f8fafc; }

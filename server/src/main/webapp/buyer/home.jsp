@@ -8,7 +8,7 @@
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Trang chủ - FreshSave</title>
+                <title>Trang chủ - FoodRescue</title>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/buyer/home.css">
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
@@ -76,7 +76,7 @@
                 <!-- Features Section -->
                 <section class="features">
                     <div class="section-title">
-                        <h2>Tại sao chọn FreshSave?</h2>
+                        <h2>Tại sao chọn FoodRescue?</h2>
                         <p>Giải pháp mua sắm thông minh cho bạn</p>
                     </div>
 

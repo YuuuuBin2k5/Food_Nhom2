@@ -7,7 +7,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Đặt hàng thành công - FreshSave</title>
+    <title>Đặt hàng thành công - FoodRescue</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
     <style>
         body {
@@ -232,7 +232,7 @@
             <div class="success-header">
                 <div class="success-icon">✅</div>
                 <h1 class="success-title">Đặt hàng thành công!</h1>
-                <p class="success-subtitle">Cảm ơn bạn đã tin tưởng FreshSave</p>
+                <p class="success-subtitle">Cảm ơn bạn đã tin tưởng FoodRescue</p>
             </div>
             
             <!-- Body -->

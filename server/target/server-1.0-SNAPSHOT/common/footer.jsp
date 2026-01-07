@@ -14,7 +14,7 @@
                             <span style="font-size: 1.5rem;">🛒</span>
                         </div>
                         <div>
-                            <span style="display: block; font-weight: 700; font-size: 1.5rem; color: #ffffff;">E-Commerce</span>
+                            <span style="display: block; font-weight: 700; font-size: 1.5rem; color: #ffffff;">FoodRescue</span>
                             <span style="display: block; font-size: 0.75rem; color: #a0aec0; margin-top: -0.25rem;">Smart Shopping Platform</span>
                         </div>
                     </div>
@@ -69,7 +69,7 @@
                         <ul style="list-style: none; padding: 0; margin: 0;">
                             <li style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.75rem; font-size: 0.875rem; color: #cbd5e0;">
                                 <span>📧</span>
-                                <span>support@ecommerce.vn</span>
+                                <span>support@foodrescue.vn</span>
                             </li>
                             <li style="display: flex; align-items: flex-start; gap: 0.5rem; margin-bottom: 0.75rem; font-size: 0.875rem; color: #cbd5e0;">
                                 <span>📞</span>
@@ -88,7 +88,7 @@
         <!-- Bottom bar -->
         <div style="padding-top: 1.5rem; border-top: 1px solid #4a5568; text-align: center;">
             <p style="font-size: 0.875rem; color: #a0aec0; margin: 0;">
-                © 2024 E-Commerce Platform. All rights reserved.
+                © 2024 FoodRescue Platform. All rights reserved.
             </p>
         </div>
     </div>

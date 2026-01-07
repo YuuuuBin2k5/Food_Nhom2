@@ -8,7 +8,7 @@
             <head>
                 <meta charset="UTF-8">
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>${product.name} - FreshSave</title>
+                <title>${product.name} - FoodRescue</title>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
                 <style>
                     body {
