@@ -2,6 +2,7 @@ com\ecommerce\entity\Review.class
 com\ecommerce\servlet\AdminStatisticsServlet.class
 com\ecommerce\entity\ProductStatus.class
 com\ecommerce\util\MenuHelper.class
+com\ecommerce\servlet\StaticResourceServlet.class
 com\ecommerce\service\AdminService.class
 com\ecommerce\servlet\CartServlet.class
 com\ecommerce\servlet\SellerOrdersServlet.class

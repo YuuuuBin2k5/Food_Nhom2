@@ -9,6 +9,7 @@
     <title>Lịch sử giao hàng - Shipper</title>
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
     <link rel="stylesheet" href="${pageContext.request.contextPath}/css/shipper-modern.css">
+    <jsp:include page="../common/pwa-head.jsp"/>
 </head>
 <body class="shipper-modern">
     <jsp:include page="../common/sidebar.jsp">
@@ -93,6 +94,7 @@
     </nav>
 
     <jsp:include page="../common/footer.jsp"/>
+    <jsp:include page="../common/pwa-script.jsp"/>
     
     <script>
         // Sync container with sidebar state
