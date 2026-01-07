@@ -67,7 +67,6 @@ com\ecommerce\dto\ProductPageResponse.class
 com\ecommerce\service\OrderService.class
 com\ecommerce\servlet\LogoutServlet.class
 com\ecommerce\util\PasswordUtil.class
-com\ecommerce\servlet\ShipperActionServlet.class
 com\ecommerce\servlet\AdminSellerServlet.class
 com\ecommerce\entity\Role.class
 com\ecommerce\service\AdminProductService.class

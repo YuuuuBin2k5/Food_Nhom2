@@ -108,8 +108,6 @@ public class SellerDashboardServlet extends HttpServlet {
                     .limit(5)
                     .collect(Collectors.toList());
 
-            List<Object> recentOrders = new ArrayList<>(); // Empty for now
-
             System.out.println("[SellerDashboard] Stats calculated:");
             System.out.println("  - Total products: " + totalProducts);
             System.out.println("  - Active products: " + activeProducts);
@@ -123,7 +121,6 @@ public class SellerDashboardServlet extends HttpServlet {
             request.setAttribute("pendingOrders", pendingOrders);
             request.setAttribute("totalRevenue", totalRevenue);
             request.setAttribute("recentProducts", recentProducts);
-            request.setAttribute("recentOrders", recentOrders);
 
             System.out.println("[SellerDashboard] Forwarding to JSP");
             request.getRequestDispatcher("/seller/dashboard.jsp").forward(request, response);
@@ -139,7 +136,6 @@ public class SellerDashboardServlet extends HttpServlet {
             request.setAttribute("pendingOrders", 0L);
             request.setAttribute("totalRevenue", 0.0);
             request.setAttribute("recentProducts", new ArrayList<>());
-            request.setAttribute("recentOrders", new ArrayList<>());
             request.setAttribute("error", "Có lỗi khi tải dữ liệu: " + e.getMessage());
 
             try {

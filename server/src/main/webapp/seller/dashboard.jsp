@@ -43,8 +43,6 @@
                         Role: ${sessionScope.role}<br>
                         Total Products: ${totalProducts}<br>
                         Active Products: ${activeProducts}<br>
-                        Recent Products Count: ${recentProducts.size()}<br>
-                        Recent Orders Count: ${recentOrders.size()}
                     </div>
 
                     <!-- Stats Grid -->
