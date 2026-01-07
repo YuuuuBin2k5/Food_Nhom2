@@ -214,7 +214,7 @@
     <jsp:include page="../common/footer.jsp"/>
     <jsp:include page="../common/pwa-script.jsp"/>
     
-    <script></script>
+    <script>
         // Auto hide toast after 3 seconds
         setTimeout(function() {
             var toasts = document.querySelectorAll('.toast-modern');
