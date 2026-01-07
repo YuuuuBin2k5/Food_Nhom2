@@ -10,73 +10,7 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Đơn hàng - Seller</title>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
-                <style>
-                    .filter-bar {
-                        border-bottom: 2px solid #e2e8f0;
-                        display: flex;
-                        flex-wrap: wrap;
-                        gap: 0.5rem;
-                        overflow-x: auto;
-                        padding-bottom: 0.5rem;
-                    }
-
-                    .filter-bar a {
-                        padding: 0.75rem 1.5rem;
-                        display: inline-block;
-                        text-decoration: none;
-                        font-weight: 600;
-                        white-space: nowrap;
-                        border-radius: 8px 8px 0 0;
-                        transition: all 0.2s ease;
-                        min-width: fit-content;
-                    }
-
-                    .filter-bar a:hover {
-                        background-color: #f7fafc;
-                    }
-
-                    @media (max-width: 768px) {
-                        .filter-bar {
-                            gap: 0.25rem;
-                        }
-
-                        .filter-bar a {
-                            padding: 0.5rem 1rem;
-                            font-size: 0.875rem;
-                        }
-                    }
-
-                    .action-buttons {
-                        display: flex;
-                        gap: 0.5rem;
-                        flex-wrap: wrap;
-                    }
-
-                    .action-buttons button {
-                        font-size: 0.875rem;
-                        padding: 0.5rem 1rem;
-                        border-radius: 4px;
-                        border: none;
-                        cursor: pointer;
-                        font-weight: 600;
-                        transition: all 0.2s ease;
-                    }
-
-                    .action-buttons button:hover {
-                        transform: translateY(-1px);
-                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-                    }
-
-                    @media (max-width: 640px) {
-                        .action-buttons {
-                            flex-direction: column;
-                        }
-
-                        .action-buttons button {
-                            width: 100%;
-                        }
-                    }
-                </style>
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/seller/seller_css.css">
             </head>
 
             <body class="bg-white">
@@ -85,36 +19,39 @@
                     <jsp:param name="currentPath" value="/seller/orders" />
                 </jsp:include>
 
-                <main
-                    style="margin-top: 96px; min-height: 80vh; padding: 2rem; max-width: 1400px; margin-left: auto; margin-right: auto;">
+                <main class="seller-main">
 
-                    <div style="margin-bottom: 2rem;">
-                        <h2 style="font-size: 1.5rem; color: #1a202c; margin-bottom: 1rem;">📦 Quản lý đơn hàng</h2>
+                    <div class="orders-header">
+                        <h2>📦 Quản lý đơn hàng</h2>
 
-                        <div class="filter-bar"
-                            style="border-bottom: 2px solid #e2e8f0; display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <div class="filter-bar">
                             <a href="?status=PENDING"
-                                style="padding: 0.75rem 1.5rem; display: inline-block; text-decoration: none; color: ${param.status == 'PENDING' || empty param.status ? '#ea580c' : '#718096'}; border-bottom: 2px solid ${param.status == 'PENDING' || empty param.status ? '#ea580c' : 'transparent'}; font-weight: 600; white-space: nowrap;">
+                                class="${param.status == 'PENDING' || empty param.status ? 'text-orange-600' : 'text-gray-500'}"
+                                style="border-bottom: 2px solid ${param.status == 'PENDING' || empty param.status ? '#ea580c' : 'transparent'};">
                                 🕐 Chờ duyệt
                             </a>
                             <a href="?status=CONFIRMED"
-                                style="padding: 0.75rem 1.5rem; display: inline-block; text-decoration: none; color: ${param.status == 'CONFIRMED' ? '#ea580c' : '#718096'}; border-bottom: 2px solid ${param.status == 'CONFIRMED' ? '#ea580c' : 'transparent'}; font-weight: 600; white-space: nowrap;">
+                                class="${param.status == 'CONFIRMED' ? 'text-orange-600' : 'text-gray-500'}"
+                                style="border-bottom: 2px solid ${param.status == 'CONFIRMED' ? '#ea580c' : 'transparent'};">
                                 ✅ Đã duyệt
                             </a>
                             <a href="?status=SHIPPING"
-                                style="padding: 0.75rem 1.5rem; display: inline-block; text-decoration: none; color: ${param.status == 'SHIPPING' ? '#ea580c' : '#718096'}; border-bottom: 2px solid ${param.status == 'SHIPPING' ? '#ea580c' : 'transparent'}; font-weight: 600; white-space: nowrap;">
+                                class="${param.status == 'SHIPPING' ? 'text-orange-600' : 'text-gray-500'}"
+                                style="border-bottom: 2px solid ${param.status == 'SHIPPING' ? '#ea580c' : 'transparent'};">
                                 🚚 Đang giao
                             </a>
                             <a href="?status=DELIVERED"
-                                style="padding: 0.75rem 1.5rem; display: inline-block; text-decoration: none; color: ${param.status == 'DELIVERED' ? '#ea580c' : '#718096'}; border-bottom: 2px solid ${param.status == 'DELIVERED' ? '#ea580c' : 'transparent'}; font-weight: 600; white-space: nowrap;">
+                                class="${param.status == 'DELIVERED' ? 'text-orange-600' : 'text-gray-500'}"
+                                style="border-bottom: 2px solid ${param.status == 'DELIVERED' ? '#ea580c' : 'transparent'};">
                                 📦 Đã giao
                             </a>
                             <a href="?status=CANCELLED"
-                                style="padding: 0.75rem 1.5rem; display: inline-block; text-decoration: none; color: ${param.status == 'CANCELLED' ? '#ea580c' : '#718096'}; border-bottom: 2px solid ${param.status == 'CANCELLED' ? '#ea580c' : 'transparent'}; font-weight: 600; white-space: nowrap;">
+                                class="${param.status == 'CANCELLED' ? 'text-orange-600' : 'text-gray-500'}"
+                                style="border-bottom: 2px solid ${param.status == 'CANCELLED' ? '#ea580c' : 'transparent'};">
                                 ❌ Đã hủy
                             </a>
-                            <a href="?status=ALL"
-                                style="padding: 0.75rem 1.5rem; display: inline-block; text-decoration: none; color: ${param.status == 'ALL' ? '#ea580c' : '#718096'}; border-bottom: 2px solid ${param.status == 'ALL' ? '#ea580c' : 'transparent'}; font-weight: 600; white-space: nowrap;">
+                            <a href="?status=ALL" class="${param.status == 'ALL' ? 'text-orange-600' : 'text-gray-500'}"
+                                style="border-bottom: 2px solid ${param.status == 'ALL' ? '#ea580c' : 'transparent'};">
                                 📋 Tất cả
                             </a>
                         </div>
@@ -122,78 +59,65 @@
 
                     <c:choose>
                         <c:when test="${not empty orders}">
-                            <table
-                                style="width: 100%; border-collapse: collapse; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
-                                <thead style="background: #f7fafc;">
+                            <table class="orders-table">
+                                <thead>
                                     <tr>
-                                        <th style="padding: 1rem; text-align: left;">Mã đơn</th>
-                                        <th style="padding: 1rem; text-align: left;">Khách hàng</th>
-                                        <th style="padding: 1rem; text-align: left;">Địa chỉ</th>
-                                        <th style="padding: 1rem; text-align: left;">Tổng tiền</th>
-                                        <th style="padding: 1rem; text-align: left;">Ngày đặt</th>
-                                        <th style="padding: 1rem; text-align: left;">Trạng thái</th>
-                                        <th style="padding: 1rem; text-align: left;">Hành động</th>
+                                        <th>Mã đơn</th>
+                                        <th>Khách hàng</th>
+                                        <th>Địa chỉ</th>
+                                        <th>Tổng tiền</th>
+                                        <th>Ngày đặt</th>
+                                        <th>Trạng thái</th>
+                                        <th>Hành động</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <c:forEach var="o" items="${orders}">
-                                        <tr style="border-top: 1px solid #e2e8f0;">
-                                            <td style="padding: 1rem; font-weight: bold;">#${o.orderId}</td>
-                                            <td style="padding: 1rem;">${o.buyer.fullName}</td>
-                                            <td style="padding: 1rem;">${o.shippingAddress}</td>
-                                            <td style="padding: 1rem; font-weight: 600; color: #2d3748;">
+                                        <tr>
+                                            <td class="order-id">#${o.orderId}</td>
+                                            <td>${o.buyer.fullName}</td>
+                                            <td>${o.shippingAddress}</td>
+                                            <td class="order-total">
                                                 <fmt:formatNumber value="${o.payment.amount}" type="currency"
                                                     currencySymbol="₫" maxFractionDigits="0" />
                                             </td>
-                                            <td style="padding: 1rem; color: #718096;">
+                                            <td class="order-date">
                                                 <fmt:formatDate value="${o.orderDate}" pattern="dd/MM/yyyy HH:mm" />
                                             </td>
-                                            <td style="padding: 1rem;">
+                                            <td>
                                                 <c:choose>
                                                     <c:when test="${o.status == 'PENDING'}">
-                                                        <span
-                                                            style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600;">🕐
-                                                            Chờ duyệt</span>
+                                                        <span class="order-status-pending">🕐 Chờ duyệt</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'CONFIRMED'}">
-                                                        <span
-                                                            style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600;">✅
-                                                            Đã duyệt</span>
+                                                        <span class="order-status-confirmed">✅ Đã duyệt</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'SHIPPING'}">
-                                                        <span
-                                                            style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600;">🚚
-                                                            Đang giao</span>
+                                                        <span class="order-status-shipping">🚚 Đang giao</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'DELIVERED'}">
-                                                        <span
-                                                            style="background: #dcfce7; color: #166534; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600;">📦
-                                                            Đã giao</span>
+                                                        <span class="order-status-delivered">📦 Đã giao</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'CANCELLED'}">
-                                                        <span
-                                                            style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600;">❌
-                                                            Đã hủy</span>
+                                                        <span class="order-status-cancelled">❌ Đã hủy</span>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <span
-                                                            style="background: #f3f4f6; color: #374151; padding: 0.25rem 0.75rem; border-radius: 9999px; font-size: 0.875rem; font-weight: 600;">${o.status}</span>
+                                                        <span class="status-badge">${o.status}</span>
                                                     </c:otherwise>
                                                 </c:choose>
                                             </td>
-                                            <td style="padding: 1rem;">
+                                            <td>
                                                 <c:choose>
                                                     <c:when test="${o.status == 'PENDING'}">
-                                                        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                                        <div class="action-buttons">
                                                             <form
                                                                 action="${pageContext.request.contextPath}/seller/orders"
                                                                 method="post" style="display: inline;">
                                                                 <input type="hidden" name="action" value="CONFIRM">
                                                                 <input type="hidden" name="orderId"
                                                                     value="${o.orderId}">
-                                                                <button type="submit"
-                                                                    style="background: #38a169; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">✅
-                                                                    Duyệt đơn</button>
+                                                                <button type="submit" class="btn-approve">✅ Duyệt
+                                                                    đơn</button>
                                                             </form>
                                                             <form
                                                                 action="${pageContext.request.contextPath}/seller/orders"
@@ -201,35 +125,30 @@
                                                                 <input type="hidden" name="action" value="CANCEL">
                                                                 <input type="hidden" name="orderId"
                                                                     value="${o.orderId}">
-                                                                <button type="submit"
-                                                                    style="background: #dc2626; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.875rem;"
+                                                                <button type="submit" class="btn-cancel-order"
                                                                     onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">❌
                                                                     Hủy đơn</button>
                                                             </form>
                                                         </div>
                                                     </c:when>
                                                     <c:when test="${o.status == 'CONFIRMED'}">
-                                                        <span
-                                                            style="color: #16a34a; font-size: 0.875rem; font-weight: 600;">✅
-                                                            Đã duyệt - Chờ shipper nhận đơn</span>
+                                                        <span class="order-action-text order-action-success">✅ Đã duyệt
+                                                            - Chờ shipper nhận đơn</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'SHIPPING'}">
-                                                        <span
-                                                            style="color: #2563eb; font-size: 0.875rem; font-weight: 600;">🚚
-                                                            Đang được giao bởi shipper</span>
+                                                        <span class="order-action-text order-action-info">🚚 Đang được
+                                                            giao bởi shipper</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'DELIVERED'}">
-                                                        <span
-                                                            style="color: #16a34a; font-size: 0.875rem; font-weight: 600;">✅
-                                                            Đã giao thành công</span>
+                                                        <span class="order-action-text order-action-success">✅ Đã giao
+                                                            thành công</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'CANCELLED'}">
-                                                        <span
-                                                            style="color: #dc2626; font-size: 0.875rem; font-weight: 600;">❌
-                                                            Đơn hàng đã bị hủy</span>
+                                                        <span class="order-action-text order-action-error">❌ Đơn hàng đã
+                                                            bị hủy</span>
                                                     </c:when>
                                                     <c:otherwise>
-                                                        <span style="color: #718096; font-size: 0.875rem;">Không có hành
+                                                        <span class="order-action-text order-action-muted">Không có hành
                                                             động</span>
                                                     </c:otherwise>
                                                 </c:choose>
@@ -240,8 +159,7 @@
                             </table>
                         </c:when>
                         <c:otherwise>
-                            <div
-                                style="text-align: center; padding: 3rem; background: #f7fafc; border-radius: 8px; color: #718096;">
+                            <div class="empty-state">
                                 <p>Chưa có đơn hàng nào trong mục này.</p>
                             </div>
                         </c:otherwise>
