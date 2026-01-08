@@ -1,6 +1,7 @@
 package com.ecommerce.servlet;
 
 import com.ecommerce.service.AuthService;
+import com.ecommerce.util.AppConfig;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -32,8 +33,11 @@ public class ForgotPasswordPageServlet extends HttpServlet {
                 throw new Exception("Vui lòng nhập email");
             }
             
+            // Lấy base URL động
+            String baseUrl = AppConfig.getBaseUrl(request);
+            
             // Send reset password email
-            authService.forgotPassword(email);
+            authService.forgotPassword(email, baseUrl);
             
             // Success
             request.setAttribute("success", "Đã gửi email hướng dẫn đặt lại mật khẩu. Vui lòng kiểm tra hộp thư.");

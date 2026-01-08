@@ -110,14 +110,16 @@ public class AuthService {
     /* =========================
        FORGOT PASSWORD
        ========================= */
-    public void forgotPassword(String email) throws Exception {
+    public void forgotPassword(String email, String baseUrl) throws Exception {
         EntityManager em = DBUtil.getEmFactory().createEntityManager();
 
         try {
             User user = findUserByEmail(em, email);
 
-            // Không leak thông tin email có tồn tại hay không
-            if (user == null) return;
+            // Throw exception nếu email không tồn tại
+            if (user == null) {
+                throw new Exception("Email không tồn tại trong hệ thống");
+            }
 
             em.getTransaction().begin();
 
@@ -131,12 +133,17 @@ public class AuthService {
             em.persist(token);
             em.getTransaction().commit();
 
-            // Gửi mail
-            String resetLink = "http://localhost:5173/reset-password?token=" + tokenValue;
+            // Gửi mail với link động
+            String resetLink = baseUrl + "/reset-password?token=" + tokenValue;
             MailUtil.send(
                 user.getEmail(),
-                "Reset your password",
-                "Click the link to reset your password:\n\n" + resetLink
+                "Đặt lại mật khẩu - FoodRescue",
+                "Xin chào " + user.getFullName() + ",\n\n" +
+                "Bạn đã yêu cầu đặt lại mật khẩu. Vui lòng click vào link sau để đặt lại mật khẩu:\n\n" +
+                resetLink + "\n\n" +
+                "Link này sẽ hết hạn sau 15 phút.\n\n" +
+                "Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này.\n\n" +
+                "Trân trọng,\nFoodRescue Team"
             );
 
         } catch (Exception e) {

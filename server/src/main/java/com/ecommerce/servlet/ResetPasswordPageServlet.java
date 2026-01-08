@@ -51,7 +51,11 @@ public class ResetPasswordPageServlet extends HttpServlet {
             }
             
             // Reset password
-            authService.resetPassword(token, password);
+            boolean success = authService.resetPassword(token, password);
+            
+            if (!success) {
+                throw new Exception("Token không hợp lệ hoặc đã hết hạn");
+            }
             
             // Success
             request.setAttribute("success", "Đổi mật khẩu thành công! Đang chuyển đến trang đăng nhập...");
@@ -59,6 +63,7 @@ public class ResetPasswordPageServlet extends HttpServlet {
             
         } catch (Exception e) {
             request.setAttribute("error", e.getMessage());
+            request.setAttribute("token", token);
             request.getRequestDispatcher("/auth/reset-password.jsp").forward(request, response);
         }
     }

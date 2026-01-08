@@ -47,6 +47,7 @@ com\ecommerce\servlet\ForgotPasswordPageServlet.class
 com\ecommerce\entity\Buyer.class
 com\ecommerce\service\ProductService.class
 com\ecommerce\servlet\RegisterPageServlet.class
+com\ecommerce\util\AppConfig.class
 com\ecommerce\entity\Seller.class
 com\ecommerce\servlet\SellerDashboardServlet.class
 com\ecommerce\entity\OrderDetail.class

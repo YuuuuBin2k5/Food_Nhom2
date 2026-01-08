@@ -63,14 +63,7 @@
             <c:if test="${not empty sessionScope.otpError}">
                 <div class="error-message">⚠️ ${sessionScope.otpError}</div>
                 <% session.removeAttribute("otpError"); %>
-            </c:if>
-            
-            <!-- Dev OTP (remove in production) -->
-            <c:if test="${not empty sessionScope.devOtp}">
-                <div style="background: #fef3c7; color: #92400e; padding: 0.5rem 0.75rem; border-radius: 0.5rem; font-size: 0.8rem; margin-bottom: 1rem;">
-                    🔑 [DEV] Mã OTP: <strong>${sessionScope.devOtp}</strong>
-                </div>
-            </c:if>
+            </c:if> 
             
             <!-- OTP Send Form (hidden, submitted via JS) -->
             <form method="POST" action="${pageContext.request.contextPath}/otp/send" id="otpForm" style="display: none;">

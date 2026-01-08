@@ -18,19 +18,59 @@ public class OtpService {
     // OTP expiry time: 10 minutes
     private static final long OTP_EXPIRY_MS = 10 * 60 * 1000;
     
+    // Cleanup expired OTPs every 5 minutes
+    static {
+        Thread cleanupThread = new Thread(() -> {
+            while (true) {
+                try {
+                    Thread.sleep(5 * 60 * 1000); // 5 minutes
+                    cleanupExpiredOtps();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        });
+        cleanupThread.setDaemon(true);
+        cleanupThread.start();
+    }
+    
+    /**
+     * Cleanup expired OTPs
+     */
+    private static void cleanupExpiredOtps() {
+        long now = System.currentTimeMillis();
+        otpStore.entrySet().removeIf(entry -> 
+            now - entry.getValue().timestamp > OTP_EXPIRY_MS
+        );
+        System.out.println("=== [OTP] Cleaned up expired OTPs. Remaining: " + otpStore.size() + " ===");
+    }
+    
     /**
      * Generate and send OTP to email
      */
     public String generateOtp(String email) throws Exception {
-        // Generate 6-digit OTP
-        String otp = String.format("%06d", new Random().nextInt(999999));
+        email = email.toLowerCase();
+        
+        // Check rate limiting - không cho gửi quá 1 OTP trong 1 phút
+        OtpData existingData = otpStore.get(email);
+        if (existingData != null) {
+            long timeSinceLastOtp = System.currentTimeMillis() - existingData.timestamp;
+            if (timeSinceLastOtp < 60 * 1000) { // 1 minute
+                long secondsRemaining = (60 * 1000 - timeSinceLastOtp) / 1000;
+                throw new Exception("Vui lòng đợi " + secondsRemaining + " giây trước khi gửi lại OTP");
+            }
+        }
+        
+        // Generate 6-digit OTP (đảm bảo luôn có 6 chữ số)
+        String otp = String.format("%06d", new Random().nextInt(1000000));
         
         // Store OTP with timestamp
-        otpStore.put(email.toLowerCase(), new OtpData(otp, System.currentTimeMillis()));
+        otpStore.put(email, new OtpData(otp, System.currentTimeMillis()));
         
         // Send email
         try {
-            String subject = "Mã xác thực đăng ký tài khoản - FreshSave";
+            String subject = "Mã xác thực đăng ký tài khoản - FoodRescue";
             String body = buildEmailBody(otp);
             
             MailUtil.send(email, subject, body);
@@ -82,13 +122,13 @@ public class OtpService {
      */
     private String buildEmailBody(String otp) {
         return "Xin chào,\n\n" +
-               "Cảm ơn bạn đã đăng ký tài khoản tại FreshSave!\n\n" +
+               "Cảm ơn bạn đã đăng ký tài khoản tại FoodRescue!\n\n" +
                "Mã xác thực (OTP) của bạn là:\n\n" +
                "    " + otp + "\n\n" +
                "Mã này có hiệu lực trong 10 phút.\n\n" +
                "Nếu bạn không thực hiện đăng ký này, vui lòng bỏ qua email này.\n\n" +
                "Trân trọng,\n" +
-               "Đội ngũ FreshSave";
+               "Đội ngũ FoodRescue";
     }
     
     /**
