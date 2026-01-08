@@ -41,6 +41,8 @@ public class ProductDTO {
         this.expirationDate = product.getExpirationDate();
         this.manufactureDate = product.getManufactureDate();
         this.quantity = product.getQuantity();
+        this.imageUrl = product.getImageUrl();
+        this.createdDate = product.getCreatedDate();
         this.status = product.getStatus();
         this.category = product.getCategory();
         
