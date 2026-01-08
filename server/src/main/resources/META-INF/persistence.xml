@@ -27,12 +27,11 @@
             <property name="hibernate.show_sql" value="false"/>
             <property name="hibernate.format_sql" value="false"/>
             
-            <!-- Connection pool - tăng size -->
-            <property name="hibernate.connection.pool_size" value="50"/>
-            <property name="hibernate.c3p0.min_size" value="5"/>
-            <property name="hibernate.c3p0.max_size" value="20"/>
-            <property name="hibernate.c3p0.timeout" value="300"/>
-            <property name="hibernate.c3p0.max_statements" value="50"/>
+            <!-- Connection pool - 30 connections cho 5-6 PC -->
+            <property name="hibernate.connection.pool_size" value="20"/>
+            
+            <!-- Timeout settings -->
+            <property name="hibernate.connection.provider_disables_autocommit" value="false"/>
         </properties>
     </persistence-unit>
 </persistence>

@@ -316,7 +316,7 @@
                                 <!-- Left: Image Section -->
                                 <div>
                                     <div class="product-image-section">
-                                        <img src="https://placehold.co/600x600/FF6B6B/FFFFFF?text=Food"
+                                        <img src="${not empty product.imageUrl ? product.imageUrl : 'https://placehold.co/600x600/FF6B6B/FFFFFF?text=No+Image'}"
                                             alt="${product.name}" class="product-image">
                                         <c:if test="${product.originalPrice > product.salePrice}">
                                             <c:set var="discount"
