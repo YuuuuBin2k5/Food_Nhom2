@@ -347,9 +347,14 @@ public class InsertDB {
             double originalPrice = 20000 + random.nextInt(80000);
             double salePrice = originalPrice * (0.7 + random.nextDouble() * 0.25);
             
+            // 5 sản phẩm đầu sắp hết hạn (1-3 ngày) để test cảnh báo
+            Date expirationDate = (i < 5) 
+                ? getFutureDate(random.nextInt(3) + 1) 
+                : getFutureDate(random.nextInt(365) + 180);
+            
             Product product = new Product(
                 data[0], data[1], originalPrice, salePrice,
-                getFutureDate(random.nextInt(365) + 180),
+                expirationDate,
                 getRandomPastDate(90),
                 50 + random.nextInt(200),
                 data[2], seller

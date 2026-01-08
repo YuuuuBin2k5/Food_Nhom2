@@ -12,7 +12,7 @@ public class VNPayUtil {
     private static final String TMN_CODE = "NVZY5W6Q";
     private static final String HASH_SECRET = "8BX47HMR3WR8FO3EN91PGGO72NQAWO5I";
     private static final String VNP_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
-    private static final String RETURN_URL = "http://localhost:8080/server/vnpay";
+    private static final String RETURN_URL = "https://foodrescueweb.onrender.com/vnpay";
     
     /**
      * Generate HMAC SHA512 hash

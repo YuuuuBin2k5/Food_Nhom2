@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             version="3.0"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence
+             https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd">
+
+    <persistence-unit name="FoodRescuePU" transaction-type="RESOURCE_LOCAL">
+        <!-- Đúng với Hibernate -->
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <class>com.ecommerce.entity.User</class>
+        <class>com.ecommerce.entity.Buyer</class>
+        <class>com.ecommerce.entity.Seller</class>
+        <class>com.ecommerce.entity.Shipper</class>
+        <class>com.ecommerce.entity.Admin</class>
+        <class>com.ecommerce.entity.PasswordResetToken</class>
+
+        <properties>
+            <!-- Render PostgreSQL Database - Singapore (gần VN) -->
+            <property name="jakarta.persistence.jdbc.driver" value="org.postgresql.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:postgresql://dpg-d5f6l6hr0fns73e6u910-a.singapore-postgres.render.com:5432/server_foodsave_zbtw?sslmode=require"/>
+            <property name="jakarta.persistence.jdbc.user" value="server_foodsave_zbtw_user"/>
+            <property name="jakarta.persistence.jdbc.password" value="66IupWS6pLo8NpDrIRQq5fG7P79DsGix"/>
+
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.show_sql" value="false"/>
+            <property name="hibernate.format_sql" value="false"/>
+            
+            <!-- Connection pool - tăng size -->
+            <property name="hibernate.connection.pool_size" value="50"/>
+            <property name="hibernate.c3p0.min_size" value="5"/>
+            <property name="hibernate.c3p0.max_size" value="20"/>
+            <property name="hibernate.c3p0.timeout" value="300"/>
+            <property name="hibernate.c3p0.max_statements" value="50"/>
+        </properties>
+    </persistence-unit>
+</persistence>
