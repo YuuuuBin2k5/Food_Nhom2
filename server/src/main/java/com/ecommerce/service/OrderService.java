@@ -310,7 +310,6 @@ public class OrderService {
                 }
             }
 
-            OrderStatus oldStatus = order.getStatus();
             order.setStatus(newStatus);
             em.merge(order);
 

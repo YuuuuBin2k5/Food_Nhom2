@@ -59,14 +59,19 @@ public class SellerOrdersServlet extends HttpServlet {
 
             // ✅ Filter by status if provided
             String statusParam = request.getParameter("status");
-            // 2. [QUAN TRỌNG] Logic mặc định:
-            // Nếu không có status (vào từ sidebar hoặc redirect), ép kiểu về PENDING
-            // Việc này giúp khớp với giao diện JSP đang highlight tab Pending
+
+            // Debug log để kiểm tra
+            System.out.println("Status parameter received: " + statusParam);
+
+            // Logic mặc định: nếu không có status parameter thì hiển thị PENDING
+            // Nhưng nếu có status parameter thì sử dụng giá trị đó
             if (statusParam == null || statusParam.trim().isEmpty()) {
                 statusParam = "PENDING";
             }
 
-            // 3. Thực hiện lọc
+            System.out.println("Final status to filter: " + statusParam);
+
+            // Thực hiện lọc
             // Nếu status là "ALL" thì bỏ qua đoạn này (giữ nguyên list đầy đủ)
             // Nếu khác "ALL" (ví dụ PENDING, CONFIRMED...) thì lọc theo trạng thái đó
             if (!"ALL".equals(statusParam)) {
@@ -74,9 +79,14 @@ public class SellerOrdersServlet extends HttpServlet {
                 orders = orders.stream()
                         .filter(o -> finalStatus.equals(o.getStatus().name()))
                         .collect(java.util.stream.Collectors.toList());
+
+                System.out.println("After filtering by " + finalStatus + ": " + orders.size() + " orders");
+            } else {
+                System.out.println("Showing ALL orders: " + orders.size() + " orders");
             }
 
             request.setAttribute("orders", orders);
+            request.setAttribute("currentStatus", statusParam); // Thêm để JSP biết status hiện tại
             request.getRequestDispatcher("/seller/orders.jsp").forward(request, response);
 
         } catch (Exception e) {
@@ -109,20 +119,15 @@ public class SellerOrdersServlet extends HttpServlet {
                     case "CONFIRM": // Duyệt đơn
                         newStatus = OrderStatus.CONFIRMED;
                         break;
-                    case "SHIP": // Giao hàng
-                        newStatus = OrderStatus.SHIPPING;
-                        break;
                     case "CANCEL": // Hủy đơn
                         newStatus = OrderStatus.CANCELLED;
                         break;
-                    case "DELIVER": // Đánh dấu đã giao (nếu cần)
-                        newStatus = OrderStatus.DELIVERED;
+                    default:
+                        System.out.println("Action không hợp lệ cho Seller: " + action);
                         break;
-                    // Thêm các case khác nếu cần
                 }
 
                 if (newStatus != null) {
-                    // Gọi Service xử lý (Code Service bạn đã viết rồi)
                     orderService.updateOrderStatus(orderId, newStatus);
                 }
             }
