@@ -58,6 +58,7 @@ com\ecommerce\servlet\VNPayServlet.class
 com\ecommerce\util\VNPayUtil.class
 com\ecommerce\dto\ProductPageResponse.class
 com\ecommerce\service\OrderService.class
+com\ecommerce\servlet\ProfileServlet.class
 com\ecommerce\servlet\ShipperDeliveringServlet.class
 com\ecommerce\servlet\LogoutServlet.class
 com\ecommerce\util\PasswordUtil.class

@@ -10,6 +10,7 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Kho hàng - Seller</title>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/css/sidebar.css">
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/seller/seller_css.css">
             </head>
 
@@ -26,10 +27,10 @@
                         <div class="alert-success">
                             <c:choose>
                                 <c:when test="${param.message == 'created'}">
-                                    ✅ Sản phẩm đã được đăng thành công! Đang chờ admin duyệt.
+                                    Sản phẩm đã được đăng thành công! Đang chờ admin duyệt.
                                 </c:when>
                                 <c:when test="${param.message == 'updated'}">
-                                    ✅ Sản phẩm đã được cập nhật thành công! Đang chờ admin duyệt lại.
+                                    Sản phẩm đã được cập nhật thành công! Đang chờ admin duyệt lại.
                                 </c:when>
                                 <c:otherwise>
                                     ${param.message}
@@ -40,7 +41,7 @@
 
                     <c:if test="${not empty error}">
                         <div class="alert-error">
-                            ❌ ${error}
+                            ${error}
                         </div>
                     </c:if>
 
@@ -68,7 +69,7 @@
 
                     <!-- Add New Product Form -->
                     <div class="product-form">
-                        <h3>📝 Đăng sản phẩm mới</h3>
+                        <h3>Đăng sản phẩm mới</h3>
                         <form action="${pageContext.request.contextPath}/seller/products" method="post"
                             class="form-grid">
                             <input type="hidden" name="action" value="create">
@@ -137,38 +138,26 @@
                     <!-- Filter Bar -->
                     <div class="filter-bar">
                         <a href="?status=PENDING_APPROVAL"
-                            class="${param.status == 'PENDING_APPROVAL' || empty param.status ? 'text-orange-600' : 'text-gray-500'}"
-                            style="border-bottom: 2px solid ${param.status == 'PENDING_APPROVAL' || empty param.status ? '#ea580c' : 'transparent'};">
-                            🕐 Chờ duyệt
+                            class="${param.status == 'PENDING_APPROVAL' || empty param.status ? 'filter-active' : ''}">
+                            Chờ duyệt
                         </a>
-                        <a href="?status=REJECTED"
-                            class="${param.status == 'REJECTED' ? 'text-orange-600' : 'text-gray-500'}"
-                            style="border-bottom: 2px solid ${param.status == 'REJECTED' ? '#ea580c' : 'transparent'};">
-                            ❌ Bị từ chối
+                        <a href="?status=REJECTED" class="${param.status == 'REJECTED' ? 'filter-active' : ''}">
+                            Bị từ chối
                         </a>
-                        <a href="?status=ACTIVE"
-                            class="${param.status == 'ACTIVE' ? 'text-orange-600' : 'text-gray-500'}"
-                            style="border-bottom: 2px solid ${param.status == 'ACTIVE' ? '#ea580c' : 'transparent'};">
-                            ✅ Đang bán
+                        <a href="?status=ACTIVE" class="${param.status == 'ACTIVE' ? 'filter-active' : ''}">
+                            Đang bán
                         </a>
-                        <a href="?status=SOLD_OUT"
-                            class="${param.status == 'SOLD_OUT' ? 'text-orange-600' : 'text-gray-500'}"
-                            style="border-bottom: 2px solid ${param.status == 'SOLD_OUT' ? '#ea580c' : 'transparent'};">
-                            📦 Hết hàng
+                        <a href="?status=SOLD_OUT" class="${param.status == 'SOLD_OUT' ? 'filter-active' : ''}">
+                            Hết hàng
                         </a>
-                        <a href="?status=EXPIRED"
-                            class="${param.status == 'EXPIRED' ? 'text-orange-600' : 'text-gray-500'}"
-                            style="border-bottom: 2px solid ${param.status == 'EXPIRED' ? '#ea580c' : 'transparent'};">
-                            ⏰ Hết hạn
+                        <a href="?status=EXPIRED" class="${param.status == 'EXPIRED' ? 'filter-active' : ''}">
+                            Hết hạn
                         </a>
-                        <a href="?status=HIDDEN"
-                            class="${param.status == 'HIDDEN' ? 'text-orange-600' : 'text-gray-500'}"
-                            style="border-bottom: 2px solid ${param.status == 'HIDDEN' ? '#ea580c' : 'transparent'};">
-                            👁️ Đã ẩn
+                        <a href="?status=HIDDEN" class="${param.status == 'HIDDEN' ? 'filter-active' : ''}">
+                            Đã ẩn
                         </a>
-                        <a href="?status=ALL" class="${param.status == 'ALL' ? 'text-orange-600' : 'text-gray-500'}"
-                            style="border-bottom: 2px solid ${param.status == 'ALL' ? '#ea580c' : 'transparent'};">
-                            📋 Tất cả
+                        <a href="?status=ALL" class="${param.status == 'ALL' ? 'filter-active' : ''}">
+                            Tất cả
                         </a>
                     </div>
 
@@ -220,22 +209,22 @@
                                     <td>
                                         <c:choose>
                                             <c:when test="${p.status == 'PENDING_APPROVAL'}">
-                                                <span class="status-pending-approval">🕐 Chờ duyệt</span>
+                                                <span class="status-pending-approval">Chờ duyệt</span>
                                             </c:when>
                                             <c:when test="${p.status == 'REJECTED'}">
-                                                <span class="status-rejected">❌ Bị từ chối</span>
+                                                <span class="status-rejected">Bị từ chối</span>
                                             </c:when>
                                             <c:when test="${p.status == 'ACTIVE'}">
-                                                <span class="status-active">✅ Đang bán</span>
+                                                <span class="status-active">Đang bán</span>
                                             </c:when>
                                             <c:when test="${p.status == 'SOLD_OUT'}">
-                                                <span class="status-sold-out">📦 Hết hàng</span>
+                                                <span class="status-sold-out">Hết hàng</span>
                                             </c:when>
                                             <c:when test="${p.status == 'EXPIRED'}">
-                                                <span class="status-expired">⏰ Hết hạn</span>
+                                                <span class="status-expired">Hết hạn</span>
                                             </c:when>
                                             <c:when test="${p.status == 'HIDDEN'}">
-                                                <span class="status-hidden">👁️ Đã ẩn</span>
+                                                <span class="status-hidden">Đã ẩn</span>
                                             </c:when>
                                             <c:otherwise>
                                                 <span class="status-badge">${p.status}</span>
@@ -250,41 +239,41 @@
                                                         method="post" style="display:inline;">
                                                         <input type="hidden" name="action" value="hide">
                                                         <input type="hidden" name="productId" value="${p.productId}">
-                                                        <button type="submit" class="btn-hide">👁️ Ẩn đi</button>
+                                                        <button type="submit" class="btn-hide">Ẩn đi</button>
                                                     </form>
                                                 </c:when>
                                                 <c:when test="${p.status == 'HIDDEN'}">
                                                     <button
                                                         onclick="openEditModal(${p.productId}, '${p.name}', '${p.description}', ${p.originalPrice}, ${p.salePrice}, ${p.quantity}, '${p.imageUrl}', '${p.expirationDate}', '${p.category}')"
-                                                        class="btn-edit">✏️ Chỉnh sửa</button>
+                                                        class="btn-edit">Chỉnh sửa</button>
                                                     <form action="${pageContext.request.contextPath}/seller/products"
                                                         method="post" style="display:inline;"
                                                         onsubmit="return confirm('Hiện lại sản phẩm sẽ cần Admin duyệt lại. Bạn chắc chắn chứ?');">
                                                         <input type="hidden" name="action" value="show">
                                                         <input type="hidden" name="productId" value="${p.productId}">
-                                                        <button type="submit" class="btn-show">⚠️ Hiện lại</button>
+                                                        <button type="submit" class="btn-show">Hiện lại</button>
                                                     </form>
                                                 </c:when>
                                                 <c:when test="${p.status == 'REJECTED'}">
                                                     <button
                                                         onclick="openEditModal(${p.productId}, '${p.name}', '${p.description}', ${p.originalPrice}, ${p.salePrice}, ${p.quantity}, '${p.imageUrl}', '${p.expirationDate}', '${p.category}')"
-                                                        class="btn-fix">✏️ Sửa & Gửi lại</button>
+                                                        class="btn-fix">Sửa & Gửi lại</button>
                                                 </c:when>
                                                 <c:when test="${p.status == 'PENDING_APPROVAL'}">
-                                                    <span class="text-gray-500 text-sm">⏳ Đang chờ admin duyệt</span>
+                                                    <span class="text-gray-500 text-sm">Đang chờ admin duyệt</span>
                                                 </c:when>
                                                 <c:when test="${p.status == 'SOLD_OUT'}">
                                                     <form action="${pageContext.request.contextPath}/seller/products"
                                                         method="post" style="display:inline;">
                                                         <input type="hidden" name="action" value="restock">
                                                         <input type="hidden" name="productId" value="${p.productId}">
-                                                        <button type="submit" class="btn-restock">📦 Nhập thêm
+                                                        <button type="submit" class="btn-restock">Nhập thêm
                                                             hàng</button>
                                                     </form>
                                                 </c:when>
                                                 <c:when test="${p.status == 'EXPIRED'}">
                                                     <a href="${pageContext.request.contextPath}/seller/products/edit?id=${p.productId}"
-                                                        class="btn-extend">🔄 Gia hạn</a>
+                                                        class="btn-extend">Gia hạn</a>
                                                 </c:when>
                                                 <c:otherwise>
                                                     <span class="text-gray-500 text-sm">Không có hành động</span>

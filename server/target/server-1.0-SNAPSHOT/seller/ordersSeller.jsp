@@ -10,6 +10,7 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Đơn hàng - Seller</title>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/css/sidebar.css">
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/seller/seller_css.css">
             </head>
 
@@ -22,37 +23,37 @@
                 <main class="seller-main">
 
                     <div class="orders-header">
-                        <h2>📦 Quản lý đơn hàng</h2>
+                        <h2>Quản lý đơn hàng</h2>
 
                         <div class="filter-bar">
                             <a href="?status=PENDING"
                                 class="${param.status == 'PENDING' || empty param.status ? 'text-orange-600' : 'text-gray-500'}"
                                 style="border-bottom: 2px solid ${param.status == 'PENDING' || empty param.status ? '#ea580c' : 'transparent'};">
-                                🕐 Chờ duyệt
+                                Chờ duyệt
                             </a>
                             <a href="?status=CONFIRMED"
                                 class="${param.status == 'CONFIRMED' ? 'text-orange-600' : 'text-gray-500'}"
                                 style="border-bottom: 2px solid ${param.status == 'CONFIRMED' ? '#ea580c' : 'transparent'};">
-                                ✅ Đã duyệt
+                                Đã duyệt
                             </a>
                             <a href="?status=SHIPPING"
                                 class="${param.status == 'SHIPPING' ? 'text-orange-600' : 'text-gray-500'}"
                                 style="border-bottom: 2px solid ${param.status == 'SHIPPING' ? '#ea580c' : 'transparent'};">
-                                🚚 Đang giao
+                                Đang giao
                             </a>
                             <a href="?status=DELIVERED"
                                 class="${param.status == 'DELIVERED' ? 'text-orange-600' : 'text-gray-500'}"
                                 style="border-bottom: 2px solid ${param.status == 'DELIVERED' ? '#ea580c' : 'transparent'};">
-                                📦 Đã giao
+                                Đã giao
                             </a>
                             <a href="?status=CANCELLED"
                                 class="${param.status == 'CANCELLED' ? 'text-orange-600' : 'text-gray-500'}"
                                 style="border-bottom: 2px solid ${param.status == 'CANCELLED' ? '#ea580c' : 'transparent'};">
-                                ❌ Đã hủy
+                                Đã hủy
                             </a>
                             <a href="?status=ALL" class="${param.status == 'ALL' ? 'text-orange-600' : 'text-gray-500'}"
                                 style="border-bottom: 2px solid ${param.status == 'ALL' ? '#ea580c' : 'transparent'};">
-                                📋 Tất cả
+                                Tất cả
                             </a>
                         </div>
                     </div>
@@ -87,19 +88,19 @@
                                             <td>
                                                 <c:choose>
                                                     <c:when test="${o.status == 'PENDING'}">
-                                                        <span class="order-status-pending">🕐 Chờ duyệt</span>
+                                                        <span class="order-status-pending">Chờ duyệt</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'CONFIRMED'}">
-                                                        <span class="order-status-confirmed">✅ Đã duyệt</span>
+                                                        <span class="order-status-confirmed">Đã duyệt</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'SHIPPING'}">
-                                                        <span class="order-status-shipping">🚚 Đang giao</span>
+                                                        <span class="order-status-shipping">Đang giao</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'DELIVERED'}">
-                                                        <span class="order-status-delivered">📦 Đã giao</span>
+                                                        <span class="order-status-delivered">Đã giao</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'CANCELLED'}">
-                                                        <span class="order-status-cancelled">❌ Đã hủy</span>
+                                                        <span class="order-status-cancelled">Đã hủy</span>
                                                     </c:when>
                                                     <c:otherwise>
                                                         <span class="status-badge">${o.status}</span>
@@ -116,7 +117,7 @@
                                                                 <input type="hidden" name="action" value="CONFIRM">
                                                                 <input type="hidden" name="orderId"
                                                                     value="${o.orderId}">
-                                                                <button type="submit" class="btn-approve">✅ Duyệt
+                                                                <button type="submit" class="btn-approve">Duyệt
                                                                     đơn</button>
                                                             </form>
                                                             <form
@@ -126,25 +127,25 @@
                                                                 <input type="hidden" name="orderId"
                                                                     value="${o.orderId}">
                                                                 <button type="submit" class="btn-cancel-order"
-                                                                    onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">❌
+                                                                    onclick="return confirm('Bạn có chắc muốn hủy đơn hàng này?')">
                                                                     Hủy đơn</button>
                                                             </form>
                                                         </div>
                                                     </c:when>
                                                     <c:when test="${o.status == 'CONFIRMED'}">
-                                                        <span class="order-action-text order-action-success">✅ Đã duyệt
+                                                        <span class="order-action-text order-action-success">Đã duyệt
                                                             - Chờ shipper nhận đơn</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'SHIPPING'}">
-                                                        <span class="order-action-text order-action-info">🚚 Đang được
+                                                        <span class="order-action-text order-action-info">Đang được
                                                             giao bởi shipper</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'DELIVERED'}">
-                                                        <span class="order-action-text order-action-success">✅ Đã giao
+                                                        <span class="order-action-text order-action-success">Đã giao
                                                             thành công</span>
                                                     </c:when>
                                                     <c:when test="${o.status == 'CANCELLED'}">
-                                                        <span class="order-action-text order-action-error">❌ Đơn hàng đã
+                                                        <span class="order-action-text order-action-error">Đơn hàng đã
                                                             bị hủy</span>
                                                     </c:when>
                                                     <c:otherwise>

@@ -15,6 +15,10 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
     />
     <link
       rel="stylesheet"
+      href="${pageContext.request.contextPath}/css/sidebar.css"
+    />
+    <link
+      rel="stylesheet"
       href="${pageContext.request.contextPath}/seller/seller_css.css"
     />
   </head>
@@ -26,7 +30,7 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
 
     <main class="seller-main">
       <div class="dashboard-header">
-        <h2>👋 Chào mừng, ${sessionScope.user.fullName}</h2>
+        <h2>Chào mừng, ${sessionScope.user.fullName}</h2>
         <p>Đây là tình hình kinh doanh hôm nay của bạn.</p>
       </div>
 
@@ -75,10 +79,10 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
 
       <!-- Recent Products -->
       <div class="dashboard-card">
-        <h3>📦 Sản phẩm gần đây</h3>
+        <h3>Sản phẩm gần đây</h3>
         <c:choose>
           <c:when test="${not empty recentProducts}">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto mt-4">
               <table class="dashboard-table">
                 <thead>
                   <tr>
@@ -139,25 +143,25 @@ uri="http://java.sun.com/jsp/jstl/fmt" %>
 
       <!-- Quick Actions -->
       <div class="dashboard-card">
-        <h3>🚀 Hành động nhanh</h3>
-        <div class="quick-actions">
+        <h3>Hành động nhanh</h3>
+        <div class="quick-actions mt-4">
           <a
             href="${pageContext.request.contextPath}/seller/products"
             class="quick-action-btn quick-action-products"
           >
-            📦 Quản lý sản phẩm
+            Quản lý sản phẩm
           </a>
           <a
             href="${pageContext.request.contextPath}/seller/orders"
             class="quick-action-btn quick-action-orders"
           >
-            📋 Xem đơn hàng
+            Xem đơn hàng
           </a>
           <a
             href="${pageContext.request.contextPath}/seller/settings"
             class="quick-action-btn quick-action-settings"
           >
-            ⚙️ Cài đặt shop
+            Cài đặt shop
           </a>
         </div>
       </div>

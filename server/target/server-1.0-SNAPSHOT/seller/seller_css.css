@@ -178,8 +178,12 @@
 }
 
 .status-active {
-    background: #d4edda;
-    color: #155724;
+    background: #d1fae5;
+    color: #065f46;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
 }
 
 .status-inactive {
@@ -354,17 +358,32 @@
 /* Filter Bar */
 .filter-bar {
     display: flex;
-    gap: 2rem;
+    gap: 1rem;
     margin-bottom: 2rem;
-    padding-bottom: 1rem;
+    padding-bottom: 0;
     border-bottom: 1px solid #e5e7eb;
+    flex-wrap: wrap;
 }
 
 .filter-bar a {
     text-decoration: none;
-    padding: 0.5rem 0;
+    padding: 0.75rem 1rem;
     font-weight: 500;
+    font-size: 0.875rem;
     transition: all 0.2s;
+    color: #6b7280;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+}
+
+.filter-bar a:hover {
+    color: #374151;
+}
+
+.filter-bar a.filter-active {
+    color: #ea580c !important;
+    border-bottom-color: #ea580c !important;
 }
 
 /* Product Table */
@@ -982,8 +1001,20 @@
     }
 
     .filter-bar {
-        flex-wrap: wrap;
-        gap: 1rem;
+        gap: 0.5rem;
+        overflow-x: auto;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .filter-bar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filter-bar a {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.8rem;
+        min-width: fit-content;
     }
 
     .product-table,

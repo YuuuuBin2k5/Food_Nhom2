@@ -10,6 +10,7 @@
                 <meta name="viewport" content="width=device-width, initial-scale=1.0">
                 <title>Trang chủ - FoodRescue</title>
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/main.css">
+                <link rel="stylesheet" href="${pageContext.request.contextPath}/css/sidebar.css">
                 <link rel="stylesheet" href="${pageContext.request.contextPath}/css/buyer/home.css">
                 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
                     rel="stylesheet">
@@ -73,44 +74,52 @@
                     </div>
                 </section>
 
+
                 <!-- Features Section -->
                 <section class="features">
-                    <div class="section-title">
-                        <h2>Tại sao chọn FoodRescue?</h2>
-                        <p>Giải pháp mua sắm thông minh cho bạn</p>
-                    </div>
-
-                    <div class="features-grid">
-                        <div class="feature-card">
-                            <div class="feature-icon" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">
-                                ⏰
-                            </div>
-                            <h3>Tươi ngon đảm bảo</h3>
-                            <p>Sản phẩm gần hết hạn nhưng vẫn giữ được chất lượng tuyệt đối</p>
+                    <div class="features-container">
+                        <div class="features-intro">
+                            <span class="features-label">Tại sao?</span>
+                            <h2>Hôm nay mua,<br>ngày mai ăn</h2>
+                            <p>Thực phẩm sắp hết hạn không có nghĩa là hỏng. Chúng tôi giúp bạn tiết kiệm tiền và giảm
+                                lãng phí.</p>
                         </div>
 
-                        <div class="feature-card">
-                            <div class="feature-icon" style="background: linear-gradient(135deg, #34d399, #10b981);">
-                                📉
+                        <div class="benefits-list">
+                            <div class="benefit-item">
+                                <div class="benefit-number">01</div>
+                                <div class="benefit-content">
+                                    <h3>Sắp hết hạn = Vẫn tươi ngon</h3>
+                                    <p>Hạn sử dụng gần đến không đồng nghĩa với kém chất lượng. Bạn vẫn được sản phẩm
+                                        tươi ngon, chỉ cần dùng sớm hơn một chút.</p>
+                                </div>
                             </div>
-                            <h3>Giá siêu rẻ</h3>
-                            <p>Tiết kiệm tới 70% so với giá thông thường trên thị trường</p>
-                        </div>
 
-                        <div class="feature-card">
-                            <div class="feature-icon" style="background: linear-gradient(135deg, #60a5fa, #3b82f6);">
-                                🚚
+                            <div class="benefit-item">
+                                <div class="benefit-number">02</div>
+                                <div class="benefit-content">
+                                    <h3>Giảm thẳng 50-70%</h3>
+                                    <p>Không phải trả giá đắt cho thực phẩm bạn sẽ ăn ngay. Tiết kiệm hàng trăm ngàn mỗi
+                                        tuần cho hóa đơn chợ.</p>
+                                </div>
                             </div>
-                            <h3>Giao hàng nhanh</h3>
-                            <p>Miễn phí ship cho đơn từ 200.000đ, giao trong 2 giờ</p>
-                        </div>
 
-                        <div class="feature-card">
-                            <div class="feature-icon" style="background: linear-gradient(135deg, #f472b6, #ec4899);">
-                                ❤️
+                            <div class="benefit-item">
+                                <div class="benefit-number">03</div>
+                                <div class="benefit-content">
+                                    <h3>Đặt trưa, chiều có</h3>
+                                    <p>Miễn phí giao hàng cho đơn từ 200k. Giao nhanh trong 2 giờ khu vực nội thành.</p>
+                                </div>
                             </div>
-                            <h3>Bảo vệ môi trường</h3>
-                            <p>Góp phần giảm thiểu lãng phí thực phẩm hiệu quả</p>
+
+                            <div class="benefit-item">
+                                <div class="benefit-number">04</div>
+                                <div class="benefit-content">
+                                    <h3>Giảm rác thải thực phẩm</h3>
+                                    <p>Mỗi đơn hàng là một phần thức ăn được cứu khỏi đổ bỏ. Bạn mua, môi trường được
+                                        hưởng lợi.</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </section>
