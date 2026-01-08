@@ -19,7 +19,10 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.createdDate ASC", 
+                "SELECT p FROM Product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "WHERE p.status = :status " +
+                "ORDER BY p.createdDate ASC", 
                 Product.class);
             query.setParameter("status", ProductStatus.PENDING_APPROVAL);
             query.setMaxResults(1);
@@ -40,7 +43,9 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.productId = :id", 
+                "SELECT p FROM Product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "WHERE p.productId = :id", 
                 Product.class);
             query.setParameter("id", productId);
             List<Product> result = query.getResultList();
@@ -112,7 +117,9 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.createdDate DESC", 
+                "SELECT DISTINCT p FROM Product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "ORDER BY p.createdDate DESC", 
                 Product.class);
             return query.getResultList();
         } finally {
@@ -132,7 +139,9 @@ public class AdminProductService {
                 "ORDER BY p.createdDate DESC";
                 
             TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status " + orderBy, 
+                "SELECT DISTINCT p FROM Product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "WHERE p.status = :status " + orderBy, 
                 Product.class);
             query.setParameter("status", status);
             return query.getResultList();
@@ -153,7 +162,10 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.createdDate ASC", 
+                "SELECT DISTINCT p FROM Product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "WHERE p.status = :status " +
+                "ORDER BY p.createdDate ASC", 
                 Product.class);
             query.setParameter("status", status);
             return query.getResultList();
@@ -172,7 +184,10 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.createdDate DESC", 
+                "SELECT DISTINCT p FROM Product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "WHERE p.status = :status " +
+                "ORDER BY p.createdDate DESC", 
                 Product.class);
             query.setParameter("status", status);
             return query.getResultList();
@@ -191,7 +206,10 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.name ASC", 
+                "SELECT DISTINCT p FROM Product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "WHERE p.status = :status " +
+                "ORDER BY p.name ASC", 
                 Product.class);
             query.setParameter("status", status);
             return query.getResultList();
@@ -210,7 +228,10 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller WHERE p.status = :status ORDER BY p.seller.shopName ASC", 
+                "SELECT DISTINCT p FROM Product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "WHERE p.status = :status " +
+                "ORDER BY p.seller.shopName ASC", 
                 Product.class);
             query.setParameter("status", status);
             return query.getResultList();
@@ -229,7 +250,9 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.createdDate ASC", 
+                "SELECT DISTINCT p FROM Product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "ORDER BY p.createdDate ASC", 
                 Product.class);
             return query.getResultList();
         } finally {
@@ -244,7 +267,9 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.createdDate DESC", 
+                "SELECT DISTINCT p FROM Product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "ORDER BY p.createdDate DESC", 
                 Product.class);
             return query.getResultList();
         } finally {
@@ -259,7 +284,9 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.name ASC", 
+                "SELECT DISTINCT p FROM Product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "ORDER BY p.name ASC", 
                 Product.class);
             return query.getResultList();
         } finally {
@@ -274,7 +301,9 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Product> query = em.createQuery(
-                "SELECT DISTINCT p FROM Product p LEFT JOIN FETCH p.seller ORDER BY p.seller.shopName ASC", 
+                "SELECT DISTINCT p FROM Product p " +
+                "LEFT JOIN FETCH p.seller " +
+                "ORDER BY p.seller.shopName ASC", 
                 Product.class);
             return query.getResultList();
         } finally {
@@ -291,7 +320,9 @@ public class AdminProductService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Long> query = em.createQuery(
-                "SELECT COUNT(p) FROM Product p WHERE p.status = :status", Long.class);
+                "SELECT COUNT(p) FROM Product p " +
+                "WHERE p.status = :status", 
+                Long.class);
             query.setParameter("status", status);
             return query.getSingleResult();
         } catch (Exception e) {
@@ -308,7 +339,9 @@ public class AdminProductService {
     public long countAll() {
         EntityManager em = getEntityManager();
         try {
-            return em.createQuery("SELECT COUNT(p) FROM Product p", Long.class).getSingleResult();
+            return em.createQuery(
+                "SELECT COUNT(p) FROM Product p", 
+                Long.class).getSingleResult();
         } catch (Exception e) {
             e.printStackTrace();
             return 0;

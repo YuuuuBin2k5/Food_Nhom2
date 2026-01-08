@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <!DOCTYPE html>
 <html lang="vi">
@@ -22,7 +23,6 @@
         
         <div class="stats-grid">
             <div class="stat-card stat-buyers">
-                <div class="stat-icon">👥</div>
                 <div class="stat-info">
                     <span class="stat-number">${totalBuyers}</span>
                     <span class="stat-label">Người mua</span>
@@ -30,7 +30,6 @@
             </div>
             
             <div class="stat-card stat-sellers">
-                <div class="stat-icon">🏪</div>
                 <div class="stat-info">
                     <span class="stat-number">${totalSellers}</span>
                     <span class="stat-label">Người bán</span>
@@ -38,7 +37,6 @@
             </div>
             
             <div class="stat-card stat-shippers">
-                <div class="stat-icon">🚚</div>
                 <div class="stat-info">
                     <span class="stat-number">${totalShippers}</span>
                     <span class="stat-label">Shipper</span>
@@ -46,7 +44,6 @@
             </div>
             
             <div class="stat-card stat-orders">
-                <div class="stat-icon">📦</div>
                 <div class="stat-info">
                     <span class="stat-number">${totalOrders}</span>
                     <span class="stat-label">Đơn hàng</span>
@@ -54,10 +51,25 @@
             </div>
             
             <div class="stat-card stat-products">
-                <div class="stat-icon">🍔</div>
                 <div class="stat-info">
                     <span class="stat-number">${totalProducts}</span>
                     <span class="stat-label">Sản phẩm</span>
+                </div>
+            </div>
+            
+            <div class="stat-card stat-revenue">
+                <div class="stat-info">
+                    <span class="stat-number">
+                        <c:choose>
+                            <c:when test="${totalRevenue != null && totalRevenue > 0}">
+                                <fmt:formatNumber value="${totalRevenue}" pattern="#,###"/>₫
+                            </c:when>
+                            <c:otherwise>
+                                0₫
+                            </c:otherwise>
+                        </c:choose>
+                    </span>
+                    <span class="stat-label">Tổng doanh thu</span>
                 </div>
             </div>
         </div>

@@ -40,7 +40,7 @@ public class MyOrdersServlet extends HttpServlet {
         try {
             List<Order> orders = orderService.getOrdersByBuyer(userId);
             request.setAttribute("orders", orders);
-            request.getRequestDispatcher("/buyer/orders.jsp").forward(request, response);
+            request.getRequestDispatcher("/buyer/ordersBuyer.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Error loading orders");

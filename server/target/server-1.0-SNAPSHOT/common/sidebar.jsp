@@ -421,7 +421,7 @@
                             style="position: relative; z-index: 10; font-size: 1.5rem; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">🍊</span>
                     </div>
                     <div class="logo-text">
-                        <span class="logo-title">FreshSave</span>
+                        <span class="logo-title">FoodRescue</span>
                         <span class="logo-subtitle">Smart Shopping</span>
                     </div>
                 </a>

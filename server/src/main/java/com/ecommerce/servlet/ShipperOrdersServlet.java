@@ -85,8 +85,7 @@ public class ShipperOrdersServlet extends HttpServlet {
             request.setAttribute("hasActiveDelivery", hasActiveDelivery);
             request.setAttribute("user", user);
             
-            request.getRequestDispatcher("/shipper/orders.jsp").forward(request, response);
-            
+            request.getRequestDispatcher("/shipper/ordersShipper.jsp").forward(request, response);
         } catch (Exception e) {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Lỗi tải danh sách đơn hàng");

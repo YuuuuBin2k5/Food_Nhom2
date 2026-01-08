@@ -222,7 +222,7 @@ public class AdminProductServlet extends HttpServlet {
                     ? product.getSeller().getShopName() : "Unknown";
                 
                 UserLog log = new UserLog(sellerId, Role.SELLER, ActionType.PRODUCT_APPROVED,
-                    "Sản phẩm \"" + productName + "\" của seller \"" + sellerName + "\" được duyệt bởi admin " + adminId,
+                    "Sản phẩm \"" + productName + "\" của seller \"" + sellerName + "\" được duyệt bởi admin " + admin.getFullName(),
                     productIdStr, "PRODUCT", adminId);
                 userLogService.save(log);
                 request.setAttribute("message", "Đã duyệt sản phẩm \"" + productName + "\" thành công!");
@@ -264,7 +264,7 @@ public class AdminProductServlet extends HttpServlet {
                     ? product.getSeller().getShopName() : "Unknown";
                 
                 UserLog log = new UserLog(sellerId, Role.SELLER, ActionType.PRODUCT_REJECTED,
-                    "Sản phẩm \"" + productName + "\" của seller \"" + sellerName + "\" bị từ chối bởi admin " + adminId,
+                    "Sản phẩm \"" + productName + "\" của seller \"" + sellerName + "\" bị từ chối bởi admin " + admin.getFullName(),
                     productIdStr, "PRODUCT", adminId);
                 userLogService.save(log);
                 request.setAttribute("message", "Đã từ chối sản phẩm \"" + productName + "\".");

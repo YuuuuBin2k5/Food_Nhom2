@@ -82,7 +82,7 @@ public class SellerProductsServlet extends HttpServlet {
                 System.err.println("Error getting expiring soon products: " + e.getMessage());
             }
 
-            request.getRequestDispatcher("/seller/products.jsp").forward(request, response);
+            request.getRequestDispatcher("/seller/productsSeller.jsp").forward(request, response);
 
         } catch (Exception e) {
             e.printStackTrace();

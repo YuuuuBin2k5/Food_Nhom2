@@ -45,13 +45,13 @@ public class OrderHistoryServlet extends HttpServlet {
             request.setAttribute("orders", orders);
             
             // Forward to JSP
-            request.getRequestDispatcher("/buyer/orders.jsp").forward(request, response);
+            request.getRequestDispatcher("/buyer/ordersBuyer.jsp").forward(request, response);
             
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Không thể tải danh sách đơn hàng");
             request.setAttribute("orders", new ArrayList<>());
-            request.getRequestDispatcher("/buyer/orders.jsp").forward(request, response);
+            request.getRequestDispatcher("/buyer/ordersBuyer.jsp").forward(request, response);
         }
     }
 }

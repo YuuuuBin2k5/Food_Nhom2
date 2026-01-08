@@ -196,7 +196,7 @@ public class AdminSellerServlet extends HttpServlet {
             int result = sellerDAO.approveSeller(sellerId);
             if (result == 0) {
                 UserLog log = new UserLog(sellerId, Role.SELLER, ActionType.SELLER_APPROVED,
-                    "Seller \"" + shopName + "\" được duyệt bởi admin " + adminId, sellerId, "SELLER", adminId);
+                    "Seller \"" + shopName + "\" được duyệt bởi admin " + admin.getFullName(), sellerId, "SELLER", adminId);
                 userLogDAO.save(log);
                 request.setAttribute("message", "Đã duyệt seller \"" + shopName + "\" thành công!");
             } else if (result == 2) {
@@ -230,7 +230,7 @@ public class AdminSellerServlet extends HttpServlet {
             int result = sellerDAO.rejectSeller(sellerId);
             if (result == 0) {
                 UserLog log = new UserLog(sellerId, Role.SELLER, ActionType.SELLER_REJECTED,
-                    "Seller \"" + shopName + "\" bị từ chối bởi admin " + adminId, null, null, adminId);
+                    "Seller \"" + shopName + "\" bị từ chối bởi admin " + admin.getFullName(), null, null, adminId);
                 userLogDAO.save(log);
                 request.setAttribute("message", "Đã từ chối seller \"" + shopName + "\".");
             } else if (result == 2) {

@@ -38,20 +38,24 @@ public class AdminStatisticsServlet extends HttpServlet {
         MenuHelper.setMenuItems(request, "ADMIN", "/admin/statistics");
         
         // Load statistics - TỐI ƯU: Dùng 1 EntityManager thay vì 5
-        Map<String, Long> stats = adminService.getAllStatistics();
+        Map<String, Object> stats = adminService.getAllStatistics();
         
-        long totalBuyers = stats.get("buyers");
-        long totalSellers = stats.get("sellers");
-        long totalShippers = stats.get("shippers");
-        long totalOrders = stats.get("orders");
-        long totalProducts = stats.get("products");
+        long totalBuyers = (Long) stats.get("buyers");
+        long totalSellers = (Long) stats.get("sellers");
+        long totalShippers = (Long) stats.get("shippers");
+        long totalOrders = (Long) stats.get("orders");
+        long totalProducts = (Long) stats.get("products");
+        double totalRevenue = (Double) stats.get("revenue");
         long totalUsers = totalBuyers + totalSellers + totalShippers;
+        
+        System.out.println("AdminStatisticsServlet: Total revenue: " + totalRevenue);
         
         request.setAttribute("totalBuyers", totalBuyers);
         request.setAttribute("totalSellers", totalSellers);
         request.setAttribute("totalShippers", totalShippers);
         request.setAttribute("totalOrders", totalOrders);
         request.setAttribute("totalProducts", totalProducts);
+        request.setAttribute("totalRevenue", totalRevenue);
         request.setAttribute("totalUsers", totalUsers);
         
         request.getRequestDispatcher("/admin/admin_statistics.jsp").forward(request, response);

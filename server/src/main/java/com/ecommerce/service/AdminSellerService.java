@@ -19,7 +19,9 @@ public class AdminSellerService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s WHERE s.verificationStatus = :status ORDER BY s.licenseSubmittedDate ASC", 
+                "SELECT s FROM Seller s " +
+                "WHERE s.verificationStatus = :status " +
+                "ORDER BY s.licenseSubmittedDate ASC", 
                 Seller.class);
             query.setParameter("status", SellerStatus.PENDING);
             query.setMaxResults(1);
@@ -107,7 +109,8 @@ public class AdminSellerService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s ORDER BY s.licenseSubmittedDate DESC", 
+                "SELECT s FROM Seller s " +
+                "ORDER BY s.licenseSubmittedDate DESC", 
                 Seller.class);
             return query.getResultList();
         } finally {
@@ -116,18 +119,19 @@ public class AdminSellerService {
     }
 
     /**
-     * Lấy tất cả Seller theo trạng thái (sắp xếp cũ nhất trước - FIFO cho pending)
+     * Lấy tất cả Seller theo trạng thái (sắp xếp mới nhất trước - trừ PENDING dùng FIFO)
      */
     public List<Seller> getAllSellersByStatus(SellerStatus status) {
         EntityManager em = getEntityManager();
         try {
-            // Pending: cũ nhất trước (FIFO), Others: mới nhất trước
+            // CHỈ Pending mới dùng FIFO (cũ nhất trước), các status khác mới nhất trước
             String orderBy = (status == SellerStatus.PENDING) ? 
                 "ORDER BY s.licenseSubmittedDate ASC" : 
                 "ORDER BY s.licenseSubmittedDate DESC";
                 
             TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s WHERE s.verificationStatus = :status " + orderBy, 
+                "SELECT s FROM Seller s " +
+                "WHERE s.verificationStatus = :status " + orderBy, 
                 Seller.class);
             query.setParameter("status", status);
             return query.getResultList();
@@ -148,7 +152,9 @@ public class AdminSellerService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s WHERE s.verificationStatus = :status ORDER BY s.licenseSubmittedDate ASC", 
+                "SELECT s FROM Seller s " +
+                "WHERE s.verificationStatus = :status " +
+                "ORDER BY s.licenseSubmittedDate ASC", 
                 Seller.class);
             query.setParameter("status", status);
             return query.getResultList();
@@ -167,7 +173,9 @@ public class AdminSellerService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s WHERE s.verificationStatus = :status ORDER BY s.licenseSubmittedDate DESC", 
+                "SELECT s FROM Seller s " +
+                "WHERE s.verificationStatus = :status " +
+                "ORDER BY s.licenseSubmittedDate DESC", 
                 Seller.class);
             query.setParameter("status", status);
             return query.getResultList();
@@ -186,7 +194,9 @@ public class AdminSellerService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s WHERE s.verificationStatus = :status ORDER BY s.fullName ASC", 
+                "SELECT s FROM Seller s " +
+                "WHERE s.verificationStatus = :status " +
+                "ORDER BY s.fullName ASC", 
                 Seller.class);
             query.setParameter("status", status);
             return query.getResultList();
@@ -205,7 +215,9 @@ public class AdminSellerService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s WHERE s.verificationStatus = :status ORDER BY s.shopName ASC", 
+                "SELECT s FROM Seller s " +
+                "WHERE s.verificationStatus = :status " +
+                "ORDER BY s.shopName ASC", 
                 Seller.class);
             query.setParameter("status", status);
             return query.getResultList();
@@ -224,7 +236,8 @@ public class AdminSellerService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s ORDER BY s.licenseSubmittedDate ASC", 
+                "SELECT s FROM Seller s " +
+                "ORDER BY s.licenseSubmittedDate ASC", 
                 Seller.class);
             return query.getResultList();
         } finally {
@@ -239,7 +252,8 @@ public class AdminSellerService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s ORDER BY s.licenseSubmittedDate DESC", 
+                "SELECT s FROM Seller s " +
+                "ORDER BY s.licenseSubmittedDate DESC", 
                 Seller.class);
             return query.getResultList();
         } finally {
@@ -254,7 +268,8 @@ public class AdminSellerService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s ORDER BY s.fullName ASC", 
+                "SELECT s FROM Seller s " +
+                "ORDER BY s.fullName ASC", 
                 Seller.class);
             return query.getResultList();
         } finally {
@@ -269,7 +284,8 @@ public class AdminSellerService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Seller> query = em.createQuery(
-                "SELECT s FROM Seller s ORDER BY s.shopName ASC", 
+                "SELECT s FROM Seller s " +
+                "ORDER BY s.shopName ASC", 
                 Seller.class);
             return query.getResultList();
         } finally {
@@ -286,7 +302,9 @@ public class AdminSellerService {
         EntityManager em = getEntityManager();
         try {
             TypedQuery<Long> query = em.createQuery(
-                "SELECT COUNT(s) FROM Seller s WHERE s.verificationStatus = :status", Long.class);
+                "SELECT COUNT(s) FROM Seller s " +
+                "WHERE s.verificationStatus = :status", 
+                Long.class);
             query.setParameter("status", status);
             return query.getSingleResult();
         } catch (Exception e) {
@@ -303,7 +321,9 @@ public class AdminSellerService {
     public long countAll() {
         EntityManager em = getEntityManager();
         try {
-            return em.createQuery("SELECT COUNT(s) FROM Seller s", Long.class).getSingleResult();
+            return em.createQuery(
+                "SELECT COUNT(s) FROM Seller s", 
+                Long.class).getSingleResult();
         } catch (Exception e) {
             e.printStackTrace();
             return 0;

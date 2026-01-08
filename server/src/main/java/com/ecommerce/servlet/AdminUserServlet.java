@@ -254,7 +254,7 @@ public class AdminUserServlet extends HttpServlet {
     }
 
     /**
-     * Ban user
+     * Ban user với xử lý đồng bộ hóa
      */
     private void banUser(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -265,16 +265,17 @@ public class AdminUserServlet extends HttpServlet {
         Admin admin = (Admin) session.getAttribute("user");
         String adminId = admin.getUserId();
         
-        boolean success = false;
+        int result = -1;
         if ("seller".equals(userType)) {
-            success = userDAO.banSeller(userId);
+            result = userDAO.banSeller(userId);
         } else if ("buyer".equals(userType)) {
-            success = userDAO.banBuyer(userId);
+            result = userDAO.banBuyer(userId);
         } else if ("shipper".equals(userType)) {
-            success = userDAO.banShipper(userId);
+            result = userDAO.banShipper(userId);
         }
         
-        if (success) {
+        if (result == 0) {
+            // Thành công - ghi log
             Role userRole = "seller".equals(userType) ? Role.SELLER 
                           : "buyer".equals(userType) ? Role.BUYER : Role.SHIPPER;
             ActionType actionType = "seller".equals(userType) ? ActionType.SELLER_BANNED 
@@ -282,18 +283,22 @@ public class AdminUserServlet extends HttpServlet {
                                   : ActionType.SHIPPER_BANNED;
             
             UserLog log = new UserLog(userId, userRole, actionType,
-                userType.substring(0, 1).toUpperCase() + userType.substring(1) + " \"" + userName + "\" bị ban bởi admin " + adminId,
+                userType.substring(0, 1).toUpperCase() + userType.substring(1) + " \"" + userName + "\" bị ban bởi admin " + admin.getFullName(),
                 null, null, adminId);
             userLogDAO.save(log);
             request.setAttribute("message", "Đã ban " + userType + " \"" + userName + "\".");
+        } else if (result == 2) {
+            // Đã bị ban rồi
+            request.setAttribute("error", userType.substring(0, 1).toUpperCase() + userType.substring(1) + " \"" + userName + "\" đã bị ban rồi.");
         } else {
+            // Lỗi khác
             request.setAttribute("error", "Không thể ban " + userType + ". Vui lòng thử lại.");
         }
         loadUsers(request, response);
     }
 
     /**
-     * Unban user
+     * Unban user với xử lý đồng bộ hóa
      */
     private void unbanUser(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
@@ -304,16 +309,17 @@ public class AdminUserServlet extends HttpServlet {
         Admin admin = (Admin) session.getAttribute("user");
         String adminId = admin.getUserId();
         
-        boolean success = false;
+        int result = -1;
         if ("seller".equals(userType)) {
-            success = userDAO.unbanSeller(userId);
+            result = userDAO.unbanSeller(userId);
         } else if ("buyer".equals(userType)) {
-            success = userDAO.unbanBuyer(userId);
+            result = userDAO.unbanBuyer(userId);
         } else if ("shipper".equals(userType)) {
-            success = userDAO.unbanShipper(userId);
+            result = userDAO.unbanShipper(userId);
         }
         
-        if (success) {
+        if (result == 0) {
+            // Thành công - ghi log
             Role userRole = "seller".equals(userType) ? Role.SELLER 
                           : "buyer".equals(userType) ? Role.BUYER : Role.SHIPPER;
             ActionType actionType = "seller".equals(userType) ? ActionType.SELLER_UNBANNED 
@@ -321,11 +327,15 @@ public class AdminUserServlet extends HttpServlet {
                                   : ActionType.SHIPPER_UNBANNED;
             
             UserLog log = new UserLog(userId, userRole, actionType,
-                userType.substring(0, 1).toUpperCase() + userType.substring(1) + " \"" + userName + "\" được unban bởi admin " + adminId,
+                userType.substring(0, 1).toUpperCase() + userType.substring(1) + " \"" + userName + "\" được unban bởi admin " + admin.getFullName(),
                 null, null, adminId);
             userLogDAO.save(log);
             request.setAttribute("message", "Đã unban " + userType + " \"" + userName + "\".");
+        } else if (result == 2) {
+            // Chưa bị ban
+            request.setAttribute("error", userType.substring(0, 1).toUpperCase() + userType.substring(1) + " \"" + userName + "\" chưa bị ban.");
         } else {
+            // Lỗi khác
             request.setAttribute("error", "Không thể unban " + userType + ". Vui lòng thử lại.");
         }
         loadUsers(request, response);
