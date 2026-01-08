@@ -3,10 +3,6 @@ package com.ecommerce.servlet;
 import java.io.IOException;
 import java.util.UUID;
 
-import com.ecommerce.entity.Admin;
-import com.ecommerce.entity.Buyer;
-import com.ecommerce.entity.Seller;
-import com.ecommerce.entity.Shipper;
 import com.ecommerce.entity.User;
 import com.ecommerce.service.AuthService;
 
@@ -53,7 +49,7 @@ public class LoginPageServlet extends HttpServlet {
                             if (user != null && !user.isBanned()) {
                                 // Tạo session mới
                                 HttpSession newSession = request.getSession(true);
-                                String role = determineRole(user);
+                                String role = user.getRole().name(); // Lấy role từ User entity
                                 
                                 newSession.setAttribute("user", user);
                                 newSession.setAttribute("userId", user.getUserId());
@@ -101,7 +97,7 @@ public class LoginPageServlet extends HttpServlet {
 
             // 2. Create NEW session
             HttpSession session = request.getSession(true);
-            String role = determineRole(user);
+            String role = user.getRole().name(); // Lấy role từ User entity
 
             session.setAttribute("user", user);
             session.setAttribute("userId", user.getUserId());
@@ -151,14 +147,6 @@ public class LoginPageServlet extends HttpServlet {
             request.setAttribute("email", email); // Giữ lại email để user đỡ phải gõ lại
             request.getRequestDispatcher("/auth/login.jsp").forward(request, response);
         }
-    }
-    
-    private String determineRole(User user) {
-        if (user instanceof Admin) return "ADMIN";
-        if (user instanceof Seller) return "SELLER";
-        if (user instanceof Shipper) return "SHIPPER";
-        if (user instanceof Buyer) return "BUYER";
-        return "UNKNOWN";
     }
     
     private void redirectByRole(HttpServletRequest request, HttpServletResponse response, String role) throws IOException {

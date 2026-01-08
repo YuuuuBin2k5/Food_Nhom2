@@ -180,13 +180,7 @@
                                             </form>
                                         </c:otherwise>
                                     </c:choose>
-                                    
-                                    <div class="order-secondary-actions">
-                                        <button type="button" class="btn-secondary-modern" 
-                                                onclick="showOrderDetail(${order.orderId})">
-                                            👁️ Xem chi tiết
-                                        </button>
-                                    </div>
+                                
                                 </div>
                             </div>
                         </div>
@@ -244,10 +238,6 @@
             syncSidebarState();
         }
         
-        // Simple order detail modal (optional - can be removed if not needed)
-        function showOrderDetail(orderId) {
-            alert('Chi tiết đơn hàng #' + orderId + '\n\nĐể xem chi tiết, vui lòng nhận đơn và xem tại trang "Đang giao".');
-        }
     </script>
 </body>
 </html>

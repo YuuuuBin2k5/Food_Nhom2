@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/shipper/orders")
 public class ShipperOrdersServlet extends HttpServlet {
     
-    private OrderService orderService = new OrderService();
+    private final OrderService orderService = new OrderService();
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
@@ -63,12 +63,6 @@ public class ShipperOrdersServlet extends HttpServlet {
                            shipperId.equals(o.getShipper() != null ? o.getShipper().getUserId() : null))
                 .count();
             
-            double totalEarnings = orders.stream()
-                .filter(o -> o.getStatus() == OrderStatus.DELIVERED && 
-                           shipperId.equals(o.getShipper() != null ? o.getShipper().getUserId() : null))
-                .mapToDouble(o -> 15000.0) // Fixed shipping fee
-                .sum();
-            
             // Filter only CONFIRMED orders for the new orders page
             List<Order> availableOrdersList = orders.stream()
                 .filter(o -> o.getStatus() == OrderStatus.CONFIRMED)
@@ -81,7 +75,6 @@ public class ShipperOrdersServlet extends HttpServlet {
             request.setAttribute("availableOrders", availableOrders);
             request.setAttribute("shippingOrders", shippingOrders);
             request.setAttribute("deliveredOrders", deliveredOrders);
-            request.setAttribute("totalEarnings", totalEarnings);
             request.setAttribute("hasActiveDelivery", hasActiveDelivery);
             request.setAttribute("user", user);
             

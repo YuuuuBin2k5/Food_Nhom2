@@ -19,7 +19,7 @@ import jakarta.servlet.http.HttpSession;
 @WebServlet("/shipper/delivering")
 public class ShipperDeliveringServlet extends HttpServlet {
     
-    private OrderService orderService = new OrderService();
+    private final OrderService orderService = new OrderService();
     
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) 
