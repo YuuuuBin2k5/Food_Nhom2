@@ -90,12 +90,12 @@ public class ProductListServlet extends HttpServlet {
             request.setAttribute("search", search != null ? search : "");
             request.setAttribute("currentSort", sortBy != null ? sortBy : "newest");
             
-            request.getRequestDispatcher("/buyer/products.jsp").forward(request, response);
+            request.getRequestDispatcher("/buyer/productsBuyer.jsp").forward(request, response);
             
         } catch (Exception e) {
             e.printStackTrace();
             request.setAttribute("error", "Không thể tải danh sách sản phẩm: " + e.getMessage());
-            request.getRequestDispatcher("/buyer/products.jsp").forward(request, response);
+            request.getRequestDispatcher("/buyer/productsBuyer.jsp").forward(request, response);
         }
     }
 }
