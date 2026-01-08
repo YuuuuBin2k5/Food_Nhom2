@@ -394,6 +394,7 @@ public class ProductService {
         dto.setManufactureDate(product.getManufactureDate());
         dto.setStatus(product.getStatus());
         dto.setCategory(product.getCategory());
+        dto.setImageUrl(product.getImageUrl());
 
         if (product.getSeller() != null) {
             SellerDTO sellerDTO = new SellerDTO();
