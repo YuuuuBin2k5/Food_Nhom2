@@ -74,11 +74,18 @@ Application sử dụng SMTP để gửi email (OTP đăng ký, reset password).
 
 ```bash
 SMTP_HOST=smtp-relay.brevo.com
-SMTP_PORT=587
+SMTP_PORT=2525
 SMTP_USERNAME=your-smtp-key-here
 SMTP_PASSWORD=your-smtp-key-here
 FROM_EMAIL=your-verified-email@domain.com
 ```
+
+**⚠️ LƯU Ý VỀ PORT:**
+- **Port 587**: STARTTLS (thường bị block trên một số cloud platform)
+- **Port 2525**: Alternative STARTTLS (ít bị block hơn) ✅ **KHUYẾN NGHỊ**
+- **Port 465**: SSL/TLS (cũ hơn, ít dùng)
+
+Nếu port 587 không hoạt động trên Render, hãy đổi sang port 2525.
 
 ### ⚠️ LƯU Ý QUAN TRỌNG VỀ BREVO SMTP
 
@@ -108,7 +115,7 @@ FROM_EMAIL=your-verified-email@domain.com
 3. Thêm từng biến:
    ```
    SMTP_HOST = smtp-relay.brevo.com
-   SMTP_PORT = 587
+   SMTP_PORT = 2525
    SMTP_USERNAME = xsmtpsib-your-key-here
    SMTP_PASSWORD = xsmtpsib-your-key-here
    FROM_EMAIL = daonguyennhatanh0910@gmail.com
