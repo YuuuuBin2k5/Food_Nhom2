@@ -49,16 +49,22 @@ public class MailUtil {
         Properties props = new Properties();
         props.put("mail.smtp.auth", "true");
         props.put("mail.smtp.starttls.enable", "true");
+        props.put("mail.smtp.starttls.required", "true");
         props.put("mail.smtp.host", SMTP_HOST);
         props.put("mail.smtp.port", SMTP_PORT);
         props.put("mail.smtp.ssl.trust", SMTP_HOST);
-        props.put("mail.smtp.ssl.protocols", "TLSv1.2");
+        props.put("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3");
+        
+        // Explicitly set user for authentication
+        props.put("mail.smtp.user", USERNAME);
+        props.put("mail.user", USERNAME);
 
         Session session = Session.getInstance(
                 props,
                 new Authenticator() {
                     @Override
                     protected PasswordAuthentication getPasswordAuthentication() {
+                        System.out.println("=== [MAIL] Authenticator called with USERNAME: " + USERNAME + " ===");
                         return new PasswordAuthentication(USERNAME, PASSWORD);
                     }
                 }
@@ -77,7 +83,12 @@ public class MailUtil {
             message.setSubject(subject);
             message.setText(content);
 
-            Transport.send(message);
+            // Use Transport with explicit authentication
+            Transport transport = session.getTransport("smtp");
+            System.out.println("=== [MAIL] Connecting with USERNAME: " + USERNAME + " ===");
+            transport.connect(SMTP_HOST, Integer.parseInt(SMTP_PORT), USERNAME, PASSWORD);
+            transport.sendMessage(message, message.getAllRecipients());
+            transport.close();
             
             System.out.println("=== [MAIL] Email sent successfully! ===");
 
