@@ -1,19 +1,21 @@
 package com.ecommerce.servlet;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import com.ecommerce.dto.CartItemDTO;
 import com.ecommerce.dto.ProductDTO;
 import com.ecommerce.service.ProductService;
 import com.ecommerce.util.MenuHelper;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Iterator;
 
 /**
  * Handles shopping cart page display and form-based cart operations
@@ -31,15 +33,6 @@ public class CartServlet extends HttpServlet {
         // Authentication check
         HttpSession session = request.getSession(false);
         
-        // ✅ DEBUG: Log session info
-        System.out.println("=== [CartServlet] ===");
-        if (session != null) {
-            System.out.println("Session ID: " + session.getId());
-            System.out.println("User: " + session.getAttribute("user"));
-        } else {
-            System.out.println("❌ No session found");
-        }
-        
         if (session == null || session.getAttribute("user") == null) {
             System.out.println("❌ User not authenticated, redirecting to login");
             response.sendRedirect(request.getContextPath() + "/login");
@@ -49,14 +42,6 @@ public class CartServlet extends HttpServlet {
         // Initialize cart if not exists
         List<CartItemDTO> cart = getOrCreateCart(session);
         
-        // ✅ DEBUG: Log cart info
-        System.out.println("Cart size: " + cart.size());
-        if (!cart.isEmpty()) {
-            System.out.println("Cart items:");
-            for (CartItemDTO item : cart) {
-                System.out.println("  - " + item.getProduct().getName() + " x" + item.getQuantity());
-            }
-        }
 
         // Calculate cart summary for display
         CartSummary summary = calculateCartSummary(cart);

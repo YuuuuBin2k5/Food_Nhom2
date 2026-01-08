@@ -3,8 +3,13 @@ package com.ecommerce.servlet;
 import java.io.IOException;
 import java.util.UUID;
 
-import com.ecommerce.entity.*;
+import com.ecommerce.entity.Admin;
+import com.ecommerce.entity.Buyer;
+import com.ecommerce.entity.Seller;
+import com.ecommerce.entity.Shipper;
+import com.ecommerce.entity.User;
 import com.ecommerce.service.AuthService;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.Cookie;
@@ -18,7 +23,7 @@ public class LoginPageServlet extends HttpServlet {
 
     private final AuthService authService = new AuthService();
     private static final String REMEMBER_COOKIE_NAME = "rememberToken";
-    private static final int REMEMBER_COOKIE_MAX_AGE = 30 * 24 * 60 * 60; // 30 ngày
+    private static final int REMEMBER_COOKIE_MAX_AGE = 30 * 24 * 60 * 60; 
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
